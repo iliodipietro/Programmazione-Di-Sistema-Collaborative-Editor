@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs
+/Client/EditorGUI/.vs/EditorGUI
+/Client/EditorGUI/build-EditorGUI-Clone_of_Desktop_Qt_5_12_3_MSVC2017_64bit-Debug
+/Client/EditorGUI/EditorGUI/debug
+/Client/EditorGUI/EditorGUI/GeneratedFiles
+/Client/EditorGUI/EditorGUI/x64/Debug
+/Client/EditorGUI/x64/Debug
