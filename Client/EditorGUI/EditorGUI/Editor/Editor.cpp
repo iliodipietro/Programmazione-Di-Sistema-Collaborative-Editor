@@ -30,6 +30,7 @@ Editor::Editor(QWidget* parent, QString path)
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
 	//MATTIA--------------------------------------------------------------------------------------
+	//qui vanno fatte tutte le connect che sono in main window a debora
 	connect(ui.textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 
 
@@ -499,7 +500,7 @@ void Editor::on_textEdit_textChanged() {
 	int curr = TC.position();
 	int last = lastCursor;
 	if (TC.position() <= lastCursor) {
-		//è una delete
+		//è una delete		
 		Edelete();
 	}
 	else {
@@ -526,11 +527,11 @@ void Editor::Einsert() {
 		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
 		QFont font = ui.textEdit->currentFont();
 		QColor color = ui.textEdit->textColor();
-        Qt::Alignment alignment = ui.textEdit->alignment();
+        Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 
         Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
 
-		//send to socket
+		//send to socket-->emit qualcosa
 
 	}
 }
@@ -548,7 +549,7 @@ void Editor::Edelete() {
 		return;
 	}
 	if (lastCursor == TC.position()) {//se sono uguale sono nel caso particolare in cui seeziono da dx a sx
-										// e quando cancello il cursore non cambia
+									// e quando cancello il cursore non cambia
 		deleteDxSx();
 	}
 }
@@ -567,47 +568,32 @@ void Editor::deleteDxSx() {
 void Editor::remoteAction(Message m)
 {
 	this->remoteEvent = true;//serve ad evitare che l'ontextchange venga triggerato e che quindi vada a mod il cursore e le altre var
-
-	QChar chr = m.getSymbol().getChar();
-	QFont r_font = m.getSymbol().getFont();
-	QColor r_color = m.getSymbol().getColor();
+	//provato anche con connect e disconnect del segnale 
 
 	//inserisce auth nel CRDT
-	__int64 index = this->_CRDT->process(m);
+	__int64 index = this->_CRDT->process(m);//index rappresenta l'indice della lettere nel testo corrente dove fare insert/delete
 
 	/*--------------------------------------------------------------------------------
 	queste due funzioni in base al valore dell'indice a cui inserire e a quello del cursore corrente decidono
-	se è il caso o meno di andare a modificare il curosre incrementandolo o decrementandolo
+	se è il caso o meno di andare a modificare il cursore incrementandolo o decrementandolo
 	++ iff this<last
 	-- iff this<last
 	solo se sto inserendo ad un indice inferiore a quello a cui sto srivendo poiche avrò un char in meno o in piu
 	-----------------------------------------------------------------------------------------*/
 	switch (m.getAction())
 	{
-	case INSERT:maybeincrement(index);
+	case INSERT:
+		updateViewAfterInsert(m, index);
+		maybeincrement(index);
 		break;
-	case DELETE:maybedecrement(index);
+	case DELETE:
+		updateViewAfterDelete(m, index);
+		maybedecrement(index);
+
 		break;
 	default:
 		break;
 	}
-
-	QTextCursor TC = ui.textEdit->textCursor();
-
-	QFont font = ui.textEdit->currentFont();
-	QColor color = ui.textEdit->textColor();
-
-	//colore del char che arriva
-	ui.textEdit->setFont(r_font);
-	ui.textEdit->setTextColor(r_color);
-
-	TC.setPosition(index);
-	TC.insertText(chr);
-	TC.setPosition(this->lastCursor);
-
-	//ripristino
-	ui.textEdit->setFont(font);
-	ui.textEdit->setTextColor(r_color);
 
 	this->remoteEvent = false;
 }
@@ -642,8 +628,61 @@ void Editor::updateLastPosition()
 	int in = TC.position();
 	int l = lastCursor;
 	this->lastCursor = TC.position();
+	//emit per dire che mi sono spostato-->aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
 }
 
+void Editor::updateViewAfterInsert(Message m, __int64 index)
+{
+	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	//retrieving remote state
+	QChar chr = m.getSymbol().getChar();
+	QFont r_font = m.getSymbol().getFont();
+	QColor r_color = m.getSymbol().getColor();
+	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
+	/// 
+	/// la parte qui sotto potrbbe essere inutile per poter scrivere sul text editor 
+	/// conviene usare la Qchartextedit--> vedi nota vocale su telegram a me stesso
+	//o vedere changeViewAfterInsert in mainwindow.cpp debora
+
+	QTextCursor TC = ui.textEdit->textCursor();
+	// saving current state
+	QFont font = ui.textEdit->currentFont();
+	QColor color = ui.textEdit->textColor();
+
+	//colore del char che arriva
+	QTextCharFormat format;
+	format.setFont(r_font);
+	format.setForeground(r_color);
+	//ui.textEdit->setFont(r_font);
+	//ui.textEdit->setTextColor(r_color);
+
+	TC.setPosition(index);
+	TC.insertText(chr,format);
+
+	QTextBlockFormat blockFormat = TC.blockFormat();
+	blockFormat.setAlignment(alignment);
+	
+	TC.mergeBlockFormat(blockFormat);
+	
+
+	//ripristino
+	TC.setPosition(this->lastCursor);
+	//ui.textEdit->setFont(font);
+	//ui.textEdit->setTextColor(color);
+	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+}
+
+void Editor::updateViewAfterDelete(Message m, __int64 index)
+{
+	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	QTextCursor TC = ui.textEdit->textCursor();
+	TC.setPosition(index);
+	TC.deleteChar();
+	//TC.deletePreviousChar();//oppure è questo se il primo non funziona
+	TC.setPosition(this->lastCursor);
+	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+}
 //FINE-------------------------------------------------------------------------------------------------------------
 
 void Editor::keyPressEvent(QKeyEvent* e) {
@@ -773,3 +812,15 @@ void Editor::textColor()
 	mergeFormatOnWordOrSelection(fmt);
 	colorChanged(col);
 }
+
+Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
+	if (al.testFlag(Qt::AlignLeft))
+		return Qt::AlignLeft;
+	else if (al.testFlag(Qt::AlignRight))
+		return Qt::AlignRight;
+	else if (al.testFlag(Qt::AlignCenter) || al.testFlag(Qt::AlignHCenter))
+		return Qt::AlignCenter;
+	else return Qt::AlignJustify;
+}
+
+

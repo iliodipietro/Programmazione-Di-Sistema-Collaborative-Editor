@@ -121,6 +121,7 @@
     <ClCompile Include="Login\Login.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NewAccount\NewAccount.cpp" />
+    <ClCompile Include="Serialization\Serialize.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h" />
@@ -154,6 +155,8 @@
     <ClInclude Include="CRDT\Message.h" />
     <ClInclude Include="CRDT\Symbol.h" />
     <QtMoc Include="NewAccount\NewAccount.h" />
+    <ClInclude Include="Serialization\define.h" />
+    <QtMoc Include="Serialization\Serialize.h" />
     <ClInclude Include="Structures\FormatStructure.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

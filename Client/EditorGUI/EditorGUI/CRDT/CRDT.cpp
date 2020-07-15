@@ -99,7 +99,7 @@ __int64 CRDT::process(const Message & m)
 
 
 //local insert/delete di conclave creano il messaggio che identifica le mie azioni e creo anche qui la parte frazionaria ecc
-Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::Alignment alignment)
+Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment)
 {
 	std::array<int, 2> a;
 	std::vector<int> pos;
@@ -235,29 +235,47 @@ std::vector<Message> CRDT::getMessageArray()
 	return msgs;
 }
 
-void CRDT::readFromFile(std::string fileName)
-{
-	std::ifstream iFile(fileName);
-	if (iFile.is_open())
-	{
-		std::string line;
-		
+//void CRDT::readFromFile(std::string fileName)
+//{
+//	std::ifstream iFile(fileName);
+//	if (iFile.is_open())
+//	{
+//		std::string line;
+//		
+//
+//		while (getline(iFile, line))
+//		{
+//			
+//			for (char s : line) {
+//				
+//				std::array<int, 2> a = { 0,this->_counter };
+//				std::vector<int> v;
+//				v.push_back(this->_counter++);
+//                Symbol sb( s, a, v, QFont("Times New Roman"), QColor(0, 0, 0),Qt::Alignment());
+//				_symbols.push_back(sb);
+//			}
+//
+//			}
+//
+//		iFile.close();
+//
+//	}
+//}
+//
+//void CRDT::writeToFile(std::string filename)
+//{
+//
+//	std::ofstream oFile("test-out.txt", std::ios_base::out | std::ios_base::trunc);
+//	if (oFile.is_open())
+//	{
+//
+//		std::string text = this->to_string();
+//		{
+//			oFile << text;
+//		}
+//		oFile.close();
+//	}
+//
+//}
+//
 
-		while (getline(iFile, line))
-		{
-			
-			for (char s : line) {
-				
-				std::array<int, 2> a = { 0,this->_counter };
-				std::vector<int> v;
-				v.push_back(this->_counter++);
-                Symbol sb( s, a, v, QFont("Times New Roman"), QColor(0, 0, 0),Qt::Alignment());
-				_symbols.push_back(sb);
-			}
-
-			}
-
-		iFile.close();
-
-	}
-}

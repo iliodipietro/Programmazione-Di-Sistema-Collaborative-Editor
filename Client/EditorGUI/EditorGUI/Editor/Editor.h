@@ -96,7 +96,10 @@ private:
 	void remoteAction(Message m);
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
-
+	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
+	void updateViewAfterInsert(Message m, __int64 index);
+	void updateViewAfterDelete(Message m, __int64 index);
+	//FINE----------------------------------------------------------------------
 protected:
 	void keyPressEvent(QKeyEvent *e);
 
@@ -104,4 +107,7 @@ private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
+
+//---------------------------------------------------------------------------------------------------
+
 };
