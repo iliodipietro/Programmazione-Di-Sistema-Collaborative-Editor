@@ -14,7 +14,7 @@ public:
     explicit SocketHandler(QObject *parent = nullptr);
 
     bool connectToServer();
-    bool writeData(SocketMessage data);
+    bool writeData(SocketMessage& data);
 
 private:
     QSharedPointer<QTcpSocket> m_tcpSocket;

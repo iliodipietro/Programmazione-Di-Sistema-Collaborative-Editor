@@ -54,6 +54,12 @@
     <ClCompile Include="NewAccount\NewAccount.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SocketHandler\SocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketHandler\SocketMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -66,6 +72,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="NewAccount\NewAccount.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SocketHandler\SocketHandler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SocketHandler\SocketMessage.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -108,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CRDT\Message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Structures\MessageTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

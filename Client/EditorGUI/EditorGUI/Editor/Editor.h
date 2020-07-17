@@ -1,11 +1,12 @@
 #pragma once
 
-#include <QMainWindow>
 #include "ui_Editor.h"
+#include <QMainWindow>
 #include "CRDT/CRDT.h"
-#include "../Structures/FormatStructure.h"
 #include <QKeyEvent>
 #include <Qt>
+#include <iostream>
+#include "../Structures/FormatStructure.h"
 
 class QFontComboBox;
 class QPrinter;

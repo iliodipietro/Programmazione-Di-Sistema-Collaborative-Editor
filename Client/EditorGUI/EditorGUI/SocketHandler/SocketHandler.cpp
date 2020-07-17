@@ -49,13 +49,13 @@ void SocketHandler::readyRead()
         while(data.size() >= 8){
 
             qint64 messageSize = arrayToInt(data.mid(0, 8));
-
+            
             data.remove(0, 8);
 
             if(messageSize > 0 && data.size() >= messageSize){
                 QByteArray message = data.mid(0, static_cast<qint32>(messageSize));
                 data.remove(0, static_cast<qint32>(messageSize));
-                emit dataReceived(SocketMessage::deserializeMessage(message));
+                emit dataReceived(QSharedPointer<SocketMessage>(new SocketMessage(message)));
             }
         }
 
@@ -64,7 +64,7 @@ void SocketHandler::readyRead()
     }
 }
 
-bool SocketHandler::writeData(SocketMessage data){
+bool SocketHandler::writeData(SocketMessage& data){
     if(m_tcpSocket->state() == QAbstractSocket::ConnectedState)
     {
         QByteArray bytes = data.serializeMessage();

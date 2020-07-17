@@ -5,6 +5,7 @@
 #include "ui_Login.h"
 #include "FileBrowser/FileBrowser.h"
 #include "NewAccount/NewAccount.h"
+#include "SocketHandler/SocketHandler.h"
 
 class Login : public QMainWindow
 {
@@ -19,6 +20,7 @@ private:
 	Ui::LoginClass ui;
 	FileBrowser* FileBrowserWindow;
 	NewAccount* NewAccountWindow;
+	QSharedPointer<SocketHandler> m_socketHandler;
 	void closeEvent(QCloseEvent* event);
 
 private slots:

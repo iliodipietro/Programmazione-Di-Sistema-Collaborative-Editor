@@ -526,12 +526,14 @@ void Editor::Einsert() {
 		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
 		QFont font = ui.textEdit->currentFont();
 		QColor color = ui.textEdit->textColor();
-        Qt::Alignment alignment = ui.textEdit->alignment();
+		Qt::Alignment alignment = ui.textEdit->alignment();
 
-        Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
+		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
 
 		//send to socket
 
+		//std::string prova = m.getSymbol().getFont().toString().toStdString();
+		//std::cout << "prova" << std::endl;
 	}
 }
 
@@ -746,7 +748,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 		int headingLevel = this->ui.textEdit->textCursor().blockFormat().headingLevel();
 		this->comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
 	}
-	
+
 	this->comboFont->setCurrentFont(ui.textEdit->currentFont());
 	QPixmap pix(16, 16);
 	pix.fill(ui.textEdit->textColor());
@@ -757,7 +759,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 }
 
-void Editor::colorChanged(const QColor& c){
+void Editor::colorChanged(const QColor& c) {
 	QPixmap pix(16, 16);
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
