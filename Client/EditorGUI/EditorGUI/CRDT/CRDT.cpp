@@ -1,4 +1,10 @@
 #include "CRDT.h"
+#include <QTextStream>
+#include <Qstring>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 /*
 
@@ -73,6 +79,27 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 
 	return -1 ;
 }
+__int64 CRDT::change_symbol(Symbol symbol) {
+	__int64 index;
+
+	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
+		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+
+	if (it != _symbols.end()) {
+		//vuol dire che l'ho trovato
+		(it)->setFont(symbol.getFont());
+		(it)->setColor(symbol.getColor());
+		(it)->setAlignment(symbol.getAlignment());
+
+		index = std::distance(_symbols.begin(), it);
+
+
+		return index;
+	}
+
+	return -1;
+
+}
 
 __int64 CRDT::process(const Message & m)
 {
@@ -88,12 +115,18 @@ __int64 CRDT::process(const Message & m)
 		index = insert_symbol(m.getSymbol());
 		//fare qualcosa con index
 		break;
+	case CHANGE:
+		index = change_symbol(m.getSymbol());
+		break;
 
 	default:
 		index = 0;
 		break;
 	}
 
+	if (index == -1) {
+		std::cout << "ERRORE CON GLI INDICI NELLA PROCESS";
+	}
 	return index;
 }
 
@@ -208,6 +241,16 @@ Message CRDT::localErase(int index)
 	return m;
 }
 
+Message CRDT::localChange(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment)
+{
+	_symbols.at(index).setColor(color);
+	_symbols.at(index).setFont(font);
+	_symbols.at(index).setAlignment(alignment);
+	Symbol s = _symbols.at(index);
+	Message m(s, CHANGE, this->_siteId);
+	return m;
+}
+
 
 std::string CRDT::to_string()
 {
@@ -235,47 +278,177 @@ std::vector<Message> CRDT::getMessageArray()
 	return msgs;
 }
 
-//void CRDT::readFromFile(std::string fileName)
-//{
-//	std::ifstream iFile(fileName);
-//	if (iFile.is_open())
-//	{
-//		std::string line;
-//		
-//
-//		while (getline(iFile, line))
-//		{
-//			
-//			for (char s : line) {
-//				
-//				std::array<int, 2> a = { 0,this->_counter };
-//				std::vector<int> v;
-//				v.push_back(this->_counter++);
-//                Symbol sb( s, a, v, QFont("Times New Roman"), QColor(0, 0, 0),Qt::Alignment());
-//				_symbols.push_back(sb);
-//			}
-//
-//			}
-//
-//		iFile.close();
-//
-//	}
-//}
-//
-//void CRDT::writeToFile(std::string filename)
-//{
-//
-//	std::ofstream oFile("test-out.txt", std::ios_base::out | std::ios_base::trunc);
-//	if (oFile.is_open())
-//	{
-//
-//		std::string text = this->to_string();
-//		{
-//			oFile << text;
-//		}
-//		oFile.close();
-//	}
-//
-//}
-//
+
+
+
+// SERVER ONLYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+QJsonObject ObjectFromString(const QString& in)
+{
+	QJsonObject obj;
+
+	QJsonDocument doc = QJsonDocument::fromJson(in.toUtf8());
+
+	// check validity of the document
+	if (!doc.isNull())
+	{
+		if (doc.isObject())
+		{
+			obj = doc.object();
+		}
+		else
+		{
+			std::cout << "Document is not an object" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid JSON...\n" << in.toStdString() << std::endl;
+	}
+
+	return obj;
+}
+void CRDT::readFromFile(std::string fileName)
+{
+	std::ifstream iFile(fileName);
+	if (iFile.is_open())
+	{
+		std::string line;
+		
+
+		while (getline(iFile, line))
+		{
+			QString str = QString::fromStdString(line);
+			QJsonObject  obj = ObjectFromString(str);
+
+			char c = obj.value("character").toInt();
+
+			std::array<int, 2> a;
+			QJsonArray id = obj.value("globalCharacterId").toArray();
+			a[0] = id[0].toInt();
+			a[1] = id[1].toInt();
+
+			std::vector<int> pos;
+
+			QJsonArray vett_pos = obj.value("position").toArray();
+
+			for (QJsonValue qj : vett_pos) {
+
+				pos.push_back(qj.toInt());
+			}
+
+			QFont font;
+			font.fromString(obj.value("font").toString());
+
+
+			QString color_hex = obj.value("color").toString();
+
+			QColor color(color_hex);
+
+
+			int align = obj.value("alignment").toInt();
+			Qt::AlignmentFlag alignFlag = static_cast<Qt::AlignmentFlag>(align);
+
+
+			Symbol s(c, a, pos, font, color, alignFlag);
+
+			this->_symbols.push_back(s);
+
+			}
+
+
+		iFile.close();
+		for (auto symb : this->_symbols) {
+
+			Message m(symb, INSERT, 0);//L'ID del server è 0 sempre
+			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		}
+
+	}
+}
+
+
+
+QString CRDT::crdt_serialize()
+{
+	QString text = ""; 
+
+	for (auto s : this->_symbols) {
+		
+		QJsonObject obj;
+
+
+		char c = s.getChar();
+
+		obj.insert("character", QJsonValue(c));
+
+		//include di vector e array sono gia in symbol includso in message
+		std::array<int, 2> id = s.getId();
+
+		QJsonArray  Qid = { id[0],id[1] };//id globale
+
+		obj.insert("globalCharacterId", QJsonValue(Qid));
+
+		std::vector<int> v = s.getPos();
+
+		QJsonArray Qvett;
+
+		for (int i : v) {
+
+			Qvett.append(QJsonValue(i));
+		}
+
+		obj.insert("position", QJsonValue(Qvett));
+
+
+		//font e colore
+		QFont font = s.getFont();
+		QString serialFont = font.toString();
+		obj.insert("font", QJsonValue(serialFont));
+
+		QString color = s.getColor().name();//hex value
+		Qt::AlignmentFlag aligment = s.getAlignment();
+
+		//int red = color.red();
+		//int green = color.green();
+		//int blue = color.blue();
+
+		//obj.insert("red",QJsonValue(red));
+		//obj.insert("green", QJsonValue(green));
+		//obj.insert("blue", QJsonValue(blue));
+		obj.insert("color", color);
+		obj.insert("aligment", aligment);
+
+
+		QJsonDocument doc(obj);
+		QString strJson(doc.toJson(QJsonDocument::Compact));
+		text.append(strJson);
+		text.append('\n');
+	}
+	return text;
+}
+void CRDT::saveOnFile(std::string filename)
+{
+	std::string name = "C:/Users/Mattia Proietto/Desktop/prova_save.txt";
+
+	QString serialized_text = this->crdt_serialize();
+
+	std::ofstream oFile(name, std::ios_base::out | std::ios_base::trunc);
+	if (oFile.is_open())
+	{
+
+		//std::string text = this->to_string();
+		{
+			//oFile << text;
+			oFile << serialized_text.toStdString();
+		}
+		oFile.close();
+	}
+	else {
+		std::cout << "Errore apertura file";
+	}
+
+	this->readFromFile(name);
+
+}
+
 

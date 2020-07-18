@@ -27,5 +27,8 @@ public:
 	QFont getFont();
 	QColor getColor();
 	Qt::AlignmentFlag getAlignment();
+	void setFont(QFont font);
+	void setColor(QColor color);
+	void setAlignment(Qt::AlignmentFlag al);
 };
 

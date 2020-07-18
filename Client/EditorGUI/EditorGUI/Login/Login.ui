@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Login</string>
   </property>
+  <property name="inputMethodHints">
+   <set>Qt::ImhHiddenText</set>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
@@ -79,7 +82,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="passwordTextLine"/>
+         <widget class="QLineEdit" name="passwordTextLine">
+          <property name="inputMethodHints">
+           <set>Qt::ImhHiddenText|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

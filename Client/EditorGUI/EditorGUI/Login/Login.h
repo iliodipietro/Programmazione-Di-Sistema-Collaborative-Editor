@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QCloseEvent>
+#include <QMessageBox>
 #include "ui_Login.h"
 #include "FileBrowser/FileBrowser.h"
 #include "NewAccount/NewAccount.h"

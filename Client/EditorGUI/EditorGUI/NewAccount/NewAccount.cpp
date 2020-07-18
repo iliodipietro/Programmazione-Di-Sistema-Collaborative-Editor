@@ -1,5 +1,6 @@
 #include "NewAccount.h"
 #include <QMouseEvent>
+#include <QMessageBox>
 
 NewAccount::NewAccount(QWidget *parent)
 	: QMainWindow(parent)
@@ -38,6 +39,13 @@ void NewAccount::on_selectImageButton_clicked() {
 
 void NewAccount::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
+	QString username = ui.emailLine->text();
+	QString nickname = ui.nickNameLine->text();
+	QString password = ui.passwordLine->text();
+	QString password_re = ui.rePasswordLine->text();
+
+	if(password.compare(password_re) != 0){}
+
 	if (this->croppedImage != Q_NULLPTR) {
 		delete this->croppedImage;
 		this->croppedImage = Q_NULLPTR;
@@ -45,6 +53,16 @@ void NewAccount::on_submit_clicked() {
 
 	this->croppedImage = new QPixmap(this->img->copy(this->selectionArea->geometry()));
 	ui.crop->setPixmap(*this->croppedImage);
+	
+	if (password.compare(password_re) == 0) {
+
+		//emit per il socket
+		QMessageBox::information(this, "NewAccount", "New Account Created");
+	
+	}
+	else {
+		QMessageBox::warning(this, "NewAccount", "Different passwords");
+	}
 }
 
 void NewAccount::mousePressEvent(QMouseEvent* e)

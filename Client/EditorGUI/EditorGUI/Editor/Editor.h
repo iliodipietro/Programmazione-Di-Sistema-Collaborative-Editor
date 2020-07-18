@@ -5,8 +5,6 @@
 #include "CRDT/CRDT.h"
 #include "../Structures/FormatStructure.h"
 #include <QKeyEvent>
-#include <Qt>
-
 class QFontComboBox;
 class QPrinter;
 //class QTextEdit;
@@ -88,10 +86,11 @@ private:
 
 	//Mattia-----------------------------------------------------------------------------------------------------------
 
-	void Einsert();//Editor Local insert
-	void Edelete();//Editor local delete
+	void localInsert();//Editor Local insert
+	void localDelete();//Editor local delete
+	void localStyleChange();//Editor local style change
 	void updateLastPosition();
-	void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end
+	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
 
 	void remoteAction(Message m);
 	void maybeincrement(__int64 index);
@@ -99,6 +98,8 @@ private:
 	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
 	void updateViewAfterInsert(Message m, __int64 index);
 	void updateViewAfterDelete(Message m, __int64 index);
+	void updateViewAfterStyleChange(Message m, __int64 index);
+
 	//FINE----------------------------------------------------------------------
 protected:
 	void keyPressEvent(QKeyEvent *e);

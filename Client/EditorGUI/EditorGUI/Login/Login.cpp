@@ -9,6 +9,7 @@ Login::Login(QWidget *parent)
 
 Login::~Login()
 {
+	
 }
 
 void Login::closeEvent(QCloseEvent* event)
@@ -25,10 +26,23 @@ void Login::on_loginButton_clicked()
 {
 	QString username = ui.usernameTextLine->text();
 	QString password = ui.passwordTextLine->text();
-	this->FileBrowserWindow = new FileBrowser(Q_NULLPTR, username);
-	this->FileBrowserWindow->show();
-	this->newWindow = true;
-	this->close();
+	
+	//emit per il server--> aspettare risposta e
+
+	if ((username == "admin" && password == "admin")|| 1==1) {
+		//QMessageBox::information(this, "Login", "Welcome Back");
+		//hide();
+		this->FileBrowserWindow = new FileBrowser(Q_NULLPTR, username);
+		this->FileBrowserWindow->show();
+		this->newWindow = true;
+		this->close();
+
+	}
+	else {
+		QMessageBox::warning(this, "Login", "Username or password is not correct");
+	}
+	
+
 }
 
 void Login::on_newAccount_clicked() {

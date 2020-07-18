@@ -6,7 +6,8 @@
 #include <fstream>
 #include <string>
 #include <iostream>
-#include <QTextStream>
+
+
 
 #define INSERT 0
 #define DELETE 1
@@ -39,6 +40,8 @@ private:
 	//uso __int64 per evitare warning e perdita dati per troncamento
 	__int64 insert_symbol(Symbol symbol);
 	__int64 delete_symbol(Symbol symbol);
+	__int64 change_symbol(Symbol symbol);
+	QString crdt_serialize();
 
 public:
 	CRDT(int id);
@@ -46,6 +49,8 @@ public:
 
     Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
 	Message localErase(int index);
+	Message localChange(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
+
 	__int64 process(const Message & m);
 	std::string to_string();//usare Qstring??
 	int getId();
@@ -53,7 +58,7 @@ public:
 	//void dispatchMessages();-->sul server
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta
 	void readFromFile(std::string fileName);
-	void writeToFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
+	void saveOnFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
 
 
 

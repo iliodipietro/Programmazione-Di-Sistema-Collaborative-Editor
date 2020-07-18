@@ -33,7 +33,7 @@ public:
 
 	QString userSerialize(QString user, QString password,QString nickname,int type);//type usato per discriminare login o register
 	QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
-	//la eegister l'immagine viene serializzata a parte per ora
+	//la register l'immagine viene serializzata a parte per ora
 
 	
 	
@@ -56,6 +56,7 @@ public:
 	QString responseSerialize(int res,int type);
 	int responseUnserialize(QJsonObject obj);
 
+	QJsonObject ObjectFromString(const QString& in);
 
 
 	//void setType(QString type);

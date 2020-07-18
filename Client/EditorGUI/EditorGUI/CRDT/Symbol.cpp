@@ -38,3 +38,18 @@ Qt::AlignmentFlag Symbol::getAlignment()
 {
 	return this->alignment;
 }
+
+void Symbol::setFont(QFont font)
+{
+	this->font = font;
+}
+
+void Symbol::setColor(QColor color)
+{
+	this->color = color;
+}
+
+void Symbol::setAlignment(Qt::AlignmentFlag al)
+{
+	this->alignment = al;
+}

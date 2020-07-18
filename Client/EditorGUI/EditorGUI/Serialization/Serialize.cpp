@@ -1,7 +1,7 @@
 #include "Serialize.h"
 #include <QBuffer>
 #include <QJsonDocument>
-
+#include <QDebug>
 Serialize::Serialize(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -13,13 +13,14 @@ QString Serialize::userSerialize(QString user, QString password,QString nickname
 {
 	QJsonObject obj;
 	
-	obj.insert("type", QJsonValue(type));//??
+	obj.insert("type", QJsonValue(type));
 	obj.insert("user",QJsonValue(user));
 	obj.insert("password", QJsonValue(password));
 
 	if (type == REGISTER) {
 		obj.insert("nickname",QJsonValue(nickname));
 	}
+
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -52,8 +53,9 @@ QString Serialize::fileNameSerialize(QString fileName, int type)
 {
 
 	QJsonObject obj;
-	obj.insert("type", QJsonValue(type));//??
+	obj.insert("type", QJsonValue(type));
 	obj.insert("filename",fileName);
+
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -74,7 +76,7 @@ QString Serialize::messageSerialize(Message message, int type)
 {
 	QJsonObject obj;
 	
-	obj.insert("type", QJsonValue(type));//??
+	obj.insert("type", QJsonValue(type));
 
 	int action = message.getAction();
 	
@@ -114,7 +116,7 @@ QString Serialize::messageSerialize(Message message, int type)
 	QString serialFont = font.toString();
 	obj.insert("font",QJsonValue(serialFont));
 
-	QString color = s.getColor().name();
+	QString color = s.getColor().name();//hex value
 	Qt::AlignmentFlag aligment = s.getAlignment();
 	
 	//int red = color.red();
@@ -162,12 +164,12 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
 	QColor color(color_hex);
 
-	//FINIRE QUESTOOOOOOOOOOOO
+
 	int align = obj.value("alignment").toInt();
 	Qt::AlignmentFlag alignFlag = static_cast<Qt::AlignmentFlag>(align);
 
 	
-	Symbol s(c , a , pos,font,color, alignFlag);
+	Symbol s(c , a , pos, font, color, alignFlag);
 	
 	int action = obj.value("action").toInt();
 
@@ -185,6 +187,7 @@ QString Serialize::textMessageSerialize(QString str, int type)
 
 	obj.insert("type", QJsonValue(type));//??
 	obj.insert("message", QJsonValue(str));
+
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -220,6 +223,7 @@ QString Serialize::imageSerialize(QPixmap img, int type)
 	obj.insert("type", QJsonValue(type));//??
 
 	obj.insert("img",this->jsonValFromPixmap(img));
+
 	
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -243,6 +247,7 @@ QString Serialize::responseSerialize(int res, int type)
 
 	obj.insert("res", QJsonValue(res));
 
+
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
 	return strJson.append("\r\n");
@@ -251,6 +256,32 @@ QString Serialize::responseSerialize(int res, int type)
 int Serialize::responseUnserialize(QJsonObject obj)
 {
 	return obj.value("res").toInt();
+}
+
+QJsonObject Serialize::ObjectFromString(const QString& in)
+{
+	QJsonObject obj;
+
+	QJsonDocument doc = QJsonDocument::fromJson(in.toUtf8());
+
+	// check validity of the document
+	if (!doc.isNull())
+	{
+		if (doc.isObject())
+		{
+			obj = doc.object();
+		}
+		else
+		{
+			std::cout << "Document is not an object" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Invalid JSON...\n" << in.toStdString() << std::endl;
+	}
+
+	return obj;
 }
 
 

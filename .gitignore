@@ -9,3 +9,5 @@
 /Client/EditorGUI/EditorGUI/GeneratedFiles
 /Client/EditorGUI/EditorGUI/x64/Debug
 /Client/EditorGUI/x64/Debug
+/Client/EditorGUI/EditorGUI/SocketHandler/socket.cpp
+/Client/EditorGUI/EditorGUI/SocketHandler/socket.h
