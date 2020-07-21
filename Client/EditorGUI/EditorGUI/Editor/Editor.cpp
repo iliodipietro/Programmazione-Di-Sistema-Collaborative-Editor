@@ -506,6 +506,7 @@ void Editor::on_textEdit_textChanged() {
 	int last = this->lastCursor;
 	if (this->lastText.compare(this->ui.textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
 		this->localStyleChange();
+
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
 		localDelete();
@@ -532,16 +533,29 @@ void Editor::localInsert() {
 		int pos = i;
 
 		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
-		QFont font = ui.textEdit->currentFont();
-		QColor color = ui.textEdit->textColor();
+
+		std::vector<Message> vett;
+		//debug purposes
+		//if (chr == '§') {
+		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//	for (auto v : vett) {
+		//		this->remoteAction(v);
+		//		std::cout << "inserito" << std::endl;
+		//	}
+		//	std::cout << "FINE" << std::endl;
+		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//	return;
+		//}
+
+		QTextCharFormat format = TC.charFormat();
+		QFont font = format.font();
+		QColor color = format.foreground().color();
         Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 
         Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
 
 		//send to socket-->emit qualcosa
-		if (chr == '§') {
-			this->_CRDT->saveOnFile("prova");
-		}
+
 	}
 }
 
@@ -565,8 +579,8 @@ void Editor::localDelete() {
 		//send to socketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 	}
 
-	this->lastStart = 0;
-	this -> lastEnd = 0;
+	//this->lastStart = 0;
+	//this -> lastEnd = 0;
 	//for (int i = lastCursor; i > TC.position(); i--) {
 	//	Message m = this->_CRDT->localErase(i - 1);
 	//	//send to socket
@@ -644,9 +658,14 @@ void Editor::updateLastPosition()
 	QTextCursor TC = ui.textEdit->textCursor();
 	if (TC.hasSelection()) {
 
-	lastStart = TC.selectionStart();
-	lastEnd = TC.selectionEnd();
+		lastStart = TC.selectionStart();
+		lastEnd = TC.selectionEnd();
 	
+	}
+	else
+	{
+		lastStart = 0;
+		lastEnd = 0;
 	}
 
 	if (this->remoteEvent)
@@ -667,7 +686,7 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 {
 	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	//retrieving remote state
-	QChar chr = m.getSymbol().getChar();
+	QChar chr (m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -751,19 +770,22 @@ void Editor::localStyleChange()
 
 	start = this->lastStart;
 	end = this->lastEnd;
+	QTextCursor TC = ui.textEdit->textCursor();
 
 
 	for (int i = end; i > start; i--) {
 		int pos = i - 1;
+		TC.setPosition(pos+1);
+		QTextCharFormat format = TC.charFormat();
 		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
-		QFont font = ui.textEdit->currentFont();
-		QColor color = ui.textEdit->textColor();
+		QFont font = format.font();
+		QColor color = format.foreground().color();
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 		Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
 	}
 
-	this->lastStart = 0;
-	this->lastEnd = 0;
+	//this->lastStart = 0;
+	//this->lastEnd = 0;
 }
 
 //FINE-------------------------------------------------------------------------------------------------------------

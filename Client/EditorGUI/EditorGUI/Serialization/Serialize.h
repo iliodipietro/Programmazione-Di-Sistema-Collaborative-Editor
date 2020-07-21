@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QImage>
 #include <string>
+#include <vector>
 
 class Serialize : public QMainWindow
 {
@@ -21,13 +22,13 @@ public:
 	Serialize(QWidget *parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
-	quando arriva dal socket una QString si usa unserialize per ottenere il QJson Object corrispondente,ogni Qstring 
+	quando arriva dal socket una QString si usa la funzione ObjectFromString per ottenere il QJson Object corrispondente,ogni Qstring 
 	è qui terminata da un "/r/n" perchè potrebbe capitare arrivino più messaggi nella stessa read--> da gestire nel socket.
 	con tale oggetto si chiama la funzione actionType che mi dice il tipo di messaggio--> sono le define da decidere
 	in base a tale valore si puo capire quale dei deserializzatori usare con uno switch
 	--------------------------------------------------------------------------------------------------------------*/
 
-	QJsonObject unserialize(QString str);
+	//QJsonObject unserialize(QString str); // old
 	int actionType(QJsonObject obj);
 
 
@@ -56,7 +57,10 @@ public:
 	QString responseSerialize(int res,int type);
 	int responseUnserialize(QJsonObject obj);
 
-	QJsonObject ObjectFromString(const QString& in);
+	QJsonObject ObjectFromString( QString& in);
+
+	QString cursorPostionSerialize(int position, int user, int type);
+	std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
 
 	//void setType(QString type);

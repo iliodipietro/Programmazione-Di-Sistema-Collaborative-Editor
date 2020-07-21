@@ -24,34 +24,40 @@ CRDT::~CRDT()
 //inserimento e cancellazione nelle strutture dati locali sono le remote insert/delete di conclave ossia de messaggi che mi arrivano
 __int64 CRDT::insert_symbol(Symbol symbol)
 {
-	__int64 index;
+	__int64 index = -1;
 
-	//trovo l'iteratore che punta alla posizione in cui inserire basandomi sulle pos frazionarie
-	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),[symbol](Symbol s) {
 
-		if (s.getPos() > symbol.getPos())
-			return true;
-		else if (s.getPos() == symbol.getPos()) {
-
-			if (symbol.getId()[0] < s.getId()[0])//vince chi ha il site id minore
-				return true;
-			else
-				return false;
-		}
-
-		return false; });
-	
-	if (it != _symbols.end()) {
-		_symbols.insert(it, symbol);
-	}
-	else
-	{
-		//se sono su end --> inserisco in coda
+	if (this->_symbols.empty() || symbol.getPos() > this->_symbols.back().getPos()) {
+		//inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
+		//quando carico dal server
 		_symbols.push_back(symbol);
+		index = _symbols.size() - 1;
 	}
+	else {
 
-	index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-												//all'inizio della Qstring che rappresenta il testo
+		//trovo l'iteratore che punta alla posizione in cui inserire basandomi sulle pos frazionarie
+		auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(), [symbol](Symbol s) {
+
+			if (s.getPos() > symbol.getPos())
+				return true;
+			else if (s.getPos() == symbol.getPos()) {
+
+				if (symbol.getId()[0] < s.getId()[0])//vince chi ha il site id minore
+					return true;
+				else
+					return false;
+			}
+
+			return false;
+			});
+
+		if (it != _symbols.end()) {
+			_symbols.insert(it, symbol);
+			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+													//all'inizio della Qstring che rappresenta il testo
+
+		}
+	}
 
 	if ((unsigned)index < _symbols.size())
 		return index;
@@ -307,9 +313,10 @@ QJsonObject ObjectFromString(const QString& in)
 
 	return obj;
 }
-void CRDT::readFromFile(std::string fileName)
+std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
 	std::ifstream iFile(fileName);
+	std::vector<Symbol> local_symbols;
 	if (iFile.is_open())
 	{
 		std::string line;
@@ -351,18 +358,25 @@ void CRDT::readFromFile(std::string fileName)
 
 			Symbol s(c, a, pos, font, color, alignFlag);
 
+			
 			this->_symbols.push_back(s);
 
+			//per fare prove
+			//local_symbols.push_back(s);
 			}
 
 
 		iFile.close();
-		for (auto symb : this->_symbols) {
+		std::vector<Message> local_m;
+		//prima carico tutto e poi inizio a mandare i messaggi
+		for (auto symb : local_symbols) {
 
 			Message m(symb, INSERT, 0);//L'ID del server è 0 sempre
+			local_m.push_back(m);
+			
 			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 		}
-
+		return local_m;
 	}
 }
 
@@ -416,7 +430,7 @@ QString CRDT::crdt_serialize()
 		//obj.insert("green", QJsonValue(green));
 		//obj.insert("blue", QJsonValue(blue));
 		obj.insert("color", color);
-		obj.insert("aligment", aligment);
+		obj.insert("alignment", aligment);
 
 
 		QJsonDocument doc(obj);
@@ -428,11 +442,10 @@ QString CRDT::crdt_serialize()
 }
 void CRDT::saveOnFile(std::string filename)
 {
-	std::string name = "C:/Users/Mattia Proietto/Desktop/prova_save.txt";
-
+	
 	QString serialized_text = this->crdt_serialize();
 
-	std::ofstream oFile(name, std::ios_base::out | std::ios_base::trunc);
+	std::ofstream oFile(filename, std::ios_base::out | std::ios_base::trunc);
 	if (oFile.is_open())
 	{
 
@@ -446,8 +459,6 @@ void CRDT::saveOnFile(std::string filename)
 	else {
 		std::cout << "Errore apertura file";
 	}
-
-	this->readFromFile(name);
 
 }
 
