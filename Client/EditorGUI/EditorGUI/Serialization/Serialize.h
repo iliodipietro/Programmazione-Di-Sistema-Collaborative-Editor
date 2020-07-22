@@ -22,6 +22,9 @@ public:
 	Serialize(QWidget *parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
+
+															USO GENERALE
+
 	quando arriva dal socket una QString si usa la funzione ObjectFromString per ottenere il QJson Object corrispondente,ogni Qstring 
 	è qui terminata da un "/r/n" perchè potrebbe capitare arrivino più messaggi nella stessa read--> da gestire nel socket.
 	con tale oggetto si chiama la funzione actionType che mi dice il tipo di messaggio--> sono le define da decidere
@@ -32,34 +35,34 @@ public:
 	int actionType(QJsonObject obj);
 
 
-	QString userSerialize(QString user, QString password,QString nickname,int type);//type usato per discriminare login o register
+	QJsonObject userSerialize(QString user, QString password,QString nickname,int type);//type usato per discriminare login o register
 	QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
 	
 	
-	QString fileNameSerialize(QString fileName, int type);
+	QJsonObject fileNameSerialize(QString fileName, int type);
 
 	QString fileNameUnserialize(QJsonObject obj);
 	
 	
-	QString messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	Message messageUnserialize(QJsonObject obj);
 
 
 
-	QString textMessageSerialize(QString str, int type);
+	QJsonObject textMessageSerialize(QString str, int type);
 	QString textMessageUnserialize(QJsonObject obj);
 
-	QString imageSerialize(QPixmap img, int type);
+	QJsonObject imageSerialize(QPixmap img, int type);
 	QPixmap imageUnserialize(QJsonObject obj);
 
-	QString responseSerialize(int res,int type);
+	QJsonObject responseSerialize(int res,int type);
 	int responseUnserialize(QJsonObject obj);
 
 	QJsonObject ObjectFromString( QString& in);
 
-	QString cursorPostionSerialize(int position, int user, int type);
+	QJsonObject cursorPostionSerialize(int position, int user, int type);
 	std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
 

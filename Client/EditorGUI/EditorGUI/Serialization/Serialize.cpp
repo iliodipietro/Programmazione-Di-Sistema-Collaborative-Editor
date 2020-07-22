@@ -10,7 +10,7 @@ Serialize::Serialize(QWidget *parent)
 
 
 
-QString Serialize::userSerialize(QString user, QString password,QString nickname, int type)
+QJsonObject Serialize::userSerialize(QString user, QString password,QString nickname, int type)
 {
 	/*
 
@@ -36,10 +36,11 @@ QString Serialize::userSerialize(QString user, QString password,QString nickname
 	}
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
 
-	return strJson.append("\r\n");
+	//return strJson.append("\r\n");
+	return obj;
 }
 
 QStringList Serialize::userUnserialize(QJsonObject obj)
@@ -81,7 +82,7 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 
 
 
-QString Serialize::fileNameSerialize(QString fileName, int type)
+QJsonObject Serialize::fileNameSerialize(QString fileName, int type)
 {
 	/*
 
@@ -98,9 +99,11 @@ QString Serialize::fileNameSerialize(QString fileName, int type)
 	obj.insert("filename",fileName);
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
 }
 
 QString Serialize::fileNameUnserialize(QJsonObject obj)
@@ -121,7 +124,7 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 
 
 
-QString Serialize::messageSerialize(Message message, int type)
+QJsonObject Serialize::messageSerialize(Message message, int type)
 {
 	/*
 
@@ -192,9 +195,11 @@ QString Serialize::messageSerialize(Message message, int type)
 	obj.insert("alignment", aligment);
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
 }
 
 Message Serialize::messageUnserialize(QJsonObject obj)
@@ -251,7 +256,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	return m;
 }
 
-QString Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server
+QJsonObject Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server
 {
 
 	QJsonObject obj;
@@ -260,9 +265,11 @@ QString Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a
 	obj.insert("message", QJsonValue(str));
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
 }
 
 QString Serialize::textMessageUnserialize(QJsonObject obj)
@@ -289,7 +296,7 @@ QPixmap  Serialize::pixmapFrom(const QJsonValue &val) {
 }
 ///---------------------------------------------------------------------------------------
 
-QString Serialize::imageSerialize(QPixmap img, int type)//DA FINIRE NON SO COME VOGLIAMO GESTIRE LE IMMAGINI
+QJsonObject Serialize::imageSerialize(QPixmap img, int type)//DA FINIRE NON SO COME VOGLIAMO GESTIRE LE IMMAGINI
 {
 	QJsonObject obj;
 
@@ -298,9 +305,11 @@ QString Serialize::imageSerialize(QPixmap img, int type)//DA FINIRE NON SO COME 
 	obj.insert("img",this->jsonValFromPixmap(img));
 
 	
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
 }
 
 QPixmap Serialize::imageUnserialize(QJsonObject obj)
@@ -313,7 +322,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
-QString Serialize::responseSerialize(int res, int type)
+QJsonObject Serialize::responseSerialize(int res, int type)
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
@@ -326,9 +335,11 @@ QString Serialize::responseSerialize(int res, int type)
 	obj.insert("res", QJsonValue(res));
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
 }
 
 int Serialize::responseUnserialize(QJsonObject obj)
@@ -364,7 +375,7 @@ QJsonObject Serialize::ObjectFromString(QString& in)
 	return obj;
 }
 
-QString Serialize::cursorPostionSerialize(int position, int userID, int type)
+QJsonObject Serialize::cursorPostionSerialize(int position, int userID, int type)
 {
 	/*
 
@@ -386,9 +397,10 @@ QString Serialize::cursorPostionSerialize(int position, int userID, int type)
 
 
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	return strJson.append("\r\n");
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+	return obj;
 }
 
 std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
