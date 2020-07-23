@@ -20,7 +20,7 @@ class Message;
 
 le local insert/delete ritornano dei messaggi che dovranno essere presi serializzati e mandati tramite socket al server
 
-L'algoritmo è quello del lab e funzionava non so se il tutto funziona adesso dopo i cambiamneti -->FARE PROVE QUANDO SI SARA
+L'algoritmo e' quello del lab e funzionava non so se il tutto funziona adesso dopo i cambiamneti -->FARE PROVE QUANDO SI SARA
 IMPLEMENTATO UN MECCANISMO FUNZIONANTE
 
 
