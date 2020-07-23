@@ -10,7 +10,7 @@
 #include <QChar>
 #include <Qdebug>
 
-Editor::Editor(QWidget* parent, QString path)
+Editor::Editor(QWidget* parent, QString path, QString username)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
@@ -41,6 +41,7 @@ Editor::Editor(QWidget* parent, QString path)
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
+	this->username = username;
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS

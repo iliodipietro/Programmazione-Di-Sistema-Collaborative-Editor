@@ -26,7 +26,7 @@ void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
 	
 	QString path = this->model.filePath(index);
 
-	this->textEditor = new Editor(this, path);
+	this->textEditor = new Editor(this, path, this->username);
 	textEditor->show();
 	this->hide();
 }

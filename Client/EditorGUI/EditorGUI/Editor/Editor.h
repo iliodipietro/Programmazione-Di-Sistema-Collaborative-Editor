@@ -14,7 +14,7 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QWidget *parent = Q_NULLPTR, QString path = "");
+	Editor(QWidget *parent = Q_NULLPTR, QString path = "", QString username ="");
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -57,9 +57,11 @@ private:
 					 venga triggerato l'on_text_change*/
 
 
-					 //servono a mantenere gli estremi di quando seleziono --> caso particolare nella delete
+	//servono a mantenere gli estremi di quando seleziono --> caso particolare nella delete
 	int lastStart;
 	int lastEnd;
+
+	QString username;
 
 	//FINE-------------------------------------------------------------------------------------------------------
 

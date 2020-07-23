@@ -71,7 +71,7 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	QStringList list;
 	list.append(usr);
 	list.append(password);
-	if (this->actionType(obj)==REGISTER) {
+	if (Serialize::actionType(obj)==REGISTER) {
 		QString nickname = obj.value("nickname").toString();
 		list.append(nickname);
 	}
@@ -302,7 +302,7 @@ QJsonObject Serialize::imageSerialize(QPixmap img, int type)//DA FINIRE NON SO C
 
 	obj.insert("type", QJsonValue(type));//??
 
-	obj.insert("img",this->jsonValFromPixmap(img));
+	obj.insert("img", Serialize::jsonValFromPixmap(img));
 
 	
 	//QJsonDocument doc(obj);
@@ -316,7 +316,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 {
 	QPixmap map;
 
-	map = this->pixmapFrom(obj.value("img"));
+	map = Serialize::pixmapFrom(obj.value("img"));
 
 	return map;
 }
@@ -422,6 +422,19 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 
 	return vett;
 
+}
+
+QByteArray Serialize::fromObjectToArray(QJsonObject obj)
+{
+	QByteArray qarray = QJsonDocument(obj).toJson();
+	return qarray;
+}
+
+QJsonObject Serialize::fromArrayToObject(QByteArray data)
+{
+	QJsonDocument document = QJsonDocument::fromJson(data);
+	QJsonObject obj = document.object();
+	return obj;
 }
 
 
