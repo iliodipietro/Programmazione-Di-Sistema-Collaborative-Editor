@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = EditorGUI
 DESTDIR = ../x64/Debug
-QT += core sql gui multimedia uitools widgets printsupport websockets concurrent multimediawidgets
+QT += core sql gui  multimedia uitools widgets printsupport websockets concurrent multimediawidgets 
 CONFIG += c++11
 DEFINES += _UNICODE _ENABLE_EXTENDED_ALIGNED_STORAGE WIN64 QT_DLL QT_CONCURRENT_LIB QT_MULTIMEDIA_LIB QT_MULTIMEDIAWIDGETS_LIB QT_PRINTSUPPORT_LIB QT_SQL_LIB QT_UITOOLS_LIB QT_WEBSOCKETS_LIB QT_WIDGETS_LIB
 INCLUDEPATH += ./GeneratedFiles \

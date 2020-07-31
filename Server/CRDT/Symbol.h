@@ -4,7 +4,7 @@
 #include<array>
 #include<QFont>
 #include<QColor>
-#include "../Structures/FormatStructure.h"//??
+//#include "../Structures/FormatStructure.h"//??
 
 class Symbol
 {

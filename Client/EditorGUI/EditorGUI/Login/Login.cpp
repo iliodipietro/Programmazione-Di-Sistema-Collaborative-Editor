@@ -15,6 +15,7 @@ Login::Login(QWidget* parent)
 
 Login::~Login()
 {
+	
 }
 
 void Login::closeEvent(QCloseEvent* event)

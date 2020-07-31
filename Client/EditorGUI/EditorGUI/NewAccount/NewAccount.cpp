@@ -1,5 +1,6 @@
 #include "NewAccount.h"
 #include <QMouseEvent>
+#include <QMessageBox>
 
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
@@ -73,6 +74,26 @@ void NewAccount::on_submit_clicked() {
 		QMessageBox resultDialog(this);
 		resultDialog.setInformativeText("Errore di connessione");
 		resultDialog.exec();
+	}
+}
+	try {
+	this->croppedImage = new QPixmap(this->img->copy(this->selectionArea->geometry()));
+	ui.crop->setPixmap(*this->croppedImage);
+	}
+	catch(std::exception e){
+		QMessageBox::warning(this, "NewAccount", "A picture is needed");
+		//mettere qui di default la prima lettera del nickname
+	}
+
+	
+	if (password.compare(password_re) == 0) {
+
+		//emit per il socket
+		QMessageBox::information(this, "NewAccount", "New Account Created");
+	
+	}
+	else {
+		QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
 	}
 }
 

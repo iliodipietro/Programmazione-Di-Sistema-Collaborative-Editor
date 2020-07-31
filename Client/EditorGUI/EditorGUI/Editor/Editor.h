@@ -21,7 +21,7 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString path = "");
+	Editor(QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString path = "", QString username = "");
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -66,9 +66,11 @@ private:
 					 venga triggerato l'on_text_change*/
 
 
-					 //servono a mantenere gli estremi di quando seleziono --> caso particolare nella delete
+	//servono a mantenere gli estremi di quando seleziono --> caso particolare nella delete
 	int lastStart;
 	int lastEnd;
+
+	QString username;
 
 	//FINE-------------------------------------------------------------------------------------------------------
 
@@ -95,10 +97,11 @@ private:
 
 	//Mattia-----------------------------------------------------------------------------------------------------------
 
-	void Einsert();//Editor Local insert
-	void Edelete();//Editor local delete
+	void localInsert();//Editor Local insert
+	void localDelete();//Editor local delete
+	void localStyleChange();//Editor local style change
 	void updateLastPosition();
-	void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end
+	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
 
 	void remoteAction(Message m);
 	void maybeincrement(__int64 index);
@@ -106,6 +109,8 @@ private:
 	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
 	void updateViewAfterInsert(Message m, __int64 index);
 	void updateViewAfterDelete(Message m, __int64 index);
+	void updateViewAfterStyleChange(Message m, __int64 index);
+
 	//FINE----------------------------------------------------------------------
 protected:
 	void keyPressEvent(QKeyEvent *e);

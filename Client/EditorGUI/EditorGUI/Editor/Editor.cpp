@@ -8,8 +8,9 @@
 #include <QPrintPreviewDialog>
 #include <QColorDialog>
 #include <QChar>
+#include <Qdebug>
 
-Editor::Editor(QSharedPointer<Serialize> messageSerializer, QWidget* parent, QString path)
+Editor::Editor(QSharedPointer<Serialize> messageSerializer, QWidget* parent, QString path, QString username)
 	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))), m_messageSerializer(messageSerializer)
 {
 	ui.setupUi(this);
@@ -29,13 +30,17 @@ Editor::Editor(QSharedPointer<Serialize> messageSerializer, QWidget* parent, QSt
 	this->colorChanged(this->ui.textEdit->textColor());
 
 	//MATTIA--------------------------------------------------------------------------------------
-	//qui vanno fatte tutte le connect che sono in main window a debora
+	//qui vanno fatte tutte le connect che sono in main window a debora??
 	connect(ui.textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
+
 
 
 	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
 	this->remoteEvent = false;
 	lastCursor = 0;
+	this->lastStart = this->lastEnd = 0;
+	this->lastText = "";
+	this->username = username;
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -488,23 +493,27 @@ void Editor::on_textEdit_textChanged() {
 	//FS.size = TC.charFormat().fontPointSize();
 	//FS.font = TC.charFormat().fontFamily();
 
-	//Message M = this->_CRDT->localInsert(TC.position(), chr, FS);
 
 	//il messaggio va mandato al serializzatore
 
 	if (this->remoteEvent)
 		return;
+
+	
 	QTextCursor TC = ui.textEdit->textCursor();
 	//DEBUG
 	int curr = TC.position();
-	int last = lastCursor;
-	if (TC.position() <= lastCursor) {
+	int last = this->lastCursor;
+	if (this->lastText.compare(this->ui.textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
+		this->localStyleChange();
+
+	else if (TC.position() <= lastCursor) {
 		//è una delete		
-		Edelete();
+		localDelete();
 	}
 	else {
 		//è una insert
-		Einsert();
+		localInsert();
 	}
 	//aggiorno
 	this->lastText = ui.textEdit->toPlainText();
@@ -512,7 +521,7 @@ void Editor::on_textEdit_textChanged() {
 }
 
 
-void Editor::Einsert() {
+void Editor::localInsert() {
 	QTextCursor TC = ui.textEdit->textCursor();
 	int li = TC.anchor();
 
@@ -524,9 +533,24 @@ void Editor::Einsert() {
 		int pos = i;
 
 		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
-		QFont font = ui.textEdit->currentFont();
-		QColor color = ui.textEdit->textColor();
-		Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
+
+		std::vector<Message> vett;
+		//debug purposes
+		//if (chr == '§') {
+		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//	for (auto v : vett) {
+		//		this->remoteAction(v);
+		//		std::cout << "inserito" << std::endl;
+		//	}
+		//	std::cout << "FINE" << std::endl;
+		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//	return;
+		//}
+
+		QTextCharFormat format = TC.charFormat();
+		QFont font = format.font();
+		QColor color = format.foreground().color();
+        Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
 		m_socketHandler->writeData(m_messageSerializer->messageSerialize(m, 0)); // -> socket
@@ -536,34 +560,50 @@ void Editor::Einsert() {
 	}
 }
 
-void Editor::Edelete() {
-
+void Editor::localDelete() {
 	QTextCursor TC = ui.textEdit->textCursor();
+	
+	int start, end;
+	if (this->lastStart!=0 && this->lastEnd!=0) {
 
-	int li = TC.position();
-
-	for (int i = lastCursor; i > TC.position(); i--) {
-		Message m = this->_CRDT->localErase(i - 1);
-		//send to socket
-		m_socketHandler->writeData(m_messageSerializer->messageSerialize(m, 0));  // -> socket
-		return;
+		start = this->lastStart;
+		end = this->lastEnd;
 	}
-	if (lastCursor == TC.position()) {//se sono uguale sono nel caso particolare in cui seeziono da dx a sx
-									// e quando cancello il cursore non cambia
-		deleteDxSx();
+	else {
+		start = TC.position();
+		end = lastCursor; 
 	}
-}
 
-void Editor::deleteDxSx() {
 
-	QTextCursor TC = ui.textEdit->textCursor();
-	int start = this->lastStart;
-	int end = this->lastEnd;
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
 		m_socketHandler->writeData(m_messageSerializer->messageSerialize(m, 0)); // -> socket
 	}
+
+	//this->lastStart = 0;
+	//this -> lastEnd = 0;
+	//for (int i = lastCursor; i > TC.position(); i--) {
+	//	Message m = this->_CRDT->localErase(i - 1);
+	//	//send to socket
+
+	//}
+	//if (lastCursor == TC.position()) {//se sono uguale sono nel caso particolare in cui seeziono da dx a sx
+	//								// e quando cancello il cursore non cambia
+	//	deleteDxSx();
+	//}
+
 }
+//
+//void Editor::deleteDxSx() {
+//
+//	QTextCursor TC = ui.textEdit->textCursor();
+//	int start = this->lastStart;
+//	int end = this->lastEnd;
+//	for (int i = end; i > start; i--) {
+//		Message m = this->_CRDT->localErase(i - 1);
+//		//send to socketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+//	}
+//}
 
 void Editor::remoteAction(Message m)
 {
@@ -589,11 +629,14 @@ void Editor::remoteAction(Message m)
 	case DELETE:
 		updateViewAfterDelete(m, index);
 		maybedecrement(index);
-
+		break;
+	case CHANGE:
+		updateViewAfterStyleChange(m, index);
 		break;
 	default:
 		break;
 	}
+	this->lastText = ui.textEdit->toPlainText();
 	//Augusto: bisogna aggiungere anche la condizione se si riceve un'immagine dal server ed una per i messaggi 
 	//dei cursori degli altri client
 
@@ -617,13 +660,22 @@ void Editor::maybedecrement(__int64 index)
 void Editor::updateLastPosition()
 {
 	QTextCursor TC = ui.textEdit->textCursor();
-	lastStart = TC.selectionStart();
-	lastEnd = TC.selectionEnd();
+	if (TC.hasSelection()) {
+
+		lastStart = TC.selectionStart();
+		lastEnd = TC.selectionEnd();
+	
+	}
+	else
+	{
+		lastStart = 0;
+		lastEnd = 0;
+	}
 
 	if (this->remoteEvent)
 		return;
 
-	if (this->lastText.compare(this->ui.textEdit->toPlainText()))//aggiorno solo se non è delete or insert
+	if (this->lastText.compare(this->ui.textEdit->toPlainText()))//aggiorno  il cursore solo se non è delete or insert
 		return;
 
 
@@ -638,7 +690,7 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 {
 	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	//retrieving remote state
-	QChar chr = m.getSymbol().getChar();
+	QChar chr (m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -649,8 +701,8 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 
 	QTextCursor TC = ui.textEdit->textCursor();
 	// saving current state
-	QFont font = ui.textEdit->currentFont();
-	QColor color = ui.textEdit->textColor();
+	//QFont font = ui.textEdit->currentFont();
+	//QColor color = ui.textEdit->textColor();
 
 	//colore del char che arriva
 	QTextCharFormat format;
@@ -685,6 +737,61 @@ void Editor::updateViewAfterDelete(Message m, __int64 index)
 	TC.setPosition(this->lastCursor);
 	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
+
+void Editor::updateViewAfterStyleChange(Message m, __int64 index)
+{
+	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	QTextCursor TC = ui.textEdit->textCursor();
+	TC.setPosition(index);
+
+
+	
+	QFont r_font = m.getSymbol().getFont();
+	QColor r_color = m.getSymbol().getColor();
+	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
+	
+	//change color, font and style in general
+	QTextCharFormat format;
+	format.setFont(r_font);
+	format.setForeground(r_color);
+	TC.mergeCharFormat(format);
+
+	//change alignment
+	QTextBlockFormat blockFormat = TC.blockFormat();
+	blockFormat.setAlignment(alignment);
+
+	TC.mergeBlockFormat(blockFormat);
+
+
+	TC.setPosition(this->lastCursor);
+	
+	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+}
+
+void Editor::localStyleChange()
+{
+	int start, end;
+
+	start = this->lastStart;
+	end = this->lastEnd;
+	QTextCursor TC = ui.textEdit->textCursor();
+
+
+	for (int i = end; i > start; i--) {
+		int pos = i - 1;
+		TC.setPosition(pos+1);
+		QTextCharFormat format = TC.charFormat();
+		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
+		QFont font = format.font();
+		QColor color = format.foreground().color();
+		Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
+		Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
+	}
+
+	//this->lastStart = 0;
+	//this->lastEnd = 0;
+}
+
 //FINE-------------------------------------------------------------------------------------------------------------
 
 void Editor::keyPressEvent(QKeyEvent* e) {
