@@ -11,7 +11,8 @@
 #include <Qdebug>
 
 Editor::Editor(QSharedPointer<Serialize> messageSerializer, QWidget* parent, QString path, QString username)
-	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))), m_messageSerializer(messageSerializer)
+	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))), 
+	m_messageSerializer(messageSerializer)
 {
 	ui.setupUi(this);
 	this->parent = parent;
@@ -553,7 +554,8 @@ void Editor::localInsert() {
         Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
-		m_socketHandler->writeData(m_messageSerializer->messageSerialize(m, 0)); // -> socket
+		QJsonObject packet = m_messageSerializer->messageSerialize(m, 0);
+		m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(packet)); // -> socket
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
 		//std::cout << "prova" << std::endl;
@@ -577,7 +579,8 @@ void Editor::localDelete() {
 
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
-		m_socketHandler->writeData(m_messageSerializer->messageSerialize(m, 0)); // -> socket
+		QJsonObject packet = m_messageSerializer->messageSerialize(m, 0);
+		m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(packet)); // -> socket
 	}
 
 	//this->lastStart = 0;
@@ -830,8 +833,8 @@ void Editor::insertImage() {
 		imageFormat.setHeight(image.height());
 		imageFormat.setName(uri.toString());
 		cursor.insertImage(imageFormat);
-		QString imageSerialized = m_messageSerializer->imageSerialize(image, 2);
-		//bisogna aggiungere anche la posizione del cursore
+		QJsonObject imageSerialized = m_messageSerializer->imageSerialize(image, 2);
+		//serve un messaggio che abbia anche la posizione del cursore per l'immagine, oltre che il ridimensionamento
 	}
 }
 

@@ -41,8 +41,8 @@ void Login::on_loginButton_clicked()
 	//QString loginInfo = "";
 	//loginInfo.append(username).append(",").append(password);
 	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-	QString message = m_messageSerializer->userSerialize(username, password, username, 1);
-	bool result = m_socketHandler->writeData(message);
+	QJsonObject message = m_messageSerializer->userSerialize(username, password, username, 1);
+	bool result = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(message));
 	if (true) {
 		m_timer->setSingleShot(true);
 		m_timer->setInterval(1000);

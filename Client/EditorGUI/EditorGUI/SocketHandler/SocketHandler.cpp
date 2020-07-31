@@ -86,11 +86,11 @@ bool SocketHandler::writeData(SocketMessage& data) {
 	}
 }
 
-bool SocketHandler::writeData(QString& data) {
+bool SocketHandler::writeData(QByteArray& data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{
 		m_tcpSocket->write(intToArray(data.size()));
-		m_tcpSocket->write(data.toUtf8());
+		m_tcpSocket->write(data);
 		return m_tcpSocket->waitForBytesWritten();
 		readyRead();
 	}

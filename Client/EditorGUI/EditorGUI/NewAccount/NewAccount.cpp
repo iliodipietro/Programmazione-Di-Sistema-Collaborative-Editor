@@ -55,46 +55,40 @@ void NewAccount::on_submit_clicked() {
 
 	QString username = ui.nickNameLine->text();
 	QString password = ui.passwordLine->text();
+	QString password_re = ui.rePasswordLine->text();
 	QString email = ui.emailLine->text();
 	QPoint areaPos = m_selectionArea->geometry().topLeft();
-	areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
-	areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-	m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
-	ui.crop->setPixmap(*m_croppedImage);
-	QString imageSerialized = m_messageSerializer->imageSerialize(*m_croppedImage, 2);
-	QString userInfoSerialized = m_messageSerializer->userSerialize(username, password, username, 2);
-	bool result1 = m_socketHandler->writeData(imageSerialized);
-	bool result2 = m_socketHandler->writeData(userInfoSerialized);
-	if (result1 && result2) {
-		m_timer->setSingleShot(true);
-		m_timer->setInterval(1000);
-		m_timer->start();
-	}
-	else {
-		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText("Errore di connessione");
-		resultDialog.exec();
-	}
-}
-	try {
-	this->croppedImage = new QPixmap(this->img->copy(this->selectionArea->geometry()));
-	ui.crop->setPixmap(*this->croppedImage);
-	}
-	catch(std::exception e){
-		QMessageBox::warning(this, "NewAccount", "A picture is needed");
-		//mettere qui di default la prima lettera del nickname
-	}
-
-	
 	if (password.compare(password_re) == 0) {
 
-		//emit per il socket
-		QMessageBox::information(this, "NewAccount", "New Account Created");
-	
+		areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+		areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+		m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
+		ui.crop->setPixmap(*m_croppedImage);
+		if (m_croppedImage != Q_NULLPTR) {
+			QJsonObject imageSerialized = m_messageSerializer->imageSerialize(*m_croppedImage, 2);
+			QJsonObject userInfoSerialized = m_messageSerializer->userSerialize(username, password, username, 2);
+			bool result1 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(imageSerialized));
+			bool result2 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(userInfoSerialized));
+			if (result1 && result2) {
+				m_timer->setSingleShot(true);
+				m_timer->setInterval(1000);
+				m_timer->start();
+			}
+			else {
+				QMessageBox resultDialog(this);
+				resultDialog.setInformativeText("Errore di connessione");
+				resultDialog.exec();
+			}
+			//QMessageBox::information(this, "NewAccount", "New Account Created");
+		}
+		else {
+			QMessageBox::warning(this, "NewAccount", "A picture is needed");
+		}
 	}
 	else {
 		QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
 	}
+
 }
 
 void NewAccount::mousePressEvent(QMouseEvent* e)

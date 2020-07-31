@@ -16,7 +16,7 @@ public:
 
     bool connectToServer();
     bool writeData(SocketMessage& data);
-    bool writeData(QString& data);
+    bool writeData(QByteArray& data);
     QString writeDataAndWaitForResponse(QString data);
 
     QAbstractSocket::SocketState getSocketState();
