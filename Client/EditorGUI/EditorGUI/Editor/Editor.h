@@ -1,10 +1,17 @@
 #pragma once
 
-#include <QMainWindow>
 #include "ui_Editor.h"
+#include <QMainWindow>
 #include "CRDT/CRDT.h"
-#include "../Structures/FormatStructure.h"
 #include <QKeyEvent>
+#include <Qt>
+#include <iostream>
+#include <QFontComboBox>
+#include <QtWidgets>
+#include "Structures/FormatStructure.h"
+#include "SocketHandler/SocketHandler.h"
+#include "Serialization/Serialize.h"
+
 class QFontComboBox;
 class QPrinter;
 //class QTextEdit;
@@ -14,7 +21,7 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QWidget *parent = Q_NULLPTR, QString path = "", QString username ="");
+	Editor(QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString path = "", QString username = "");
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -41,6 +48,8 @@ private:
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
+	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<Serialize> m_messageSerializer;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
 
 	//MATTIA---------------------------------------------------------------------------------
@@ -110,6 +119,7 @@ private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
+	void messageReceived(QJsonObject);
 
 //---------------------------------------------------------------------------------------------------
 

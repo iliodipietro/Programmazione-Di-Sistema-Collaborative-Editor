@@ -1,10 +1,16 @@
 #include "Login.h"
 
-Login::Login(QWidget *parent)
-	: QMainWindow(parent)
+Login::Login(QWidget* parent)
+	: QMainWindow(parent), m_messageSerializer(QSharedPointer<Serialize>(new Serialize())),
+	m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler())),
+	m_timer(QSharedPointer<QTimer>(new QTimer(this)))
 {
 	ui.setupUi(this);
-	//this->setAttribute(Qt::WA_DeleteOnClose);
+	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(loginResult(QJsonObject)));
+	connect(m_timer.get(), SIGNAL(timeout()), this, SLOT(showErrorMessage()));
+	m_socketHandler->connectToServer();
+	m_fileBrowserWindow = Q_NULLPTR;
+	m_newAccountWindow = Q_NULLPTR;
 }
 
 Login::~Login()
@@ -14,40 +20,76 @@ Login::~Login()
 
 void Login::closeEvent(QCloseEvent* event)
 {
-	if (this->newWindow) {
-		event->accept();
-	}
-	else {
-		qApp->quit();
-	}
+	qApp->quit();
+}
+
+void Login::openFileBrowser() {
+	QString username = ui.usernameTextLine->text();
+	resetWindows();
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, m_messageSerializer, this, username);
+	m_fileBrowserWindow->show();
+	this->newWindow = true;
+	m_timer->stop();
+	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
+	this->hide();
 }
 
 void Login::on_loginButton_clicked()
 {
 	QString username = ui.usernameTextLine->text();
 	QString password = ui.passwordTextLine->text();
-	
-	//emit per il server--> aspettare risposta e
-
-	if ((username == "admin" && password == "admin")|| 1==1) {
-		//QMessageBox::information(this, "Login", "Welcome Back");
-		//hide();
-		this->FileBrowserWindow = new FileBrowser(Q_NULLPTR, username);
-		this->FileBrowserWindow->show();
-		this->newWindow = true;
-		this->close();
-
+	//QString loginInfo = "";
+	//loginInfo.append(username).append(",").append(password);
+	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
+	QJsonObject message = m_messageSerializer->userSerialize(username, password, username, 1);
+	bool result = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(message));
+	if (true) {
+		m_timer->setSingleShot(true);
+		m_timer->setInterval(1000);
+		m_timer->start();
+		openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
 	}
 	else {
-		QMessageBox::warning(this, "Login", "Username or password is not correct");
+		qDebug() << m_socketHandler->getSocketState();
 	}
-	
+}
 
+void Login::showErrorMessage() {
+	qDebug() << "messaggio di errore per il login";
+}
+
+void Login::loginResult(QJsonObject response) {
+	int result = m_messageSerializer->responseUnserialize(response);
+	if (true) {
+		openFileBrowser();
+	}
+	else {
+		QMessageBox resultDialog(this);
+		resultDialog.setInformativeText(""); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.exec();
+	}
 }
 
 void Login::on_newAccount_clicked() {
-	this->NewAccountWindow = new NewAccount(Q_NULLPTR);
-	this->NewAccountWindow->show();
+	resetWindows();
+	m_newAccountWindow = new NewAccount(m_socketHandler, this);
+	m_newAccountWindow->show();
 	this->newWindow = true;
-	this->close();
+	connect(m_newAccountWindow, &NewAccount::showParent, this, &Login::childWindowClosed);
+	this->hide();
+}
+
+void Login::childWindowClosed() {
+	this->show();
+}
+
+void Login::resetWindows() {
+	if (m_fileBrowserWindow != Q_NULLPTR) {
+		delete m_fileBrowserWindow;
+		m_fileBrowserWindow = Q_NULLPTR;
+	}
+	if (m_newAccountWindow != Q_NULLPTR) {
+		delete m_newAccountWindow;
+		m_newAccountWindow = Q_NULLPTR;
+	}
 }

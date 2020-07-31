@@ -10,8 +10,9 @@
 #include <QChar>
 #include <Qdebug>
 
-Editor::Editor(QWidget* parent, QString path, QString username)
-	: QMainWindow(parent)
+Editor::Editor(QSharedPointer<Serialize> messageSerializer, QWidget* parent, QString path, QString username)
+	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))), 
+	m_messageSerializer(messageSerializer)
 {
 	ui.setupUi(this);
 	this->parent = parent;
@@ -24,11 +25,10 @@ Editor::Editor(QWidget* parent, QString path, QString username)
 
 	connect(ui.textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
 	connect(ui.textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
+	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 
 	this->alignmentChanged(this->ui.textEdit->alignment());
 	this->colorChanged(this->ui.textEdit->textColor());
-
-	this->setAttribute(Qt::WA_DeleteOnClose);
 
 	//MATTIA--------------------------------------------------------------------------------------
 	//qui vanno fatte tutte le connect che sono in main window a debora??
@@ -63,11 +63,11 @@ Editor::~Editor()
 }
 
 void Editor::closeEvent(QCloseEvent* event) {
-	this->parent->show();
 	this->close();
 }
 
 void Editor::loadFile(const QString& fileName) {
+	//il file andrà caricato con quello inviato dal server
 	QFile file(fileName);
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
 		QMessageBox::warning(this, tr("Application"),
@@ -553,10 +553,12 @@ void Editor::localInsert() {
 		QColor color = format.foreground().color();
         Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
 
-        Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
+		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
+		QJsonObject packet = m_messageSerializer->messageSerialize(m, 0);
+		m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(packet)); // -> socket
 
-		//send to socket-->emit qualcosa
-
+		//std::string prova = m.getSymbol().getFont().toString().toStdString();
+		//std::cout << "prova" << std::endl;
 	}
 }
 
@@ -577,7 +579,8 @@ void Editor::localDelete() {
 
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
-		//send to socketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		QJsonObject packet = m_messageSerializer->messageSerialize(m, 0);
+		m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(packet)); // -> socket
 	}
 
 	//this->lastStart = 0;
@@ -636,6 +639,9 @@ void Editor::remoteAction(Message m)
 		break;
 	}
 	this->lastText = ui.textEdit->toPlainText();
+	//Augusto: bisogna aggiungere anche la condizione se si riceve un'immagine dal server ed una per i messaggi 
+	//dei cursori degli altri client
+
 	this->remoteEvent = false;
 }
 
@@ -708,13 +714,13 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 	//ui.textEdit->setTextColor(r_color);
 
 	TC.setPosition(index);
-	TC.insertText(chr,format);
+	TC.insertText(chr, format);
 
 	QTextBlockFormat blockFormat = TC.blockFormat();
 	blockFormat.setAlignment(alignment);
-	
+
 	TC.mergeBlockFormat(blockFormat);
-	
+
 
 	//ripristino
 	TC.setPosition(this->lastCursor);
@@ -829,6 +835,8 @@ void Editor::insertImage() {
 		imageFormat.setHeight(image.height());
 		imageFormat.setName(uri.toString());
 		cursor.insertImage(imageFormat);
+		QJsonObject imageSerialized = m_messageSerializer->imageSerialize(image, 2);
+		//serve un messaggio che abbia anche la posizione del cursore per l'immagine, oltre che il ridimensionamento
 	}
 }
 
@@ -893,7 +901,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 		int headingLevel = this->ui.textEdit->textCursor().blockFormat().headingLevel();
 		this->comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
 	}
-	
+
 	this->comboFont->setCurrentFont(ui.textEdit->currentFont());
 	QPixmap pix(16, 16);
 	pix.fill(ui.textEdit->textColor());
@@ -904,7 +912,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 }
 
-void Editor::colorChanged(const QColor& c){
+void Editor::colorChanged(const QColor& c) {
 	QPixmap pix(16, 16);
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
@@ -931,4 +939,7 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 	else return Qt::AlignJustify;
 }
 
-
+void Editor::messageReceived(QJsonObject packet) {
+	Message m = m_messageSerializer->messageUnserialize(packet);
+	remoteAction(m);
+}

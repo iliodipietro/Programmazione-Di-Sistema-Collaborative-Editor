@@ -2,8 +2,8 @@
 #include <QBuffer>
 #include <QJsonDocument>
 #include <QDebug>
-Serialize::Serialize(QWidget *parent)
-	: QMainWindow(parent)
+Serialize::Serialize(QObject*parent)
+	: QObject(parent)
 {
 	//ui.setupUi(this);
 }

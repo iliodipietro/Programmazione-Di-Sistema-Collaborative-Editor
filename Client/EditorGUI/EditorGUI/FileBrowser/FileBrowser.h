@@ -8,6 +8,8 @@
 #include <QTreeView>
 #include <QCloseEvent>
 #include "Editor/Editor.h"
+#include "SocketHandler/SocketHandler.h"
+#include "Serialization/Serialize.h"
 #include "ui_FileBrowser.h"
 
 class FileBrowser : public QMainWindow
@@ -15,11 +17,13 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QWidget *parent = Q_NULLPTR, QString username = "");
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString username = "");
 	~FileBrowser();
 
 private:
-	Editor* textEditor;
+	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<Serialize> m_messageSerializer;
+	std::map<QString, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
 	Ui::FileBrowser ui;
@@ -28,4 +32,7 @@ private:
 private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 	void on_logoutButton_clicked();
+
+signals:
+	void showParent();
 };

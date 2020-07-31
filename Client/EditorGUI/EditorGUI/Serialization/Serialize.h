@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QWidget>
 //#include "ui_Serialize.h"
 #include "CRDT/Message.h"
 #include "define.h"
@@ -10,17 +10,18 @@
 #include <QString>
 #include <QStringList>
 #include <QImage>
+#include <QPixMap>
 #include <string>
 #include <vector>
 #include <QByteArray>
 
-class Serialize : public QMainWindow
+class Serialize : public QObject
 {
 	Q_OBJECT
 
 public:
 
-	Serialize(QWidget *parent = Q_NULLPTR);
+	Serialize(QObject*parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
 
