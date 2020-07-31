@@ -79,9 +79,6 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	return list;
 }
 
-
-
-
 QJsonObject Serialize::fileNameSerialize(QString fileName, int type)
 {
 	/*
@@ -119,10 +116,6 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 	*/
 	return obj.value("filename").toString();
 }
-
-
-
-
 
 QJsonObject Serialize::messageSerialize(Message message, int type)
 {
@@ -322,10 +315,16 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
-QJsonObject Serialize::responseSerialize(int res, int type)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
+	Type: qui dovrebbe essere sempre SERVER_ANSWER
+	*/
+
+	/*
+	bool: successo o fallimento (OK, ERROR)
+	message: risposta del server
 	Type: qui dovrebbe essere sempre SERVER_ANSWER
 	*/
 	QJsonObject obj;
@@ -333,6 +332,8 @@ QJsonObject Serialize::responseSerialize(int res, int type)
 	obj.insert("type", QJsonValue(type));//??
 
 	obj.insert("res", QJsonValue(res));
+
+	obj.insert("message", QJsonValue(message));
 
 
 	//QJsonDocument doc(obj);

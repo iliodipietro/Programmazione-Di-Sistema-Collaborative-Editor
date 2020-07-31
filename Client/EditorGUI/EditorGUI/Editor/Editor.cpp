@@ -537,16 +537,16 @@ void Editor::localInsert() {
 
 		std::vector<Message> vett;
 		//debug purposes
-		//if (chr == '§') {
-		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-		//	for (auto v : vett) {
-		//		this->remoteAction(v);
-		//		std::cout << "inserito" << std::endl;
-		//	}
-		//	std::cout << "FINE" << std::endl;
-		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-		//	return;
-		//}
+		if (chr == '§') {
+			vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+			for (auto v : vett) {
+				this->remoteAction(v);
+				std::cout << "inseriton" << std::endl;
+			}
+			std::cout << "FINE" << std::endl;
+			//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+			return;
+		}
 
 		QTextCharFormat format = TC.charFormat();
 		QFont font = format.font();
@@ -620,13 +620,12 @@ void Editor::remoteAction(Message m)
 	-- iff this<last
 	solo se sto inserendo ad un indice inferiore a quello a cui sto srivendo poiche avrò un char in meno o in piu
 	-----------------------------------------------------------------------------------------*/
-	switch (m.getAction())
-	{
+	switch (m.getAction()){
 	case INSERT:
 		updateViewAfterInsert(m, index);
 		maybeincrement(index);
 		break;
-	case DELETE:
+	case DELETE_S:
 		updateViewAfterDelete(m, index);
 		maybedecrement(index);
 		break;
@@ -726,6 +725,9 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 
 void Editor::updateViewAfterDelete(Message m, __int64 index)
 {
+	if (index == -1)
+		return;//non devo fare niente in questo caso ho provato ad eliminare ma non ho trovato il carattere-->MADARE ERROR, ECCEZIONE??????
+
 	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	QTextCursor TC = ui.textEdit->textCursor();
 	TC.setPosition(index);
@@ -740,9 +742,9 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	QTextCursor TC = ui.textEdit->textCursor();
 	TC.setPosition(index);
+	TC.deleteChar();
 
-
-	
+	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -758,7 +760,7 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	blockFormat.setAlignment(alignment);
 
 	TC.mergeBlockFormat(blockFormat);
-
+	TC.insertText(chr, format);
 
 	TC.setPosition(this->lastCursor);
 	

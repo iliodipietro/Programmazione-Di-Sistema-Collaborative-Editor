@@ -10,7 +10,8 @@
 
 
 #define INSERT 0
-#define DELETE 1
+#define DELETE_S 1
+#define CHANGE 2
 
 
 

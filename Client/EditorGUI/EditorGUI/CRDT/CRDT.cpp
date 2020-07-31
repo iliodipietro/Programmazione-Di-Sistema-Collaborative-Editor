@@ -73,12 +73,20 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
 
 	if (it != _symbols.end()) {
+
+
+		if (it == _symbols.begin()) {
+			index = 0;
+		}
+		else {
+	
+			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+		   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+		   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+		}
+
 		//vuol dire che l'ho trovato
 		_symbols.erase(it);
-
-		index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-       //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
-	   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
 
 		return index;
 	}
@@ -89,7 +97,7 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos())); });
 
 	if (it != _symbols.end()) {
 		//vuol dire che l'ho trovato
@@ -359,10 +367,10 @@ std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA 
 			Symbol s(c, a, pos, font, color, alignFlag);
 
 			
-			this->_symbols.push_back(s);
+			//this->_symbols.push_back(s);
 
 			//per fare prove
-			//local_symbols.push_back(s);
+			local_symbols.push_back(s);
 			}
 
 
@@ -371,7 +379,7 @@ std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA 
 		//prima carico tutto e poi inizio a mandare i messaggi
 		for (auto symb : local_symbols) {
 
-			Message m(symb, INSERT, 0);//L'ID del server è 0 sempre
+			Message m(symb, CHANGE, 0);//L'ID del server è 0 sempre
 			local_m.push_back(m);
 			
 			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
