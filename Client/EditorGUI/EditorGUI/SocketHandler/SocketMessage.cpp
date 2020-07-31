@@ -30,7 +30,9 @@ QByteArray SocketMessage::serializeMessage() {
 QByteArray SocketMessage::intToArray(qint32 source) {
 	QByteArray temp;
 	QDataStream data(&temp, QIODevice::ReadWrite);
-	data << source;
+	data << qint8(source);
+	/*while (temp.size() > 1 && temp[0] == 0)
+		temp.remove(0, 1);*/
 	return temp;
 }
 

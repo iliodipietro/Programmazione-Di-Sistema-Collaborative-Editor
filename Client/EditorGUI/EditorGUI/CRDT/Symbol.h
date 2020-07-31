@@ -15,17 +15,17 @@ private:
 
 	QFont font;
 	QColor color;
-    Qt::Alignment alignment;
-	FormatStructure FS;
+	Qt::AlignmentFlag alignment;
+	//FormatStructure FS;
 
 public:
-    Symbol(char character, std::array<int, 2> id, std::vector<int> vett, QFont font, QColor color, Qt::Alignment alignment);
+    Symbol(char character, std::array<int, 2> id, std::vector<int> vett, QFont font, QColor color, Qt::AlignmentFlag alignment);
 	~Symbol();
 	char getChar();
 	std::array<int, 2> getId() const;
 	std::vector<int> getPos() const;
 	QFont getFont();
 	QColor getColor();
-    Qt::Alignment getAlignment();
+	Qt::AlignmentFlag getAlignment();
 };
 

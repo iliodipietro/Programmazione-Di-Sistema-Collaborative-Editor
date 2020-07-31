@@ -1,7 +1,7 @@
 #include "Symbol.h"
 
 
-Symbol::Symbol(char character, std::array<int, 2> id, std::vector<int> vett, QFont font, QColor color, Qt::Alignment alignment)
+Symbol::Symbol(char character, std::array<int, 2> id, std::vector<int> vett, QFont font, QColor color, Qt::AlignmentFlag alignment)
     :character(character), identifier(id), position(vett), font(font), color(color), alignment(alignment)
 {
 }
@@ -34,6 +34,7 @@ QColor Symbol::getColor()
 	return this->color;
 }
 
-Qt::Alignment Symbol::getAlignment(){
-    return this->alignment;
+Qt::AlignmentFlag Symbol::getAlignment()
+{
+	return this->alignment;
 }

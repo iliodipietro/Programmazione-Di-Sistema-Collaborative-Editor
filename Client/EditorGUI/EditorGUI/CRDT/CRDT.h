@@ -44,7 +44,7 @@ public:
 	CRDT(int id);
 	~CRDT();
 
-    Message localInsert(int index, char value, QFont font, QColor color, Qt::Alignment alignment);
+    Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
 	Message localErase(int index);
 	__int64 process(const Message & m);
 	std::string to_string();//usare Qstring??
@@ -53,7 +53,9 @@ public:
 	//void dispatchMessages();-->sul server
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta
 	void readFromFile(std::string fileName);
-	void writeToFile();
+	void writeToFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
+
+
 
 	//for fractional position debug
 	void printPositions()

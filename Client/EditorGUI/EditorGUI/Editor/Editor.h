@@ -6,7 +6,11 @@
 #include <QKeyEvent>
 #include <Qt>
 #include <iostream>
-#include "../Structures/FormatStructure.h"
+#include <QFontComboBox>
+#include <QtWidgets>
+#include "Structures/FormatStructure.h"
+#include "SocketHandler/SocketHandler.h"
+#include "Serialization/Serialize.h"
 
 class QFontComboBox;
 class QPrinter;
@@ -17,7 +21,7 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QWidget *parent = Q_NULLPTR, QString path = "");
+	Editor(QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString path = "");
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -44,6 +48,8 @@ private:
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
+	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<Serialize> m_messageSerializer;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
 
 	//MATTIA---------------------------------------------------------------------------------
@@ -97,7 +103,10 @@ private:
 	void remoteAction(Message m);
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
-
+	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
+	void updateViewAfterInsert(Message m, __int64 index);
+	void updateViewAfterDelete(Message m, __int64 index);
+	//FINE----------------------------------------------------------------------
 protected:
 	void keyPressEvent(QKeyEvent *e);
 
@@ -105,4 +114,8 @@ private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
+	void messageReceived(QJsonObject);
+
+//---------------------------------------------------------------------------------------------------
+
 };

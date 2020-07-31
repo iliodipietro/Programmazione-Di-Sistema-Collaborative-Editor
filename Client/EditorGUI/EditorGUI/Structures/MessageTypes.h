@@ -1,3 +1,3 @@
 #pragma once
 
-enum MessageTypes { Insert, Delete, Login, Logout, NewUser };
+enum MessageTypes { Insert, Delete, LoginMessage, Logout, NewUser };
