@@ -10,6 +10,13 @@
 #include <QJsonObject>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
+#include "dbinteraction.h"
+#include "CRDT/CRDT.h"
+#include "CRDT/Message.h"
+#include "CRDT/Symbol.h"
+class CRDT;
+class Serialize;
+class QTcpServer;
 
 class MyServer : public QObject{
     Q_OBJECT
@@ -24,11 +31,13 @@ private slots:
     void MessageHandler(QTcpSocket *socket, QByteArray socketData);
     void onDisconnect();
 signals:
-    void bufferReady(QTcpSocket *socket, QByteArray socketData);
+    void dataReady(QTcpSocket *socket, QByteArray socketData);
 
 
 private:
     QTcpServer *_server = nullptr;
+    QMap <QTcpSocket*, QByteArray> socket_buffer;
+    DBInteraction *db = nullptr;
 
 };
 

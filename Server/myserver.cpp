@@ -5,6 +5,7 @@
 
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)){
     //supporto al file system da implementare
+    db->startDBConnection();
     connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
     connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
@@ -36,6 +37,17 @@ void MyServer::readFromSocket(){
     qint64 num_byte = sender->bytesAvailable();
     QByteArray buffer;
 
+    auto buffer_socket = socket_buffer.find(sender);
+
+    if(buffer_socket == socket_buffer.end()){
+        socket_buffer.insert(sender, buffer);
+    }
+    else {
+        buffer = buffer_socket.value();
+    }
+
+
+
     if(num_byte > 0){
 
     }
@@ -56,18 +68,24 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     SERVER_ANSWER 10
 
     */
-    QJsonDocument socketDataQJsonD = QJsonDocument::fromJson(socketData);
-    QJsonObject socketDataQJsonO = socketDataQJsonD.object();
+    QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
+    QStringList list;
 
-    int type = Serialize::actionType(socketDataQJsonO);
+    int type = Serialize::actionType(ObjData);
 
     switch (type) {
     case (LOGIN):
         qDebug("LOGIN request");
 
+         list = Serialize::userUnserialize(ObjData);
+         db->login(list.at(0), list.at(1), socket);
+
         break;
     case (REGISTER):
         qDebug("REGISTER request");
+
+        list = Serialize::userUnserialize(ObjData);
+        db->registration(list.at(0), list.at(1), socket);
 
         break;
     case (FILENAME):
