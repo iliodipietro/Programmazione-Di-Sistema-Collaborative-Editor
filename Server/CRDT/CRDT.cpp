@@ -1,6 +1,6 @@
 #include "CRDT.h"
 #include <QTextStream>
-#include <Qstring>
+#include <QString>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>

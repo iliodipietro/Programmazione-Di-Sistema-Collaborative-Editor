@@ -1,7 +1,5 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
-//#include "ui_Serialize.h"
 #include "CRDT/Message.h"
 #include "define.h"
 #include <QJsonObject>
@@ -13,11 +11,10 @@
 #include <string>
 #include <vector>
 #include <QByteArray>
+#include <QPixmap>
 
-class Serialize : public QMainWindow
+class Serialize
 {
-	Q_OBJECT
-
 public:
 
 	Serialize(QWidget* parent = Q_NULLPTR);
@@ -73,9 +70,6 @@ public:
 
 
 private:
-	//Ui::SerializeClass ui;
-	//che tipo di oggetto voglio usare viene incapsulato nel json--> login,register,ecc
-	//QString type;
 	static QJsonValue jsonValFromPixmap(const QPixmap& p);
 	static QPixmap pixmapFrom(const QJsonValue& val);
 

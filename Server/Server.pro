@@ -1,5 +1,8 @@
 #QT -= gui
 QT += gui
+QT += sql
+QT += core gui sql
+
 
 QT += network
 
@@ -21,8 +24,8 @@ SOURCES += \
         CRDT/CRDT.cpp \
         CRDT/Message.cpp \
         CRDT/Symbol.cpp \
-        Serialize.cpp \
         Serialize/Serialize.cpp \
+        dbinteraction.cpp \
         main.cpp \
         myserver.cpp
 
@@ -35,8 +38,7 @@ HEADERS += \
     CRDT/CRDT.h \
     CRDT/Message.h \
     CRDT/Symbol.h \
-    Serialize.h \
     Serialize/Serialize.h \
     Serialize/define.h \
-    define.h \
+    dbinteraction.h \
     myserver.h

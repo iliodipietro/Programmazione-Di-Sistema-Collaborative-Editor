@@ -2,10 +2,10 @@
 #include <QBuffer>
 #include <QJsonDocument>
 #include <QDebug>
+
+
 Serialize::Serialize(QWidget* parent)
-	: QMainWindow(parent)
 {
-	//ui.setupUi(this);
 }
 
 
@@ -14,7 +14,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
 {
 	/*
 
-	Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio è discriminato dal valore di type
+	Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio e' discriminato dal valore di type
 	INPUT:
 	- user: stringa che contiene lo username
 	- password: stringa che contiene la password
@@ -48,12 +48,12 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 
 	/*
 
-	Questa funzione de-serializza i dati dell'utente quando vuole fare un login o signup, cio è discriminato dal valore di type
+	Questa funzione de-serializza i dati dell'utente quando vuole fare un login o signup, cio e' discriminato dal valore di type
 	INPUT:
-	- obj: è un Qjson che contiene tutte le info dell'utente come username password e nickname per fare login o signup
+	- obj: e' un Qjson che contiene tutte le info dell'utente come username password e nickname per fare login o signup
 
 	RETURN:
-	- una QstringList che può avere lunghezza 2 0 3.
+	- una QstringList che puo avere lunghezza 2 0 3.
 	-->lunghezza 2 se LOGIN:
 		list[0]: username
 		list[1]: password
@@ -86,7 +86,7 @@ QJsonObject Serialize::fileNameSerialize(QString fileName, int type)
 {
 	/*
 
-	Questa funzione serializza il nome quando vuole fare un OPEN o CLOSE, cio è discriminato dal valore di type
+	Questa funzione serializza il nome quando vuole fare un OPEN o CLOSE, cio e' discriminato dal valore di type
 	INPUT:
 	- fileName: stringa che contiene il nome del file
 	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
@@ -112,7 +112,7 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 
 	Questa funzione de-serializza i nome del file
 	INPUT:
-	- obj: è un Qjson che contiene tutte le info
+	- obj: e' un Qjson che contiene tutte le info
 
 	RETURN:
 	- una QstringList con il nome del file
@@ -133,7 +133,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 
 	INPUT:
 	- message: messaggio che contiene il symbolo, cosa fare e tutte le informazioni necessarie
-	- type: intero che basandomi sul file define.h mi dice cosa devo fare, qui è accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, qui e' accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
 	 e sul server di inoltrarlo ad altri client connessi ed insieme aggiornareil crdt locale sul server
 
 	RETURN:
@@ -208,10 +208,10 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
 	Questa funzione de-serializza i messaggi
 	INPUT:
-	- obj: è un Qjson che contiene tutte le info
+	- obj: e' un Qjson che contiene tutte le info
 
 	RETURN:
-	- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
+	- un oggetto di tipo message che puo essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
 	vedi Message.h/cpp per specifiche
 	*/
 	char c = obj.value("character").toInt();
@@ -384,7 +384,7 @@ QJsonObject Serialize::cursorPostionSerialize(int position, int userID, int type
 	INPUT:
 	- position: posizione relativa del cursore all'interno del documento
 	- userID : ID univoco legato ad un det client che midice a quale account mi sto riferendo
-	- type: intero che basandomi sul file define.h mi dice cosa devo fare, qui è accettato solo il tipo CURSOR
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, qui e' accettato solo il tipo CURSOR
 
 	RETURN:
 	- una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
@@ -409,12 +409,12 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 
 	Questa funzione de-serializza la posizione del cursore e l'utente interessato
 	INPUT:
-	- obj: è un Qjson che contiene tutte le info dell'utente come username password e nickname per fare login o signup
+	- obj: e' un Qjson che contiene tutte le info dell'utente come username password e nickname per fare login o signup
 
 	RETURN:
 	- un vector di lunghezza 2.
 		list[0]: posizione relativa del cursore nel documento
-		list[1]: id dell'utnte a cui è riferit il cursore
+		list[1]: id dell'utnte a cui e' riferit il cursore
 	*/
 	std::vector<int> vett;
 	vett.push_back(obj.value("position").toInt());
