@@ -12,3 +12,6 @@
 /Client/EditorGUI/EditorGUI/SocketHandler/socket.cpp
 /Client/EditorGUI/EditorGUI/SocketHandler/socket.h
 /build-Server-Desktop_Qt_5_12_3_MSVC2017_64bit-Debug
+/Server/.vs/Server/v16
+/Server/release
+/Server/debug

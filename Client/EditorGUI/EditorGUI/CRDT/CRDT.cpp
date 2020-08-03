@@ -367,20 +367,21 @@ std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA 
 			Symbol s(c, a, pos, font, color, alignFlag);
 
 			
-			//this->_symbols.push_back(s);
+			this->_symbols.push_back(s);
 
 			//per fare prove
-			local_symbols.push_back(s);
+			//local_symbols.push_back(s);
 			}
 
 
 		iFile.close();
 		std::vector<Message> local_m;
 		//prima carico tutto e poi inizio a mandare i messaggi
-		for (auto symb : local_symbols) {
+		for (auto symb : this->_symbols) {
 
 			Message m(symb, CHANGE, 0);//L'ID del server è 0 sempre
 			local_m.push_back(m);
+
 			
 			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 		}
