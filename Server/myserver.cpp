@@ -180,12 +180,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         qDebug("SERVER_ANSWER request");
 
         break;
-
-
-
     }
-
-
 }
 
 void MyServer::onDisconnect(){
