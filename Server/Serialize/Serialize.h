@@ -31,16 +31,22 @@ public:
 	//QJsonObject unserialize(QString str); // old
 	static int actionType(QJsonObject obj);
 
-
+    //usate in myserver.cpp per login o register
 	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
+    //usate in DBInteraction per login
+    static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);//ilio
+    static QJsonObject user_filesSerialize(QString username, QJsonArray files, int type);//ilio
+    static QPair<QString, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
 
+    //usate in myserver.cpp per open - close
+    static QJsonObject openCloseFileSerialize(int fileId, QString username, int type); // ilio
+    static QPair<int, QString> openCloseFileUnserialize(QJsonObject obj);// ilio
 
-	static QJsonObject fileNameSerialize(QString fileName, int type);
-
-	static QString fileNameUnserialize(QJsonObject obj);
+    static QJsonObject newFileSerialize(QString filename, QString username, int type);//ilio
+    static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
 
 
 	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
@@ -54,8 +60,8 @@ public:
 	static QJsonObject imageSerialize(QPixmap img, int type);
 	static QPixmap imageUnserialize(QJsonObject obj);
 
-	static QJsonObject responseSerialize(int res, int type);
-	static int responseUnserialize(QJsonObject obj);
+	static QJsonObject responseSerialize(bool res, QString message, int type);
+	static QStringList responseUnserialize(QJsonObject obj);
 
 	static QJsonObject ObjectFromString(QString& in);
 

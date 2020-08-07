@@ -9,8 +9,9 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define MESSAGE 4
 #define TEXT 5
 #define IMAGE 6
-#define OPEN 7
-#define CLOSE 8
-#define CURSOR 9
-#define SERVER_ANSWER 10
-#
+#define NEWFILE 7
+#define OPEN 8
+#define CLOSE 9
+#define CURSOR 10
+#define SERVER_ANSWER 11
+

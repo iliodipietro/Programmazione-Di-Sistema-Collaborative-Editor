@@ -36,7 +36,8 @@ signals:
 
 private:
     QTcpServer *_server = nullptr;
-    QMap <QTcpSocket*, QByteArray> socket_buffer;
+    QMap <QTcpSocket*, QPair<QByteArray*, quint32>> socket_buffer;//We need a buffer to store data until block has completely received.
+                                                                 //The int represent the dimension of the data receiver and it is sent as first parameter in the socket
     DBInteraction *db = nullptr;
 
 };
