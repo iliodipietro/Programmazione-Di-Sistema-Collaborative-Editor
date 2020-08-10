@@ -23,7 +23,6 @@ private:
 	FileBrowser* m_fileBrowserWindow;
 	NewAccount* m_newAccountWindow;
 	QSharedPointer<SocketHandler> m_socketHandler;
-	QSharedPointer<Serialize> m_messageSerializer;
 	QSharedPointer<QTimer> m_timer;
 
 	void openFileBrowser();
@@ -36,4 +35,7 @@ private slots:
 	void loginResult(QJsonObject response);
 	void showErrorMessage();
 	void childWindowClosed();
+
+protected:
+	void hideEvent(QHideEvent* event);
 };

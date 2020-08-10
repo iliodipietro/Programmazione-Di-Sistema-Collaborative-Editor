@@ -4,7 +4,7 @@
 #define SERVER_IP "192.168.0.6"
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
-m_messageSerializer(QSharedPointer<Serialize>(new Serialize(this)))
+	m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
 {
 	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 	connect(m_tcpSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
@@ -48,15 +48,16 @@ void SocketHandler::readyRead()
 	while (m_tcpSocket->bytesAvailable()) {
 		qint64 numBytes = m_tcpSocket->bytesAvailable();
 		QByteArray data = m_tcpSocket->readAll();
-		while (data.size() >= 8) {
+		m_previousPacket->append(data);
+		while (m_previousPacket->size() >= 8) {
 
-			qint64 messageSize = arrayToInt(data.mid(0, 8));
+			qint64 messageSize = arrayToInt(m_previousPacket->mid(0, 8));
 
-			data.remove(0, 8);
+			m_previousPacket->remove(0, 8);
 
-			if (messageSize > 0 && data.size() >= messageSize) {
-				QByteArray message = data.mid(0, static_cast<qint32>(messageSize));
-				data.remove(0, static_cast<qint32>(messageSize));
+			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
+				QByteArray message = m_previousPacket->mid(0, static_cast<qint32>(messageSize));
+				m_previousPacket->remove(0, static_cast<qint32>(messageSize));
 				QJsonParseError parseError;
 				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
 				emit dataReceived(doc.object());

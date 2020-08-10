@@ -1,7 +1,7 @@
 #include "FileBrowser.h"
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<Serialize> messageSerializer, QWidget *parent, QString username)
-	: QMainWindow(parent), m_socketHandler(socketHandler), m_messageSerializer(messageSerializer)
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler)
 {
 	ui.setupUi(this);
 	ui.usernameLabel->setText(username);
@@ -20,8 +20,9 @@ void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
 	auto it = m_textEditors.find(path);
 	Editor* editor;
 	if (it == m_textEditors.end()) {
-		editor = new Editor(m_messageSerializer, this, path);
+		editor = new Editor(path, "prova");
 		m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
+		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
 	}
 	else {
@@ -38,4 +39,14 @@ void FileBrowser::closeEvent(QCloseEvent* event){
 void FileBrowser::on_logoutButton_clicked() {
 	emit showParent();
 	this->hide();
+}
+
+void FileBrowser::editorClosed(QString file) {
+	Editor* editor = m_textEditors.find(file)->second;
+	editor->deleteLater();
+	m_textEditors.erase(file);
+}
+
+void FileBrowser::mousePressEvent(QMouseEvent* event) {
+	show();
 }

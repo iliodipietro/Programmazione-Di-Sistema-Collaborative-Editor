@@ -63,6 +63,12 @@
     <ClCompile Include="Serialization\Serialize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Editor\CustomCursor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\MyTextEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -84,6 +90,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="Serialization\Serialize.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\CustomCursor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

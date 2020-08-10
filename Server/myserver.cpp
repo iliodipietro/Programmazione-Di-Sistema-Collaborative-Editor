@@ -66,7 +66,6 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     CLOSE 8
     CURSOR 9
     SERVER_ANSWER 10
-
     */
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
@@ -130,6 +129,94 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 
 void MyServer::onDisconnect(){
 
+}
+
+void MyServer::saveCRDTOnFile(int fileID, std::string path)
+{
+    CRDT* crdt = this->fileId_CRDT.at(fileID);
+    crdt->saveOnFile(path);
+}
+
+void MyServer::handleMessage(int fileID, Message m)
+{
+    int senderId = m.getSenderId();
+
+    this->fileId_CRDT.at(fileID)->process(m);
+
+    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
+}
+
+std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
+{
+    auto it = this->fileId_CRDT.find(fileID);
+
+    if (this->addFile(fileID)) {//true se è andato a buon fine
+
+        auto vett = this->fileId_CRDT.at(fileID)->readFromFile(path);
+
+        sendNewFile(vett, fileID);
+    }
+    else {
+        return std::vector<Message>();
+    }
+
+    return std::vector<Message>();
+}
+
+void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
+{
+    for (auto m : messages) {
+        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
+    }
+}
+
+bool MyServer::addFile(int fileID)
+{
+    auto it = this->fileId_CRDT.find(fileID);
+
+    if (it != fileId_CRDT.end())
+        return false;//gia presente qull'ID
+
+    CRDT* file = new CRDT(fileID);
+
+    this->fileId_CRDT.insert(std::pair<int, CRDT*>(fileID, file));//non presente aggiungo
+    return true;
+}
+
+void MyServer::removeFile(int fileID)
+{
+    auto it = this->fileId_CRDT.find(fileID);
+
+    if (it != fileId_CRDT.end()) {
+
+        this->fileId_CRDT.erase(it);
+    }
+}
+
+bool MyServer::addTimer(int fileID)
+{
+    auto it = this->FileID_Timer.find(fileID);
+
+    if (it != FileID_Timer.end())
+        return false;
+
+    QTimer* timer = new QTimer(this);
+    this->FileID_Timer.insert(std::pair<int, QTimer*>(fileID, timer));//non presente aggiungo
+
+    connect(timer, SIGNAL(timeout()), this, SLOT(saveCRDTOnFile()));///?????
+    timer->start(10000);
+
+    return true;
+}
+
+void MyServer::removeTimer(int fileID)
+{
+    auto it = this->FileID_Timer.find(fileID);
+
+    if (it != FileID_Timer.end()) {
+
+        this->FileID_Timer.erase(it);
+    }
 }
 
 
