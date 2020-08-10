@@ -66,6 +66,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     CLOSE 8
     CURSOR 9
     SERVER_ANSWER 10
+
     */
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
@@ -151,7 +152,7 @@ std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
     auto it = this->fileId_CRDT.find(fileID);
 
     if (this->addFile(fileID)) {//true se è andato a buon fine
-
+        
         auto vett = this->fileId_CRDT.at(fileID)->readFromFile(path);
 
         sendNewFile(vett, fileID);
@@ -159,14 +160,14 @@ std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
     else {
         return std::vector<Message>();
     }
-
+    
     return std::vector<Message>();
 }
 
 void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
 {
     for (auto m : messages) {
-        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
+        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file 
     }
 }
 

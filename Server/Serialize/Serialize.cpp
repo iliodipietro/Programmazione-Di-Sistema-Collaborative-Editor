@@ -278,7 +278,7 @@ QString Serialize::textMessageUnserialize(QJsonObject obj)
 	return obj.value("message").toString();
 }
 
-//internal useage only----------------------------------------------------------
+//internal usage only----------------------------------------------------------
 
 QJsonValue  Serialize::jsonValFromPixmap(const QPixmap& p) {
 	QBuffer buffer;
@@ -322,10 +322,16 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
-QJsonObject Serialize::responseSerialize(int res, int type)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
+	Type: qui dovrebbe essere sempre SERVER_ANSWER
+	*/
+
+	/*
+	bool: successo o fallimento (OK, ERROR)
+	message: risposta del server
 	Type: qui dovrebbe essere sempre SERVER_ANSWER
 	*/
 	QJsonObject obj;
@@ -334,17 +340,30 @@ QJsonObject Serialize::responseSerialize(int res, int type)
 
 	obj.insert("res", QJsonValue(res));
 
+	obj.insert("message", QJsonValue(message));
 
-	//QJsonDocument doc(obj);
-	//QString strJson(doc.toJson(QJsonDocument::Compact));
-	//return strJson.append("\r\n");
 
 	return obj;
 }
 
-int Serialize::responseUnserialize(QJsonObject obj)
+QStringList Serialize::responseUnserialize(QJsonObject obj)
 {
-	return obj.value("res").toInt();
+	/*
+
+	Questa funzione de-serializza la risposta del server
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info sulla risposta data dal server
+
+	RETURN:
+	- una QstringList che di lunghezza 2:
+	list[0]: valore booleano che mi dice OK/ERROR
+	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+	*/
+	QStringList list;
+	list.append(obj.value("res").toString());
+	list.append(obj.value("message").toString());
+
+	return list;
 }
 
 QJsonObject Serialize::ObjectFromString(QString& in)

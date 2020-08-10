@@ -43,7 +43,7 @@ private:
 
     ///MATTIA--------------------------------
 
-    std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
+    std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file 
     std::map<int, QTimer*> FileID_Timer;//un timer per ogni file aperto
 
     void handleMessage(int fileID, Message m);

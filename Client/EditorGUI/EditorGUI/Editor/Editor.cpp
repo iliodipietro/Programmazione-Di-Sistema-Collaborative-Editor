@@ -576,6 +576,11 @@ void Editor::localInsert() {
 		//debug purposes
 		if (chr == '§') {
 			vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+
+			QByteArray arr = Serialize::fromObjectToArray( Serialize::messageSerialize(vett[0], INSERT));
+
+			qint64 len = arr.size();
+
 			for (auto v : vett) {
 				this->remoteAction(v);
 				std::cout << "inseriton" << std::endl;
