@@ -1,7 +1,7 @@
 #include "FileBrowser.h"
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<Serialize> messageSerializer, QWidget *parent, QString username)
-	: QMainWindow(parent), m_socketHandler(socketHandler), m_messageSerializer(messageSerializer)
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler)
 {
 	ui.setupUi(this);
 	ui.usernameLabel->setText(username);
@@ -9,7 +9,6 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));
-	this->modifyProfile_page = Q_NULLPTR;
 }
 
 FileBrowser::~FileBrowser()
@@ -21,8 +20,9 @@ void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
 	auto it = m_textEditors.find(path);
 	Editor* editor;
 	if (it == m_textEditors.end()) {
-		editor = new Editor(m_messageSerializer, this, path);
+		editor = new Editor(path, "prova");
 		m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
+		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
 	}
 	else {
@@ -41,22 +41,12 @@ void FileBrowser::on_logoutButton_clicked() {
 	this->hide();
 }
 
-void FileBrowser::on_modifyProfileButton_clicked()
-{
-	if (this->modifyProfile_page != Q_NULLPTR) {
-		delete this->modifyProfile_page;
-		this->modifyProfile_page = Q_NULLPTR;
-	}
-
-	this->modifyProfile_page = new ModifyProfile(m_socketHandler, username,this);
-	this->modifyProfile_page->show();
-	connect(modifyProfile_page, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
-	this->hide();
+void FileBrowser::editorClosed(QString file) {
+	Editor* editor = m_textEditors.find(file)->second;
+	editor->deleteLater();
+	m_textEditors.erase(file);
 }
 
-void FileBrowser::childWindowClosed()
-{
-	this->show();
+void FileBrowser::mousePressEvent(QMouseEvent* event) {
+	show();
 }
-
-

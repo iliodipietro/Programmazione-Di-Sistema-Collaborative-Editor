@@ -1,7 +1,7 @@
 #include "Login.h"
 
 Login::Login(QWidget* parent)
-	: QMainWindow(parent), m_messageSerializer(QSharedPointer<Serialize>(new Serialize())),
+	: QMainWindow(parent),
 	m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler())),
 	m_timer(QSharedPointer<QTimer>(new QTimer(this)))
 {
@@ -26,7 +26,7 @@ void Login::closeEvent(QCloseEvent* event)
 void Login::openFileBrowser() {
 	QString username = ui.usernameTextLine->text();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, m_messageSerializer, this, username);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, username);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	m_timer->stop();
@@ -41,8 +41,8 @@ void Login::on_loginButton_clicked()
 	//QString loginInfo = "";
 	//loginInfo.append(username).append(",").append(password);
 	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-	QJsonObject message = m_messageSerializer->userSerialize(username, password, username, 1);
-	bool result = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(message));
+	QJsonObject message = Serialize::userSerialize(username, password, username, 1);
+	bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
 	if (true) {
 		m_timer->setSingleShot(true);
 		m_timer->setInterval(1000);
@@ -59,9 +59,7 @@ void Login::showErrorMessage() {
 }
 
 void Login::loginResult(QJsonObject response) {
-	QStringList l = m_messageSerializer->responseUnserialize(response);
-	int result = l[0].toInt();
-
+	int result = Serialize::responseUnserialize(response);
 	if (true) {
 		openFileBrowser();
 	}
@@ -74,7 +72,7 @@ void Login::loginResult(QJsonObject response) {
 
 void Login::on_newAccount_clicked() {
 	resetWindows();
-	m_newAccountWindow = new NewAccount(m_socketHandler, this);
+	m_newAccountWindow = new NewAccount(m_socketHandler);
 	m_newAccountWindow->show();
 	this->newWindow = true;
 	connect(m_newAccountWindow, &NewAccount::showParent, this, &Login::childWindowClosed);
@@ -87,11 +85,15 @@ void Login::childWindowClosed() {
 
 void Login::resetWindows() {
 	if (m_fileBrowserWindow != Q_NULLPTR) {
-		delete m_fileBrowserWindow;
+		m_fileBrowserWindow->deleteLater();
 		m_fileBrowserWindow = Q_NULLPTR;
 	}
 	if (m_newAccountWindow != Q_NULLPTR) {
-		delete m_newAccountWindow;
+		m_newAccountWindow->deleteLater();
 		m_newAccountWindow = Q_NULLPTR;
 	}
+}
+
+void Login::hideEvent(QHideEvent* event) {
+	//setWindowState(Qt::WindowMinimized);
 }

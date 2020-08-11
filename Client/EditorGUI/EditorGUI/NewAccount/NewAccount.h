@@ -20,7 +20,6 @@ public:
 
 private:
 	QSharedPointer<SocketHandler> m_socketHandler;
-	QSharedPointer<Serialize> m_messageSerializer;
 	QTimer* m_timer;
 	Ui::NewAccount ui;
 	QPixmap* m_croppedImage;

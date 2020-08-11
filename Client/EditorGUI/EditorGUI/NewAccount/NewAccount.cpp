@@ -4,7 +4,6 @@
 
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
-	m_messageSerializer(QSharedPointer<Serialize>(new Serialize(this))),
 	m_timer(new QTimer(this))
 {
 	ui.setupUi(this);
@@ -65,10 +64,10 @@ void NewAccount::on_submit_clicked() {
 		m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
 		ui.crop->setPixmap(*m_croppedImage);
 		if (m_croppedImage != Q_NULLPTR) {
-			QJsonObject imageSerialized = m_messageSerializer->imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = m_messageSerializer->userSerialize(username, password, username, 2);
-			bool result1 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(imageSerialized));
-			bool result2 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(userInfoSerialized));
+			QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
+			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, 2);
+			bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
+			bool result2 = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 			if (result1 && result2) {
 				m_timer->setSingleShot(true);
 				m_timer->setInterval(1000);
@@ -152,9 +151,7 @@ void NewAccount::on_cancel_clicked() {
 }
 
 void NewAccount::registrationResult(QJsonObject response) {
-	QStringList l = m_messageSerializer->responseUnserialize(response);
-	int result = l[0].toInt();
-
+	int result = Serialize::responseUnserialize(response);
 	if (true) {
 		QMessageBox resultDialog(this);
 		connect(&resultDialog, &QMessageBox::buttonClicked, this, &NewAccount::dialogClosed);

@@ -22,9 +22,8 @@ public:
     QAbstractSocket::SocketState getSocketState();
 
 private:
+    QSharedPointer<QByteArray> m_previousPacket;
     QSharedPointer<QTcpSocket> m_tcpSocket;
-    QSharedPointer<QNetworkSession> m_networkSession;
-    QSharedPointer<Serialize> m_messageSerializer;
 
     void closeEvent(QCloseEvent* event);
     QByteArray intToArray(qint32 source);

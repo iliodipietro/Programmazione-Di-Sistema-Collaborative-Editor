@@ -11,32 +11,31 @@
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
 #include "ui_FileBrowser.h"
-#include <QMessageBox>
-#include "ModifyProfile.h"
 
 class FileBrowser : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString username = "");
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username = "", QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 private:
 	QSharedPointer<SocketHandler> m_socketHandler;
-	QSharedPointer<Serialize> m_messageSerializer;
 	std::map<QString, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
 	Ui::FileBrowser ui;
 	void closeEvent(QCloseEvent* event);
-	ModifyProfile* modifyProfile_page;
 
 private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 	void on_logoutButton_clicked();
-	void on_modifyProfileButton_clicked();
-	void childWindowClosed();
+	void editorClosed(QString);
+
 signals:
 	void showParent();
+
+protected:
+	void mousePressEvent(QMouseEvent* event);
 };

@@ -11,6 +11,7 @@
 #include "Structures/FormatStructure.h"
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
+#include "MyTextEdit.h"
 
 class QFontComboBox;
 class QPrinter;
@@ -21,12 +22,13 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QSharedPointer<Serialize> messageSerializer, QWidget *parent = Q_NULLPTR, QString path = "", QString username = "");
+	Editor(QString path = "", QString username = "", QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
 
 private:
 	Ui::Editor ui;
+	MyTextEdit* m_textEdit;
 	QWidget *parent;
 	QString filePath, curFile;
 	QAction* italicAct;
@@ -45,12 +47,18 @@ private:
 	QAction* actionAlignCenter;
 	QAction* actionAlignJustify;
 	QAction* actionTextColor;
+	QAction* m_actionShowEditingUsers;
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
+	QListWidget* m_editingUsersList;
 	QSharedPointer<SocketHandler> m_socketHandler;
-	QSharedPointer<Serialize> m_messageSerializer;
+	QTimer* m_timer;
+	QLabel* m_usernameLabel;
+	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
+	std::vector<QString> m_editingUsers;
+	bool m_showingEditingUsers;
 
 	//MATTIA---------------------------------------------------------------------------------
 	CRDT* _CRDT;
@@ -112,15 +120,24 @@ private:
 	void updateViewAfterStyleChange(Message m, __int64 index);
 
 	//FINE----------------------------------------------------------------------
+
+	void addEditingUser(int id, QString username, QColor userColor);
+	void removeEditingUser(int id, QString username);
+
 protected:
 	void keyPressEvent(QKeyEvent *e);
+	void mousePressEvent(QMouseEvent* e);
 
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
 	void messageReceived(QJsonObject);
+	void writeText();
+	void showEditingUsers();
+	void clickOnTextEdit();
 
 //---------------------------------------------------------------------------------------------------
-
+signals:
+	void editorClosed(QString);
 };
