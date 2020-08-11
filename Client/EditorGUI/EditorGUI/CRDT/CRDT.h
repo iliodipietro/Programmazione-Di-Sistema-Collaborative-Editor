@@ -12,13 +12,13 @@
 #define INSERT 0
 #define DELETE_S 1
 #define CHANGE 2
+#define CURSOR 3
 
 
 
 class Message;
 
-/*versione con modifica del crdt lineare -->MATRICE SE SI E' DEI FOLLI MA POSSIBILE
-
+/*
 le local insert/delete ritornano dei messaggi che dovranno essere presi serializzati e mandati tramite socket al server
 
 L'algoritmo è quello del lab e funzionava non so se il tutto funziona adesso dopo i cambiamneti -->FARE PROVE QUANDO SI SARA
@@ -28,8 +28,6 @@ IMPLEMENTATO UN MECCANISMO FUNZIONANTE
 
 TODO
 mancano le interazioni con la gui ossia i signal e slot per scatenare le insert. 
-la process deve in qualche modo andare a modificare il testo????--> per ora ho solo un intero che dice a quale posizione 
-dall'inizio del vettore si trova il carattere interessato
 */
 class CRDT
 {
@@ -55,6 +53,7 @@ public:
 	__int64 process(const Message & m);
 	std::string to_string();//usare Qstring??
 	int getId();
+	Symbol getSymbol(int index);
 	//SERVER ONLY
 	//void dispatchMessages();-->sul server
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta

@@ -13,8 +13,11 @@ il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anc
 
 */
 
-CRDT::CRDT(int id) :_siteId(id), _counter(0)
+CRDT::CRDT(int id, std::string path) :_siteId(id), _counter(0),path(path)
 {
+	this->timer = new QTimer();
+	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
+	timer->start(TIMEOUT);
 }
 
 
@@ -322,11 +325,11 @@ QJsonObject ObjectFromString(const QString& in)
 
 	return obj;
 }
-std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
+std::vector<Message> CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
-	std::ifstream iFile(fileName);
+	std::ifstream iFile(this->path);
 	std::vector<Symbol> local_symbols;
-	if (iFile.is_open())
+	if (iFile.is_open())// se non riesco ad aprire il file vuol dire che è un file nuovo e che quindi ancpra va creato--> cio viene fatto nel primo save
 	{
 		std::string line;
 
@@ -389,6 +392,11 @@ std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA 
 	}
 }
 
+QTimer* CRDT::getTimer()
+{
+	return this->timer;
+}
+
 
 
 QString CRDT::crdt_serialize()
@@ -449,26 +457,30 @@ QString CRDT::crdt_serialize()
 	}
 	return text;
 }
-void CRDT::saveOnFile(std::string filename)
+void CRDT::saveOnFile()
 {
+	if (this->_symbols.size() > 0) {
 
-	QString serialized_text = this->crdt_serialize();
+		QString serialized_text = this->crdt_serialize();
 
-	std::ofstream oFile(filename, std::ios_base::out | std::ios_base::trunc);
-	if (oFile.is_open())
-	{
-
-		//std::string text = this->to_string();
+		std::ofstream oFile(this->path, std::ios_base::out | std::ios_base::trunc);
+		if (oFile.is_open())
 		{
-			//oFile << text;
-			oFile << serialized_text.toStdString();
+
+			//std::string text = this->to_string();
+			{
+				//oFile << text;
+				oFile << serialized_text.toStdString();
+			}
+			oFile.close();
 		}
-		oFile.close();
-	}
-	else {
-		std::cout << "Errore apertura file";
+		else {
+			std::cout << "Errore apertura file";
+		}
+
 	}
 
+	this->timer->start(TIMEOUT);
 }
 
 

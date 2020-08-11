@@ -9,6 +9,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));
+	this->modifyProfile_page = Q_NULLPTR;
 }
 
 FileBrowser::~FileBrowser()
@@ -39,3 +40,23 @@ void FileBrowser::on_logoutButton_clicked() {
 	emit showParent();
 	this->hide();
 }
+
+void FileBrowser::on_modifyProfileButton_clicked()
+{
+	if (this->modifyProfile_page != Q_NULLPTR) {
+		delete this->modifyProfile_page;
+		this->modifyProfile_page = Q_NULLPTR;
+	}
+
+	this->modifyProfile_page = new ModifyProfile(m_socketHandler, username,this);
+	this->modifyProfile_page->show();
+	connect(modifyProfile_page, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
+	this->hide();
+}
+
+void FileBrowser::childWindowClosed()
+{
+	this->show();
+}
+
+

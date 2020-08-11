@@ -315,6 +315,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
+
 QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 {
 	/*
@@ -336,19 +337,30 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 	obj.insert("message", QJsonValue(message));
 
 
-	//QJsonDocument doc(obj);
-	//QString strJson(doc.toJson(QJsonDocument::Compact));
-	//return strJson.append("\r\n");
-
 	return obj;
 }
 
-int Serialize::responseUnserialize(QJsonObject obj)
+QStringList Serialize::responseUnserialize(QJsonObject obj)
 {
-	return obj.value("res").toInt();
+	/*
+
+	Questa funzione de-serializza la risposta del server
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info sulla risposta data dal server
+
+	RETURN:
+	- una QstringList che di lunghezza 2:
+	list[0]: valore booleano che mi dice OK/ERROR
+	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+	*/
+	QStringList list;
+	list.append(obj.value("res").toString());
+	list.append(obj.value("message").toString());
+
+	return list;
 }
 
-QJsonObject Serialize::ObjectFromString(QString& in)
+QJsonObject Serialize::ObjectFromString(QString& in)//OLD
 {
 	//Ritorna un Qjson a partire dalla stringa ricevuta ed elimina il \n\r
 	QJsonObject obj;

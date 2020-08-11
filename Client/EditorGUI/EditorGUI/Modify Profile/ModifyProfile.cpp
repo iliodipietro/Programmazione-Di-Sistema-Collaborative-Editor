@@ -1,32 +1,37 @@
-#include "NewAccount.h"
+#include "ModifyProfile.h"
 #include <QMouseEvent>
 #include <QMessageBox>
 
-NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
-	: QMainWindow(parent), m_socketHandler(socketHandler),
-	m_messageSerializer(QSharedPointer<Serialize>(new Serialize(this))),
-	m_timer(new QTimer(this))
+
+ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
+m_messageSerializer(QSharedPointer<Serialize>(new Serialize(this))),
+m_timer(new QTimer(this))
 {
 	ui.setupUi(this);
 	this->move_rubberband = false;
 	m_selectionArea = Q_NULLPTR;
 	m_croppedImage = Q_NULLPTR;
+	m_resizedImage = Q_NULLPTR;;
+	m_selectedImage = Q_NULLPTR;
+	this->username = username;
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(registrationResult(QJsonObject)));
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 }
 
-NewAccount::~NewAccount()
+ModifyProfile::~ModifyProfile()
 {
 }
 
-void NewAccount::closeEvent(QCloseEvent* event)
+
+
+void ModifyProfile::closeEvent(QCloseEvent* event)
 {
 	exit(0);
 }
 
-void NewAccount::on_selectImageButton_clicked() {
+void ModifyProfile::on_selectImageButton_clicked() {
 	ui.imageLabel->setFixedWidth(m_originalSize.width());
 	ui.imageLabel->setFixedHeight(m_originalSize.height());
 	QString url = QFileDialog::getOpenFileName(this, tr("Scegli immagine"), QDir::homePath(), "Immagini (*.jpg *.png *.jpeg)");
@@ -46,18 +51,19 @@ void NewAccount::on_selectImageButton_clicked() {
 	}
 }
 
-void NewAccount::on_submit_clicked() {
+void ModifyProfile::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
 	if (m_croppedImage != Q_NULLPTR) {
 		delete m_croppedImage;
 		m_croppedImage = Q_NULLPTR;
 	}
 
-	QString username = ui.nickNameLine->text();
-	QString password = ui.passwordLine->text();
-	QString password_re = ui.rePasswordLine->text();
-	QString email = ui.emailLine->text();
+	QString nickname = ui.nickNameLine_3->text();
+	QString password = ui.passwordLine_3->text();
+	QString password_re = ui.rePasswordLine_3->text();
+
 	QPoint areaPos = m_selectionArea->geometry().topLeft();
+
 	if (password.compare(password_re) == 0) {
 
 		areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
@@ -66,7 +72,7 @@ void NewAccount::on_submit_clicked() {
 		ui.crop->setPixmap(*m_croppedImage);
 		if (m_croppedImage != Q_NULLPTR) {
 			QJsonObject imageSerialized = m_messageSerializer->imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = m_messageSerializer->userSerialize(username, password, username, 2);
+			QJsonObject userInfoSerialized = m_messageSerializer->userSerialize(this->username, password, nickname, 2);//type da definire in define.h
 			bool result1 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(imageSerialized));
 			bool result2 = m_socketHandler->writeData(m_messageSerializer->fromObjectToArray(userInfoSerialized));
 			if (result1 && result2) {
@@ -91,7 +97,7 @@ void NewAccount::on_submit_clicked() {
 
 }
 
-void NewAccount::mousePressEvent(QMouseEvent* e)
+void ModifyProfile::mousePressEvent(QMouseEvent* e)
 {
 	if (m_selectionArea != Q_NULLPTR && m_selectionArea->geometry().contains(e->pos()))
 	{
@@ -103,7 +109,7 @@ void NewAccount::mousePressEvent(QMouseEvent* e)
 	}
 }
 
-void NewAccount::mouseMoveEvent(QMouseEvent* e)
+void ModifyProfile::mouseMoveEvent(QMouseEvent* e)
 {
 	if (this->move_rubberband)
 	{
@@ -138,7 +144,7 @@ void NewAccount::mouseMoveEvent(QMouseEvent* e)
 	}
 }
 
-void NewAccount::mouseReleaseEvent(QMouseEvent* e)
+void ModifyProfile::mouseReleaseEvent(QMouseEvent* e)
 {
 	if (m_selectionArea != Q_NULLPTR) {
 		this->move_rubberband = false;
@@ -146,18 +152,18 @@ void NewAccount::mouseReleaseEvent(QMouseEvent* e)
 	}
 }
 
-void NewAccount::on_cancel_clicked() {
+void ModifyProfile::on_cancel_clicked() {
 	emit showParent();
 	this->hide();
 }
 
-void NewAccount::registrationResult(QJsonObject response) {
+void ModifyProfile::registrationResult(QJsonObject response) {
 	QStringList l = m_messageSerializer->responseUnserialize(response);
 	int result = l[0].toInt();
 
 	if (true) {
 		QMessageBox resultDialog(this);
-		connect(&resultDialog, &QMessageBox::buttonClicked, this, &NewAccount::dialogClosed);
+		connect(&resultDialog, &QMessageBox::buttonClicked, this, &ModifyProfile::dialogClosed);
 		resultDialog.setInformativeText("Success");
 		resultDialog.exec();
 	}
@@ -168,12 +174,12 @@ void NewAccount::registrationResult(QJsonObject response) {
 	}
 }
 
-void NewAccount::showErrorMessage() {
+void ModifyProfile::showErrorMessage() {
 	QMessageBox resultDialog(this);
 	resultDialog.setInformativeText("Errore di connessione");
 }
 
-void NewAccount::dialogClosed(QAbstractButton* button) {
+void ModifyProfile::dialogClosed(QAbstractButton* button) {
 	emit showParent();
 	this->hide();
 }

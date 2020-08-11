@@ -59,7 +59,7 @@ public:
     static QPixmap imageUnserialize(QJsonObject obj);
 
     static QJsonObject responseSerialize(bool res, QString message, int type);
-    static int responseUnserialize(QJsonObject obj);
+    static QStringList responseUnserialize(QJsonObject obj);
 
     static QJsonObject ObjectFromString( QString& in);
 

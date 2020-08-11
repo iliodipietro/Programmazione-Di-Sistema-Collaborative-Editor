@@ -97,7 +97,8 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos())); });
+		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+
 
 	if (it != _symbols.end()) {
 		//vuol dire che l'ho trovato
@@ -279,6 +280,13 @@ int CRDT::getId()
 {
 	return this->_siteId;
 }
+
+Symbol CRDT::getSymbol(int index)
+{
+	return this->_symbols.at(index);
+}
+
+
 
 std::vector<Message> CRDT::getMessageArray()
 {

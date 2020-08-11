@@ -11,6 +11,8 @@
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
 #include "ui_FileBrowser.h"
+#include <QMessageBox>
+#include "ModifyProfile.h"
 
 class FileBrowser : public QMainWindow
 {
@@ -28,11 +30,13 @@ private:
 	QString username;
 	Ui::FileBrowser ui;
 	void closeEvent(QCloseEvent* event);
+	ModifyProfile* modifyProfile_page;
 
 private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 	void on_logoutButton_clicked();
-
+	void on_modifyProfileButton_clicked();
+	void childWindowClosed();
 signals:
 	void showParent();
 };

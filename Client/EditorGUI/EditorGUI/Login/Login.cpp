@@ -59,7 +59,9 @@ void Login::showErrorMessage() {
 }
 
 void Login::loginResult(QJsonObject response) {
-	int result = m_messageSerializer->responseUnserialize(response);
+	QStringList l = m_messageSerializer->responseUnserialize(response);
+	int result = l[0].toInt();
+
 	if (true) {
 		openFileBrowser();
 	}
