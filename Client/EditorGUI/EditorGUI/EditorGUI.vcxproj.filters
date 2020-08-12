@@ -69,6 +69,9 @@
     <ClCompile Include="Editor\MyTextEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -98,6 +101,9 @@
     <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="Modify Profile\ModifyProfile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Login\Login.qrc">
@@ -115,6 +121,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="NewAccount\NewAccount.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Modify Profile\ModifyProfile.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

@@ -59,7 +59,7 @@ void Login::showErrorMessage() {
 }
 
 void Login::loginResult(QJsonObject response) {
-	int result = Serialize::responseUnserialize(response);
+	int result = Serialize::responseUnserialize(response)[0].toInt();;
 	if (true) {
 		openFileBrowser();
 	}
