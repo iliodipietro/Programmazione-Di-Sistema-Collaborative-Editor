@@ -132,11 +132,7 @@ void MyServer::onDisconnect(){
 
 }
 
-void MyServer::saveCRDTOnFile(int fileID, std::string path)
-{
-    CRDT* crdt = this->fileId_CRDT.at(fileID);
-    crdt->saveOnFile(path);
-}
+
 
 void MyServer::handleMessage(int fileID, Message m)
 {
@@ -151,9 +147,11 @@ std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
 {
     auto it = this->fileId_CRDT.find(fileID);
 
-    if (this->addFile(fileID)) {//true se è andato a buon fine
+    if (this->addFile(fileID,path)) {//true se è andato a buon fine
         
-        auto vett = this->fileId_CRDT.at(fileID)->readFromFile(path);
+
+        //@TODO--> vedere se è la prima volta che il file viene creato o meno--> se è nuovo non faccio read
+        auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
 
         sendNewFile(vett, fileID);
     }
@@ -171,16 +169,17 @@ void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
     }
 }
 
-bool MyServer::addFile(int fileID)
+bool MyServer::addFile(int fileID, std::string path)
 {
     auto it = this->fileId_CRDT.find(fileID);
 
     if (it != fileId_CRDT.end())
         return false;//gia presente qull'ID
 
-    CRDT* file = new CRDT(fileID);
+    CRDT* file = new CRDT(fileID,path);
 
     this->fileId_CRDT.insert(std::pair<int, CRDT*>(fileID, file));//non presente aggiungo
+
     return true;
 }
 
@@ -193,33 +192,6 @@ void MyServer::removeFile(int fileID)
         this->fileId_CRDT.erase(it);
     }
 }
-
-bool MyServer::addTimer(int fileID)
-{
-    auto it = this->FileID_Timer.find(fileID);
-
-    if (it != FileID_Timer.end())
-        return false;
-
-    QTimer* timer = new QTimer(this);
-    this->FileID_Timer.insert(std::pair<int, QTimer*>(fileID, timer));//non presente aggiungo
-
-    connect(timer, SIGNAL(timeout()), this, SLOT(saveCRDTOnFile()));///?????
-    timer->start(10000);
-
-    return true;
-}
-
-void MyServer::removeTimer(int fileID)
-{
-    auto it = this->FileID_Timer.find(fileID);
-
-    if (it != FileID_Timer.end()) {
-
-        this->FileID_Timer.erase(it);
-    }
-}
-
 
 MyServer::~MyServer()
 {
