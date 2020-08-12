@@ -124,7 +124,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Inserisci i campi che vuoi modificare</string>
+     <string>Inserisci solo i campi che vuoi modificare</string>
     </property>
    </widget>
    <widget class="QWidget" name="formLayoutWidget">
