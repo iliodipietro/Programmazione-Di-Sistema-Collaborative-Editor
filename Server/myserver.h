@@ -31,7 +31,7 @@ private slots:
     void readFromSocket();
     void MessageHandler(QTcpSocket *socket, QByteArray socketData);
     void onDisconnect();
-    void saveCRDTOnFile(int fileID, std::string path);
+
 signals:
     void dataReady(QTcpSocket *socket, QByteArray socketData);
 
@@ -44,17 +44,13 @@ private:
     ///MATTIA--------------------------------
 
     std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file 
-    std::map<int, QTimer*> FileID_Timer;//un timer per ogni file aperto
 
     void handleMessage(int fileID, Message m);
     std::vector<Message> readFileFromDisk(std::string path, int fileID);
     void sendNewFile(std::vector<Message> messages ,int fileId);
 
-    bool addFile(int fileID);//false file già presente o errore
+    bool addFile(int fileID, std::string path);//false se file già presente o errore
     void removeFile(int fileID);// se lo trova elimina altrimenti non fa nulla
-    //unico timer che salva tutto???????
-    bool addTimer(int fileID);//false file già presente o errore
-    void removeTimer(int fileID);// se lo trova elimina altrimenti non fa nulla
 
 
     //-------------------------------------
