@@ -35,7 +35,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Seleziona immagine</string>
+     <string>Nuova immagine</string>
     </property>
    </widget>
    <widget class="QPushButton" name="submit">
