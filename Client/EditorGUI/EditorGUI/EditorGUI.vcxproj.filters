@@ -69,6 +69,12 @@
     <ClCompile Include="Modify Profile\ModifyProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Editor\CustomCursor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\MyTextEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -96,6 +102,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="Modify Profile\ModifyProfile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\CustomCursor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -147,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Serialization\define.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRDT\MessageType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,6 +4,7 @@
 //#include "ui_Serialize.h"
 #include "CRDT/Message.h"
 #include "define.h"
+#include "Editor/CustomCursor.h"
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
@@ -65,6 +66,9 @@ public:
 
 	static QJsonObject cursorPostionSerialize(int position, int user, int type);
 	static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
+
+	static QJsonObject cursorSerialize(CustomCursor cursor, int type);
+	static CustomCursor cursorUnserialize(QJsonObject obj);
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);

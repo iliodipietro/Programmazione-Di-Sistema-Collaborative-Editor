@@ -135,7 +135,6 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	QJsonObject obj;
 
 	obj.insert("type", QJsonValue(type));
-
 	int action = message.getAction();//insert, delete ecc.
 
 	int senderId = message.getSenderId();//id del client o di chi manda
@@ -143,6 +142,14 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	obj.insert("action", QJsonValue(action));
 	obj.insert("sender", QJsonValue(senderId));
 
+	/*-------------------------------------------------------------------------------------------------------------------------------
+	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+	----------------------------------------------------------------------------------------------------------------------------------*/
+	if (message.getCursorPosition() > 0) {
+		obj.insert("cursor_position", QJsonValue( message.getCursorPosition()));
+		return obj;
+	}
 
 	Symbol s = message.getSymbol();
 
@@ -207,6 +214,21 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
 	vedi Message.h/cpp per specifiche
 	*/
+
+
+	int action = obj.value("action").toInt();
+	int sender = obj.value("sender").toInt();
+
+	/*-------------------------------------------------------------------------------------------------------------------------------
+	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+	----------------------------------------------------------------------------------------------------------------------------------*/
+	if (action == CURSOR) {
+		__int64 cursorPosition = obj.value("cursor_position").toInt();
+		Message m(cursorPosition, action, sender);
+		return m;
+	}
+
 	char c = obj.value("character").toInt();
 
 	std::array<int, 2> a;
@@ -240,9 +262,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
 	Symbol s(c, a, pos, font, color, alignFlag);
 
-	int action = obj.value("action").toInt();
 
-	int sender = obj.value("sender").toInt();
 
 	Message m(s, action, sender);
 
@@ -436,6 +456,22 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 	return vett;
 
 }
+
+//QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)
+//{
+//	QJsonObject obj;
+//
+//	obj.insert("position", position);
+//	obj.insert("userID", userID);
+//	obj.insert("type", QJsonValue(type));
+//
+//	return obj;
+//}
+//
+//CustomCursor Serialize::cursorUnserialize(QJsonObject obj)
+//{
+//	return CustomCursor();
+//}
 
 QByteArray Serialize::fromObjectToArray(QJsonObject obj)
 {

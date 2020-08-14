@@ -122,7 +122,7 @@ __int64 CRDT::process(const Message& m)
 
 	switch (m.getAction())
 	{
-	case DELETE:
+	case DELETE_S:
 		index = delete_symbol(m.getSymbol());
 		//fare qualcosa con index
 		break;
@@ -248,7 +248,7 @@ Message CRDT::localErase(int index)
 
 
 	//mando il messaggio
-	Message m(s, DELETE, this->_siteId);
+	Message m(s, DELETE_S, this->_siteId);
 
 	//elimino il simbolo dal vettore locale
 	_symbols.erase(_symbols.begin() + index);
