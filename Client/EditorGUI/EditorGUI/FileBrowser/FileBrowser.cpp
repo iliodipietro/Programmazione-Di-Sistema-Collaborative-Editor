@@ -32,6 +32,14 @@ void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
 	
 }
 
+void FileBrowser::on_newFile_Clicked() {
+	auto model = ui.treeView->model();
+	QModelIndex parent = model->index(0, 0);
+	model->insertRow(0, parent);
+	model->setData(model->index(0, 0, parent), QString("Child Item"));
+	ui.treeView->setModel(model);
+}
+
 void FileBrowser::closeEvent(QCloseEvent* event){
 	qApp->quit();
 }

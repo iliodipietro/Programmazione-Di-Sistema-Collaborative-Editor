@@ -7,6 +7,7 @@
 #include <QFileSystemModel>
 #include <QTreeView>
 #include <QCloseEvent>
+#include <QLineEdit>
 #include "Editor/Editor.h"
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
@@ -26,11 +27,13 @@ private:
 	QFileSystemModel model;
 	QString username;
 	Ui::FileBrowser ui;
+	QLineEdit* m_newFileLabel;
 	void closeEvent(QCloseEvent* event);
 
 private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 	void on_logoutButton_clicked();
+	void on_newFile_Clicked();
 	void editorClosed(QString);
 
 signals:
