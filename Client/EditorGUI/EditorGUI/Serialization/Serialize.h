@@ -4,6 +4,7 @@
 //#include "ui_Serialize.h"
 #include "CRDT/Message.h"
 #include "define.h"
+#include "Editor/CustomCursor.h"
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
@@ -21,7 +22,7 @@ class Serialize : public QObject
 
 public:
 
-	Serialize(QObject*parent = Q_NULLPTR);
+	Serialize(QObject* parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
 
@@ -33,38 +34,41 @@ public:
 	--------------------------------------------------------------------------------------------------------------*/
 
 	//QJsonObject unserialize(QString str); // old
-    static int actionType(QJsonObject obj);
+	static int actionType(QJsonObject obj);
 
 
-    static QJsonObject userSerialize(QString user, QString password,QString nickname,int type);//type usato per discriminare login o register
-    static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
+	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type);//type usato per discriminare login o register
+	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
-	
-	
-    static QJsonObject fileNameSerialize(QString fileName, int type);
-
-    static QString fileNameUnserialize(QJsonObject obj);
-	
-	
-    static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
-    static Message messageUnserialize(QJsonObject obj);
 
 
+	static QJsonObject fileNameSerialize(QString fileName, int type);
 
-    static QJsonObject textMessageSerialize(QString str, int type);
-    static QString textMessageUnserialize(QJsonObject obj);
+	static QString fileNameUnserialize(QJsonObject obj);
 
-    static QJsonObject imageSerialize(QPixmap img, int type);
-    static QPixmap imageUnserialize(QJsonObject obj);
 
-    static QJsonObject responseSerialize(bool res, QString message, int type);
-    static int responseUnserialize(QJsonObject obj);
+	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	static Message messageUnserialize(QJsonObject obj);
 
-    static QJsonObject ObjectFromString( QString& in);
 
-    static QJsonObject cursorPostionSerialize(int position, int user, int type);
-    static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
+
+	static QJsonObject textMessageSerialize(QString str, int type);
+	static QString textMessageUnserialize(QJsonObject obj);
+
+	static QJsonObject imageSerialize(QPixmap img, int type);
+	static QPixmap imageUnserialize(QJsonObject obj);
+
+	static QJsonObject responseSerialize(bool res, QString message, int type);
+	static QStringList responseUnserialize(QJsonObject obj);
+
+	static QJsonObject ObjectFromString(QString& in);
+
+	static QJsonObject cursorPostionSerialize(int position, int user, int type);
+	static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
+
+	static QJsonObject cursorSerialize(CustomCursor cursor, int type);
+	static CustomCursor cursorUnserialize(QJsonObject obj);
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
@@ -77,7 +81,7 @@ private:
 	//Ui::SerializeClass ui;
 	//che tipo di oggetto voglio usare viene incapsulato nel json--> login,register,ecc
 	//QString type;
-    static QJsonValue jsonValFromPixmap(const QPixmap &p);
-    static QPixmap pixmapFrom(const QJsonValue &val);
+	static QJsonValue jsonValFromPixmap(const QPixmap& p);
+	static QPixmap pixmapFrom(const QJsonValue& val);
 
 };

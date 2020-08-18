@@ -2,7 +2,7 @@
 #include <QBuffer>
 #include <QJsonDocument>
 #include <QDebug>
-Serialize::Serialize(QObject*parent)
+Serialize::Serialize(QObject* parent)
 	: QObject(parent)
 {
 	//ui.setupUi(this);
@@ -10,13 +10,13 @@ Serialize::Serialize(QObject*parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password,QString nickname, int type)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type)
 {
 	/*
 
 	Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio è discriminato dal valore di type
 	INPUT:
-	- user: stringa che contiene lo username 
+	- user: stringa che contiene lo username
 	- password: stringa che contiene la password
 	- nickname: stringa he contiene il nickname, questa stringa serve solo durante il sign-up viene ignorata se serializzo un messagio di tipo login
 	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono LOGIN O REGISER(singup)
@@ -25,14 +25,14 @@ QJsonObject Serialize::userSerialize(QString user, QString password,QString nick
 	- una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
 	*/
 	QJsonObject obj;
-	
+
 	obj.insert("type", QJsonValue(type));
-	obj.insert("user",QJsonValue(user));
+	obj.insert("user", QJsonValue(user));
 	obj.insert("password", QJsonValue(password));
 
 	if (type == REGISTER) {
 		//il nickname serve solo in fase di register per salvarlo sul server
-		obj.insert("nickname",QJsonValue(nickname));
+		obj.insert("nickname", QJsonValue(nickname));
 	}
 
 
@@ -57,7 +57,7 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	-->lunghezza 2 se LOGIN:
 		list[0]: username
 		list[1]: password
-	
+
 	-->lunghezza 3 se LOGIN:
 		list[0]: username
 		list[1]: password
@@ -67,15 +67,15 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	QString usr = obj.value("user").toString();
 	QString password = obj.value("password").toString();
 	//QString type = obj.value("type").toString();
-	
+
 	QStringList list;
 	list.append(usr);
 	list.append(password);
-	if (Serialize::actionType(obj)==REGISTER) {
+	if (Serialize::actionType(obj) == REGISTER) {
 		QString nickname = obj.value("nickname").toString();
 		list.append(nickname);
 	}
-	
+
 	return list;
 }
 
@@ -93,7 +93,7 @@ QJsonObject Serialize::fileNameSerialize(QString fileName, int type)
 	*/
 	QJsonObject obj;
 	obj.insert("type", QJsonValue(type));
-	obj.insert("filename",fileName);
+	obj.insert("filename", fileName);
 
 
 	//QJsonDocument doc(obj);
@@ -109,7 +109,7 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 
 	Questa funzione de-serializza i nome del file
 	INPUT:
-	- obj: è un Qjson che contiene tutte le info 
+	- obj: è un Qjson che contiene tutte le info
 
 	RETURN:
 	- una QstringList con il nome del file
@@ -121,7 +121,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 {
 	/*
 
-	Questa funzione serializza i messaggi che vengono generati--> al suo interno sono contenuti il symbolo (lettera) e cosa si deve fare 
+	Questa funzione serializza i messaggi che vengono generati--> al suo interno sono contenuti il symbolo (lettera) e cosa si deve fare
 	ossia insert/delte/style etc--> queste informazioni non sono contunte nel file json ma nel messaggio stesso
 
 	INPUT:
@@ -133,16 +133,23 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	- una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
 	*/
 	QJsonObject obj;
-	
+
 	obj.insert("type", QJsonValue(type));
-
 	int action = message.getAction();//insert, delete ecc.
-	
-	int senderId = message.getSenderId();//id del client o di chi manda
-	
-	obj.insert("action",QJsonValue(action));
-	obj.insert("sender",QJsonValue(senderId));
 
+	int senderId = message.getSenderId();//id del client o di chi manda
+
+	obj.insert("action", QJsonValue(action));
+	obj.insert("sender", QJsonValue(senderId));
+
+	/*-------------------------------------------------------------------------------------------------------------------------------
+	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+	----------------------------------------------------------------------------------------------------------------------------------*/
+	if (message.getCursorPosition() > 0) {
+		obj.insert("cursor_position", QJsonValue( message.getCursorPosition()));
+		return obj;
+	}
 
 	Symbol s = message.getSymbol();
 
@@ -153,7 +160,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	//include di vector e array sono gia in symbol includso in message
 	std::array<int, 2> id = s.getId();
 
-	QJsonArray  Qid = {id[0],id[1]};//id globale
+	QJsonArray  Qid = { id[0],id[1] };//id globale
 
 	obj.insert("globalCharacterId", QJsonValue(Qid));
 
@@ -162,21 +169,21 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	QJsonArray Qvett;
 
 	for (int i : v) {
-		
+
 		Qvett.append(QJsonValue(i));
 	}
 
-	obj.insert("position",QJsonValue(Qvett));
+	obj.insert("position", QJsonValue(Qvett));
 
 
 	//font e colore
 	QFont font = s.getFont();
 	QString serialFont = font.toString();
-	obj.insert("font",QJsonValue(serialFont));
+	obj.insert("font", QJsonValue(serialFont));
 
 	QString color = s.getColor().name();//hex value
 	Qt::AlignmentFlag aligment = s.getAlignment();
-	
+
 	//int red = color.red();
 	//int green = color.green();
 	//int blue = color.blue();
@@ -204,9 +211,24 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	- obj: è un Qjson che contiene tutte le info
 
 	RETURN:
-	- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server 
+	- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
 	vedi Message.h/cpp per specifiche
 	*/
+
+
+	int action = obj.value("action").toInt();
+	int sender = obj.value("sender").toInt();
+
+	/*-------------------------------------------------------------------------------------------------------------------------------
+	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+	----------------------------------------------------------------------------------------------------------------------------------*/
+	if (action == CURSOR) {
+		__int64 cursorPosition = obj.value("cursor_position").toInt();
+		Message m(cursorPosition, action, sender);
+		return m;
+	}
+
 	char c = obj.value("character").toInt();
 
 	std::array<int, 2> a;
@@ -219,7 +241,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	QJsonArray vett_pos = obj.value("position").toArray();
 
 	for (QJsonValue qj : vett_pos) {
-	
+
 		pos.push_back(qj.toInt());
 	}
 
@@ -237,14 +259,12 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	int align = obj.value("alignment").toInt();
 	Qt::AlignmentFlag alignFlag = static_cast<Qt::AlignmentFlag>(align);
 
-	
-	Symbol s(c , a , pos, font, color, alignFlag);
-	
-	int action = obj.value("action").toInt();
 
-	int sender = obj.value("sender").toInt();
-	
-	Message m(s,action,sender);
+	Symbol s(c, a, pos, font, color, alignFlag);
+
+
+
+	Message m(s, action, sender);
 
 	return m;
 }
@@ -273,7 +293,7 @@ QString Serialize::textMessageUnserialize(QJsonObject obj)
 
 //internal useage only----------------------------------------------------------
 
-QJsonValue  Serialize::jsonValFromPixmap(const QPixmap &p) {
+QJsonValue  Serialize::jsonValFromPixmap(const QPixmap& p) {
 	QBuffer buffer;
 	buffer.open(QIODevice::WriteOnly);
 	p.save(&buffer, "PNG");
@@ -281,7 +301,7 @@ QJsonValue  Serialize::jsonValFromPixmap(const QPixmap &p) {
 	return { QLatin1String(encoded) };
 }
 
-QPixmap  Serialize::pixmapFrom(const QJsonValue &val) {
+QPixmap  Serialize::pixmapFrom(const QJsonValue& val) {
 	auto const encoded = val.toString().toLatin1();
 	QPixmap p;
 	p.loadFromData(QByteArray::fromBase64(encoded), "PNG");
@@ -297,7 +317,7 @@ QJsonObject Serialize::imageSerialize(QPixmap img, int type)//DA FINIRE NON SO C
 
 	obj.insert("img", Serialize::jsonValFromPixmap(img));
 
-	
+
 	//QJsonDocument doc(obj);
 	//QString strJson(doc.toJson(QJsonDocument::Compact));
 	//return strJson.append("\r\n");
@@ -314,6 +334,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 	return map;
 }
 //-------------------------------------------------------------------------------
+
 
 QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 {
@@ -336,19 +357,30 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 	obj.insert("message", QJsonValue(message));
 
 
-	//QJsonDocument doc(obj);
-	//QString strJson(doc.toJson(QJsonDocument::Compact));
-	//return strJson.append("\r\n");
-
 	return obj;
 }
 
-int Serialize::responseUnserialize(QJsonObject obj)
+QStringList Serialize::responseUnserialize(QJsonObject obj)
 {
-	return obj.value("res").toInt();
+	/*
+
+	Questa funzione de-serializza la risposta del server
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info sulla risposta data dal server
+
+	RETURN:
+	- una QstringList che di lunghezza 2:
+	list[0]: valore booleano che mi dice OK/ERROR
+	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+	*/
+	QStringList list;
+	list.append(obj.value("res").toString());
+	list.append(obj.value("message").toString());
+
+	return list;
 }
 
-QJsonObject Serialize::ObjectFromString(QString& in)
+QJsonObject Serialize::ObjectFromString(QString& in)//OLD
 {
 	//Ritorna un Qjson a partire dalla stringa ricevuta ed elimina il \n\r
 	QJsonObject obj;
@@ -424,6 +456,22 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 	return vett;
 
 }
+
+//QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)
+//{
+//	QJsonObject obj;
+//
+//	obj.insert("position", position);
+//	obj.insert("userID", userID);
+//	obj.insert("type", QJsonValue(type));
+//
+//	return obj;
+//}
+//
+//CustomCursor Serialize::cursorUnserialize(QJsonObject obj)
+//{
+//	return CustomCursor();
+//}
 
 QByteArray Serialize::fromObjectToArray(QJsonObject obj)
 {

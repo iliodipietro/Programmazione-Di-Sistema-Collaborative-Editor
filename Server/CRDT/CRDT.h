@@ -6,13 +6,18 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <QTimer>
+#include <QObject>
 
 
-
+//define per azioni
 #define INSERT 0
 #define DELETE_S 1
 #define CHANGE 2
 
+
+//altre define
+#define TIMEOUT 10000// dopo quanto tempo il crdt deve essere salvato su file
 
 
 class Message;
@@ -31,8 +36,9 @@ mancano le interazioni con la gui ossia i signal e slot per scatenare le insert.
 la process deve in qualche modo andare a modificare il testo????--> per ora ho solo un intero che dice a quale posizione
 dall'inizio del vettore si trova il carattere interessato
 */
-class CRDT
+class CRDT: public QObject
 {
+	Q_OBJECT
 private:
 
 	int _siteId;
@@ -43,9 +49,11 @@ private:
 	__int64 delete_symbol(Symbol symbol);
 	__int64 change_symbol(Symbol symbol);
 	QString crdt_serialize();
+	std::string path;//path che mi dice dove salvare il file ogni volta che scade il timer
+	QTimer* timer;
 
 public:
-	CRDT(int id);
+	CRDT(int id, std::string path);//vuole l'id e un path su cui si andrà nel caso a salvare il file
 	~CRDT();
 
 	Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
@@ -57,8 +65,12 @@ public:
 	int getId();
 	//SERVER ONLY
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta
-	std::vector<Message> readFromFile(std::string fileName);
-	void saveOnFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
+	std::vector<Message> readFromFile();
+
+	QTimer* getTimer();
+
+public slots:
+	void saveOnFile();//versione base salva solo i caratteri e non il formato--> da testare
 
 
 

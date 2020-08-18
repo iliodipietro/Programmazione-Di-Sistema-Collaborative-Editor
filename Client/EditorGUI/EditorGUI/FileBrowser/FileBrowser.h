@@ -11,6 +11,7 @@
 #include "Editor/Editor.h"
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
+#include "ModifyProfile.h"
 #include "ui_FileBrowser.h"
 
 class FileBrowser : public QMainWindow
@@ -26,6 +27,8 @@ private:
 	std::map<QString, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
+
+	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
 	void closeEvent(QCloseEvent* event);
@@ -33,8 +36,10 @@ private:
 private slots:
 	void on_treeView_doubleClicked(const QModelIndex& index);
 	void on_logoutButton_clicked();
+	void on_modifyProfile_clicked();
 	void on_newFile_Clicked();
 	void editorClosed(QString);
+	void childWindowClosed();
 
 signals:
 	void showParent();

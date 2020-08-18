@@ -49,6 +49,18 @@ void FileBrowser::on_logoutButton_clicked() {
 	this->hide();
 }
 
+void FileBrowser::on_modifyProfile_clicked()
+{
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler,this->username);
+	m_modifyProfile->show();
+	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
+	this->hide();
+}
+
+
+void FileBrowser::childWindowClosed() {
+	this->show();
+}
 void FileBrowser::editorClosed(QString file) {
 	Editor* editor = m_textEditors.find(file)->second;
 	editor->deleteLater();
