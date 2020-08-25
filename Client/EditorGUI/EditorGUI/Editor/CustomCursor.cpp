@@ -28,6 +28,9 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	case CHANGE:
 		updateViewAfterStyleChange(m, index);
 		break;
+	case CURSOR:
+		setCursorPosition(m.getCursorPosition());
+		break;
 	default:
 		break;
 	}

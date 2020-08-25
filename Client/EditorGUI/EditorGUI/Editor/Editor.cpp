@@ -547,11 +547,11 @@ void Editor::on_textEdit_textChanged() {
 
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
-		localDelete();
+		//localDelete();
 	}
 	else {
 		//è una insert
-		localInsert();
+		//localInsert();
 	}
 	//aggiorno
 	this->lastText = m_textEdit->toPlainText();
@@ -971,6 +971,15 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	int size = m_textEdit->font().pointSize();
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
+
+    /*Message m(TC.position(), CURSOR, _CRDT->getId());
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, 0)));
+	QTextCharFormat format = TC.charFormat();
+	int pos = TC.position();
+	char c = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();
+	QColor color = format.foreground().color();
+	Message m2 = _CRDT->localChange(TC.position()-1, c, format.font(), color, this->getAlignementFlag(m_textEdit->alignment()));
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m2, 0)));*/
 }
 
 void Editor::colorChanged(const QColor& c) {
