@@ -436,8 +436,6 @@ void Editor::textStyle(int styleIndex)
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat& format) {
 	QTextCursor cursor = m_textEdit->textCursor();
-	if (!cursor.hasSelection())
-		cursor.select(QTextCursor::WordUnderCursor);
 	cursor.mergeCharFormat(format);
 	m_textEdit->mergeCurrentCharFormat(format);
 }
