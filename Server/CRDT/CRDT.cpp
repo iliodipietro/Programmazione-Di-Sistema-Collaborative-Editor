@@ -18,6 +18,7 @@ CRDT::CRDT(int id, std::string path) :_siteId(id), _counter(0),path(path)
 	this->timer = new QTimer();
 	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
 	timer->start(TIMEOUT);
+	//this->localInsert(0, 'K', QFont(),QColor('red'),Qt::AlignmentFlag());
 }
 
 
