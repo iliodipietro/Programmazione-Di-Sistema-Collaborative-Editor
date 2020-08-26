@@ -19,8 +19,10 @@
 #include <QFile>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
+#include "file.h"
 
 class Serialize;
+class File;
 
 class DBInteraction
 {
@@ -44,8 +46,8 @@ private:
     static DBInteraction* instance;
     QSqlDatabase db;
     QMap<QString, QMap<int, QString>> user_files;
-    QSet<QString> users;
-    QMap<int, QString> files;
+    QMap<QTcpSocket*, int> users;
+    QMap<int, File> files;
 
 };
 

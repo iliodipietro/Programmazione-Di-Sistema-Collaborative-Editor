@@ -224,7 +224,7 @@ QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj){
 
 
 
-QJsonObject Serialize::messageSerialize(Message message, int type)
+QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
 {
 	/*
 
@@ -241,6 +241,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	*/
 	QJsonObject obj;
 
+    obj.insert("fileid", fileId);
 	obj.insert("type", QJsonValue(type));
 	int action = message.getAction();//insert, delete ecc.
 
@@ -309,7 +310,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	return obj;
 }
 
-Message Serialize::messageUnserialize(QJsonObject obj)
+QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 {
 	/*
 
@@ -322,9 +323,14 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	vedi Message.h/cpp per specifiche
 	*/
 
+    int fileid = obj.value("fileid").toInt();
 
 	int action = obj.value("action").toInt();
 	int sender = obj.value("sender").toInt();
+
+   // QPair<int, Message> ret;
+    //ret.first = fileid;
+
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -332,8 +338,12 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	----------------------------------------------------------------------------------------------------------------------------------*/
 	if (action == CURSOR) {
 		__int64 cursorPosition = obj.value("cursor_position").toInt();
-		Message m(cursorPosition, action, sender);
-		return m;
+        Message m(cursorPosition, action, sender);
+        QPair<int, Message> ret(fileid, m);
+
+
+        //ret.second.operator=(m);
+        return  ret;
 	}
 
 	char c = obj.value("character").toInt();
@@ -370,10 +380,11 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	Symbol s(c, a, pos, font, color, alignFlag);
 
 
+    Message m(s, action, sender);
 
-	Message m(s, action, sender);
+    QPair<int, Message> ret(fileid, m);
 
-	return m;
+    return ret;
 }
 
 QJsonObject Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server

@@ -26,6 +26,7 @@ SOURCES += \
         CRDT/Symbol.cpp \
         Serialize/Serialize.cpp \
         dbinteraction.cpp \
+        file.cpp \
         main.cpp \
         myserver.cpp
 
@@ -44,4 +45,5 @@ HEADERS += \
     Serialize/Serialize.h \
     Serialize/define.h \
     dbinteraction.h \
+    file.h \
     myserver.h
