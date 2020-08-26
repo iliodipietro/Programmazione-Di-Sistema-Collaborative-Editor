@@ -10,30 +10,43 @@
 #include <QChar>
 #include <Qdebug>
 
-Editor::Editor(QWidget* parent, QString path, QString username)
-	: QMainWindow(parent)
+#define PADDING 10
+#define	ICONSIZE 30
+#define RADIUS ICONSIZE/2
+
+Editor::Editor(QString path, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))),
+	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false)
 {
 	ui.setupUi(this);
+	m_textEdit = new MyTextEdit(this);
+	ui.gridLayout->addWidget(m_textEdit);
+	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
 	this->parent = parent;
 	this->filePath = path;
-	//ui.textEdit->setText(path);
+	//m_textEdit->setText(path);
 	createActions();
 	this->loadFile(this->filePath);
+	QTextCursor TC = m_textEdit->textCursor();
+	TC.setPosition(0);
+	m_textEdit->setTextCursor(TC);
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
-	connect(ui.textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
-	connect(ui.textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
+	connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
+	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
+	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
+	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
+	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 
-	this->alignmentChanged(this->ui.textEdit->alignment());
-	this->colorChanged(this->ui.textEdit->textColor());
-
-	this->setAttribute(Qt::WA_DeleteOnClose);
+	this->alignmentChanged(this->m_textEdit->alignment());
+	this->colorChanged(this->m_textEdit->textColor());
 
 	//MATTIA--------------------------------------------------------------------------------------
 	//qui vanno fatte tutte le connect che sono in main window a debora??
-	connect(ui.textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
-
+	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
+	connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
 
 
 	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
@@ -46,10 +59,10 @@ Editor::Editor(QWidget* parent, QString path, QString username)
 
 #ifdef Q_OS_MACOS
 	// Use dark text on light background on macOS, also in dark mode.
-	QPalette pal = this->ui.textEdit->palette();
+	QPalette pal = this->m_textEdit->palette();
 	pal.setColor(QPalette::Base, QColor(Qt::white));
 	pal.setColor(QPalette::Text, QColor(Qt::black));
-	this->ui.textEdit->setPalette(pal);
+	this->m_textEdit->setPalette(pal);
 #endif
 }
 
@@ -63,11 +76,12 @@ Editor::~Editor()
 }
 
 void Editor::closeEvent(QCloseEvent* event) {
-	this->parent->show();
+	emit editorClosed(this->filePath);
 	this->close();
 }
 
 void Editor::loadFile(const QString& fileName) {
+	//il file andrà caricato con quello inviato dal server
 	QFile file(fileName);
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
 		QMessageBox::warning(this, tr("Application"),
@@ -80,7 +94,11 @@ void Editor::loadFile(const QString& fileName) {
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 	QString temp = in.readAll();
-	ui.textEdit->setPlainText(temp);
+	m_textEdit->setPlainText(temp);
+	m_timer->setSingleShot(true);
+	m_timer->setInterval(2000);
+	m_timer->start();
+
 	//va fatta la lettura del file per il CRDT
 	//QChar currentChar = textEdit.at
 #ifndef QT_NO_CURSOR
@@ -101,7 +119,7 @@ void Editor::open() {
 
 void Editor::setCurrentFile(const QString& fileName) {
 	this->curFile = fileName;
-	ui.textEdit->document()->setModified(false);
+	m_textEdit->document()->setModified(false);
 	setWindowModified(false);
 
 	QString shownName = curFile;
@@ -111,7 +129,7 @@ void Editor::setCurrentFile(const QString& fileName) {
 }
 
 bool Editor::maybeSave() {
-	if (!ui.textEdit->document()->isModified())
+	if (!m_textEdit->document()->isModified())
 		return true;
 	const QMessageBox::StandardButton ret
 		= QMessageBox::warning(this, tr("Application"),
@@ -182,11 +200,11 @@ void Editor::createActions() {
 #endif
 
 	//const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png"));
-	this->actionUndo = ui.menuModifica->addAction(cutIcon, tr("&Undo"), ui.textEdit, &QTextEdit::undo);
+	this->actionUndo = ui.menuModifica->addAction(cutIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
 	this->actionUndo->setShortcut(QKeySequence::Undo);
 	ui.toolBar->addAction(this->actionUndo);
 
-	this->actionRedo = ui.menuModifica->addAction(cutIcon, tr("&Redo"), ui.textEdit, &QTextEdit::redo);
+	this->actionRedo = ui.menuModifica->addAction(cutIcon, tr("&Redo"), m_textEdit, &QTextEdit::redo);
 	this->actionRedo->setShortcut(QKeySequence::Redo);
 	ui.toolBar->addAction(this->actionRedo);
 
@@ -268,8 +286,8 @@ void Editor::createActions() {
 #ifndef QT_NO_CLIPBOARD
 	cutAct->setEnabled(false);
 	copyAct->setEnabled(false);
-	connect(ui.textEdit, &QTextEdit::copyAvailable, cutAct, &QAction::setEnabled);
-	connect(ui.textEdit, &QTextEdit::copyAvailable, copyAct, &QAction::setEnabled);
+	connect(m_textEdit, &QTextEdit::copyAvailable, cutAct, &QAction::setEnabled);
+	connect(m_textEdit, &QTextEdit::copyAvailable, copyAct, &QAction::setEnabled);
 #endif // !QT_NO_CLIPBOARD
 
 	//const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png"));
@@ -311,6 +329,22 @@ void Editor::createActions() {
 	ui.toolBar->addActions(alignGroup->actions());
 	ui.menuModifica->addActions(alignGroup->actions());
 
+	QWidget* spacer = new QWidget();
+	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	ui.toolBar->addWidget(spacer);
+
+	m_actionShowEditingUsers = new QAction(cutIcon, tr(m_username.toUtf8()), this);
+	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
+	ui.toolBar->addAction(m_actionShowEditingUsers);
+	connect(m_actionShowEditingUsers, &QAction::triggered, this, &Editor::showEditingUsers);
+
+	m_editingUsersList = new QListWidget(this);
+
+	m_editingUsersList->move(QPoint(ui.toolBar->pos().x() + window()->geometry().width() - 160, ui.toolBar->pos().y() + ui.toolBar->geometry().height() + 43));
+	m_editingUsersList->setMinimumWidth(150);
+	m_editingUsersList->setMinimumHeight(100);
+	m_editingUsersList->setIconSize(QSize(ICONSIZE, ICONSIZE));
+	m_editingUsersList->hide();
 }
 
 void Editor::makeItalic() {
@@ -333,7 +367,7 @@ void Editor::makeUnderlined() {
 
 void Editor::textStyle(int styleIndex)
 {
-	QTextCursor cursor = ui.textEdit->textCursor();
+	QTextCursor cursor = m_textEdit->textCursor();
 	QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
 
 	switch (styleIndex) {
@@ -381,7 +415,7 @@ void Editor::textStyle(int styleIndex)
 		fmt.setProperty(QTextFormat::FontSizeAdjustment, sizeAdjustment);
 		cursor.select(QTextCursor::LineUnderCursor);
 		cursor.mergeCharFormat(fmt);
-		ui.textEdit->mergeCurrentCharFormat(fmt);
+		m_textEdit->mergeCurrentCharFormat(fmt);
 	}
 	else {
 		QTextListFormat listFmt;
@@ -401,11 +435,9 @@ void Editor::textStyle(int styleIndex)
 }
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat& format) {
-	QTextCursor cursor = ui.textEdit->textCursor();
-	if (!cursor.hasSelection())
-		cursor.select(QTextCursor::WordUnderCursor);
+	QTextCursor cursor = m_textEdit->textCursor();
 	cursor.mergeCharFormat(format);
-	ui.textEdit->mergeCurrentCharFormat(format);
+	m_textEdit->mergeCurrentCharFormat(format);
 }
 
 void Editor::textSize(const QString& p) {
@@ -415,6 +447,9 @@ void Editor::textSize(const QString& p) {
 		fmt.setFontPointSize(pointSize);
 		this->mergeFormatOnWordOrSelection(fmt);
 	}
+	QTextCursor TC = m_textEdit->textCursor();
+	m_textEdit->updateTextSize();
+	m_textEdit->setTextCursor(TC);
 }
 
 void Editor::textFamily(const QString& f) {
@@ -427,11 +462,11 @@ void Editor::filePrint() {
 #if QT_CONFIG(printdialog)
 	QPrinter printer(QPrinter::HighResolution);
 	QPrintDialog* dlg = new QPrintDialog(&printer, this);
-	if (ui.textEdit->textCursor().hasSelection())
+	if (m_textEdit->textCursor().hasSelection())
 		dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
 	dlg->setWindowTitle(tr("Print Document"));
 	if (dlg->exec() == QDialog::Accepted)
-		ui.textEdit->print(&printer);
+		m_textEdit->print(&printer);
 	delete dlg;
 #endif
 }
@@ -449,7 +484,7 @@ void Editor::printPreview(QPrinter* printer) {
 #ifdef QT_NO_PRINTER
 	Q_UNUSED(printer);
 #else
-	ui.textEdit->print(printer);
+	m_textEdit->print(printer);
 #endif
 }
 
@@ -466,7 +501,7 @@ void Editor::filePrintPdf() {
 	QPrinter printer(QPrinter::HighResolution);
 	printer.setOutputFormat(QPrinter::PdfFormat);
 	printer.setOutputFileName(fileName);
-	ui.textEdit->document()->print(&printer);
+	m_textEdit->document()->print(&printer);
 	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 	//! [0]
 #endif
@@ -478,15 +513,15 @@ void Editor::on_textEdit_textChanged() {
 
 
 
-	//QTextCursor TC = ui.textEdit->textCursor();
-	//QString temp = ui.textEdit->toPlainText();
+	//QTextCursor TC = m_textEdit->textCursor();
+	//QString temp = m_textEdit->toPlainText();
 	//int pos = TC.position();
 	//char chr;
 	//
 	//if(TC.position()==0)
-	//	chr = ui.textEdit->toPlainText().at(TC.position()).toLatin1();
+	//	chr = m_textEdit->toPlainText().at(TC.position()).toLatin1();
 	//else
-	//	chr = ui.textEdit->toPlainText().at(TC.position()-1).toLatin1();
+	//	chr = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();
 	//FormatStructure FS;
 	//FS.isUnderlined = TC.charFormat().fontUnderline();
 	//FS.isItalic = TC.charFormat().fontItalic();
@@ -500,30 +535,30 @@ void Editor::on_textEdit_textChanged() {
 	if (this->remoteEvent)
 		return;
 
-	
-	QTextCursor TC = ui.textEdit->textCursor();
+
+	QTextCursor TC = m_textEdit->textCursor();
 	//DEBUG
 	int curr = TC.position();
 	int last = this->lastCursor;
-	if (this->lastText.compare(this->ui.textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
+	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
 		this->localStyleChange();
 
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
-		localDelete();
+		//localDelete();
 	}
 	else {
 		//è una insert
-		localInsert();
+		//localInsert();
 	}
 	//aggiorno
-	this->lastText = ui.textEdit->toPlainText();
+	this->lastText = m_textEdit->toPlainText();
 	this->lastCursor = TC.position();
 }
 
 
 void Editor::localInsert() {
-	QTextCursor TC = ui.textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 	int li = TC.anchor();
 
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
@@ -533,51 +568,59 @@ void Editor::localInsert() {
 
 		int pos = i;
 
-		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
+		char chr = m_textEdit->toPlainText().at(pos).toLatin1();
 
 		std::vector<Message> vett;
 		//debug purposes
-		//if (chr == '§') {
-		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-		//	for (auto v : vett) {
-		//		this->remoteAction(v);
-		//		std::cout << "inserito" << std::endl;
-		//	}
-		//	std::cout << "FINE" << std::endl;
-		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-		//	return;
-		//}
+		if (chr == '§') {
+			vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+
+			QByteArray arr = Serialize::fromObjectToArray( Serialize::messageSerialize(vett[0], INSERT));
+
+			qint64 len = arr.size();
+
+			for (auto v : vett) {
+				this->remoteAction(v);
+				std::cout << "inseriton" << std::endl;
+			}
+			std::cout << "FINE" << std::endl;
+			//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+			return;
+		}
 
 		QTextCharFormat format = TC.charFormat();
 		QFont font = format.font();
 		QColor color = format.foreground().color();
-        Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
+		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 
-        Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
+		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
+		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 
-		//send to socket-->emit qualcosa
-
+		//std::string prova = m.getSymbol().getFont().toString().toStdString();
+		//std::cout << "prova" << std::endl;
 	}
 }
 
 void Editor::localDelete() {
-	QTextCursor TC = ui.textEdit->textCursor();
-	
+	QTextCursor TC = m_textEdit->textCursor();
+
 	int start, end;
-	if (this->lastStart!=0 && this->lastEnd!=0) {
+	if (this->lastStart != 0 && this->lastEnd != 0) {
 
 		start = this->lastStart;
 		end = this->lastEnd;
 	}
 	else {
 		start = TC.position();
-		end = lastCursor; 
+		end = lastCursor;
 	}
 
 
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
-		//send to socketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
 
 	//this->lastStart = 0;
@@ -596,7 +639,7 @@ void Editor::localDelete() {
 //
 //void Editor::deleteDxSx() {
 //
-//	QTextCursor TC = ui.textEdit->textCursor();
+//	QTextCursor TC = m_textEdit->textCursor();
 //	int start = this->lastStart;
 //	int end = this->lastEnd;
 //	for (int i = end; i > start; i--) {
@@ -620,23 +663,44 @@ void Editor::remoteAction(Message m)
 	-- iff this<last
 	solo se sto inserendo ad un indice inferiore a quello a cui sto srivendo poiche avrò un char in meno o in piu
 	-----------------------------------------------------------------------------------------*/
-	switch (m.getAction())
-	{
+	//switch (m.getAction()) {
+	//case INSERT:
+	//	updateViewAfterInsert(m, index);
+	//	maybeincrement(index);
+	//	break;
+	//case DELETE_S:
+	//	updateViewAfterDelete(m, index);
+	//	maybedecrement(index);
+	//	break;
+	//case CHANGE:
+	//	updateViewAfterStyleChange(m, index);
+	//	break;
+	//default:
+	//	break;
+	//}
+	QTextCursor TC = m_textEdit->textCursor();
+	int pos = TC.position();
+	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
+	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	TC.setPosition(pos);
+	m_textEdit->setTextCursor(TC);
+
+	switch (m.getAction()) {
 	case INSERT:
-		updateViewAfterInsert(m, index);
 		maybeincrement(index);
 		break;
-	case DELETE:
-		updateViewAfterDelete(m, index);
+	case DELETE_S:
 		maybedecrement(index);
-		break;
-	case CHANGE:
-		updateViewAfterStyleChange(m, index);
 		break;
 	default:
 		break;
 	}
-	this->lastText = ui.textEdit->toPlainText();
+
+	this->lastText = m_textEdit->toPlainText();
+	//Augusto: bisogna aggiungere anche la condizione se si riceve un'immagine dal server ed una per i messaggi 
+	//dei cursori degli altri client
+
 	this->remoteEvent = false;
 }
 
@@ -656,12 +720,12 @@ void Editor::maybedecrement(__int64 index)
 
 void Editor::updateLastPosition()
 {
-	QTextCursor TC = ui.textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 	if (TC.hasSelection()) {
 
 		lastStart = TC.selectionStart();
 		lastEnd = TC.selectionEnd();
-	
+
 	}
 	else
 	{
@@ -672,7 +736,7 @@ void Editor::updateLastPosition()
 	if (this->remoteEvent)
 		return;
 
-	if (this->lastText.compare(this->ui.textEdit->toPlainText()))//aggiorno  il cursore solo se non è delete or insert
+	if (this->lastText.compare(this->m_textEdit->toPlainText()))//aggiorno  il cursore solo se non è delete or insert
 		return;
 
 
@@ -685,9 +749,9 @@ void Editor::updateLastPosition()
 
 void Editor::updateViewAfterInsert(Message m, __int64 index)
 {
-	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	//retrieving remote state
-	QChar chr (m.getSymbol().getChar());
+	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -696,57 +760,60 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 	/// conviene usare la Qchartextedit--> vedi nota vocale su telegram a me stesso
 	//o vedere changeViewAfterInsert in mainwindow.cpp debora
 
-	QTextCursor TC = ui.textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 	// saving current state
-	//QFont font = ui.textEdit->currentFont();
-	//QColor color = ui.textEdit->textColor();
+	//QFont font = m_textEdit->currentFont();
+	//QColor color = m_textEdit->textColor();
 
 	//colore del char che arriva
 	QTextCharFormat format;
 	format.setFont(r_font);
 	format.setForeground(r_color);
-	//ui.textEdit->setFont(r_font);
-	//ui.textEdit->setTextColor(r_color);
+	//m_textEdit->setFont(r_font);
+	//m_textEdit->setTextColor(r_color);
 
 	TC.setPosition(index);
-	TC.insertText(chr,format);
+	TC.insertText(chr, format);
 
 	QTextBlockFormat blockFormat = TC.blockFormat();
 	blockFormat.setAlignment(alignment);
-	
+
 	TC.mergeBlockFormat(blockFormat);
-	
+
 
 	//ripristino
 	TC.setPosition(this->lastCursor);
-	//ui.textEdit->setFont(font);
-	//ui.textEdit->setTextColor(color);
-	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	//m_textEdit->setFont(font);
+	//m_textEdit->setTextColor(color);
+	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
 void Editor::updateViewAfterDelete(Message m, __int64 index)
 {
-	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
-	QTextCursor TC = ui.textEdit->textCursor();
+	if (index == -1)
+		return;//non devo fare niente in questo caso ho provato ad eliminare ma non ho trovato il carattere-->MADARE ERROR, ECCEZIONE??????
+
+	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	QTextCursor TC = m_textEdit->textCursor();
 	TC.setPosition(index);
 	TC.deleteChar();
 	//TC.deletePreviousChar();//oppure è questo se il primo non funziona
 	TC.setPosition(this->lastCursor);
-	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
 void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 {
-	disconnect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
-	QTextCursor TC = ui.textEdit->textCursor();
+	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	QTextCursor TC = m_textEdit->textCursor();
 	TC.setPosition(index);
+	TC.deleteChar();
 
-
-	
+	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
-	
+
 	//change color, font and style in general
 	QTextCharFormat format;
 	format.setFont(r_font);
@@ -758,11 +825,11 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	blockFormat.setAlignment(alignment);
 
 	TC.mergeBlockFormat(blockFormat);
-
+	TC.insertText(chr, format);
 
 	TC.setPosition(this->lastCursor);
-	
-	connect(ui.textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+
+	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
 void Editor::localStyleChange()
@@ -771,17 +838,17 @@ void Editor::localStyleChange()
 
 	start = this->lastStart;
 	end = this->lastEnd;
-	QTextCursor TC = ui.textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 
 
 	for (int i = end; i > start; i--) {
 		int pos = i - 1;
-		TC.setPosition(pos+1);
+		TC.setPosition(pos + 1);
 		QTextCharFormat format = TC.charFormat();
-		char chr = ui.textEdit->toPlainText().at(pos).toLatin1();
+		char chr = m_textEdit->toPlainText().at(pos).toLatin1();
 		QFont font = format.font();
 		QColor color = format.foreground().color();
-		Qt::AlignmentFlag alignment = this->getAlignementFlag(ui.textEdit->alignment());
+		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 		Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
 	}
 
@@ -819,26 +886,28 @@ void Editor::insertImage() {
 	if (url != "") {
 		QUrl uri(url);
 		QPixmap image(url);
-		QTextDocument* textDocument = ui.textEdit->document();
+		QTextDocument* textDocument = m_textEdit->document();
 		textDocument->addResource(QTextDocument::ImageResource, uri, QVariant(image));
-		QTextCursor cursor = ui.textEdit->textCursor();
+		QTextCursor cursor = m_textEdit->textCursor();
 		QTextImageFormat imageFormat;
 		imageFormat.setWidth(image.width());
 		imageFormat.setHeight(image.height());
 		imageFormat.setName(uri.toString());
 		cursor.insertImage(imageFormat);
+		QJsonObject imageSerialized = Serialize::imageSerialize(image, 2);
+		//serve un messaggio che abbia anche la posizione del cursore per l'immagine, oltre che il ridimensionamento
 	}
 }
 
 void Editor::textAlign(QAction* a) {
 	if (a == actionAlignLeft)
-		this->ui.textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+		this->m_textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
 	else if (a == actionAlignCenter)
-		this->ui.textEdit->setAlignment(Qt::AlignHCenter);
+		this->m_textEdit->setAlignment(Qt::AlignHCenter);
 	else if (a == actionAlignRight)
-		this->ui.textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+		this->m_textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
 	else if (a == actionAlignJustify)
-		this->ui.textEdit->setAlignment(Qt::AlignJustify);
+		this->m_textEdit->setAlignment(Qt::AlignJustify);
 }
 
 void Editor::alignmentChanged(Qt::Alignment a) {
@@ -853,8 +922,8 @@ void Editor::alignmentChanged(Qt::Alignment a) {
 }
 
 void Editor::on_textEdit_cursorPositionChanged() {
-	this->alignmentChanged(ui.textEdit->alignment());
-	QTextCursor TC = ui.textEdit->textCursor();
+	this->alignmentChanged(m_textEdit->alignment());
+	QTextCursor TC = m_textEdit->textCursor();
 	QTextList* list = TC.currentList();
 	if (list) {
 		switch (list->format().style()) {
@@ -888,21 +957,30 @@ void Editor::on_textEdit_cursorPositionChanged() {
 		}
 	}
 	else {
-		int headingLevel = this->ui.textEdit->textCursor().blockFormat().headingLevel();
+		int headingLevel = this->m_textEdit->textCursor().blockFormat().headingLevel();
 		this->comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
 	}
-	
-	this->comboFont->setCurrentFont(ui.textEdit->currentFont());
+
+	this->comboFont->setCurrentFont(m_textEdit->currentFont());
 	QPixmap pix(16, 16);
-	pix.fill(ui.textEdit->textColor());
+	pix.fill(m_textEdit->textColor());
 	this->actionTextColor->setIcon(pix);
 	const QList<int> standardSizes = QFontDatabase::standardSizes();
-	int size = ui.textEdit->font().pointSize();
+	int size = m_textEdit->font().pointSize();
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
+
+    /*Message m(TC.position(), CURSOR, _CRDT->getId());
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, 0)));
+	QTextCharFormat format = TC.charFormat();
+	int pos = TC.position();
+	char c = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();
+	QColor color = format.foreground().color();
+	Message m2 = _CRDT->localChange(TC.position()-1, c, format.font(), color, this->getAlignementFlag(m_textEdit->alignment()));
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m2, 0)));*/
 }
 
-void Editor::colorChanged(const QColor& c){
+void Editor::colorChanged(const QColor& c) {
 	QPixmap pix(16, 16);
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
@@ -910,7 +988,7 @@ void Editor::colorChanged(const QColor& c){
 
 void Editor::textColor()
 {
-	QColor col = QColorDialog::getColor(ui.textEdit->textColor(), this);
+	QColor col = QColorDialog::getColor(m_textEdit->textColor(), this);
 	if (!col.isValid())
 		return;
 	QTextCharFormat fmt;
@@ -929,4 +1007,77 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 	else return Qt::AlignJustify;
 }
 
+void Editor::messageReceived(QJsonObject packet) {
+	QTextCursor TC = m_textEdit->textCursor();
+	int pos = TC.position();
+	Message m = Serialize::messageUnserialize(packet);
+	remoteAction(m);
+	TC.setPosition(pos);
+	m_textEdit->setTextCursor(TC);
+}
 
+void Editor::writeText() {
+	QTextCursor TC = m_textEdit->textCursor();
+	int pos = TC.position();
+	addEditingUser(0, "prova", Qt::blue);
+	m_textEdit->setCursorPosition(0, 10);
+	m_textEdit->insertText(0, QString("ciao"));
+	TC.setPosition(pos);
+	m_textEdit->setTextCursor(TC);
+}
+
+void Editor::addEditingUser(int id, QString username, QColor userColor) { //da usare ogni volta che un nuove utente accede al file
+	m_textEdit->addCursor(id, userColor, username, 0);
+	m_editingUsers.push_back(username);
+
+	QPixmap pm(ICONSIZE, ICONSIZE);
+	pm.fill(Qt::white);
+	QPainter p(&pm);
+	p.setRenderHint(QPainter::Antialiasing, true);
+	QPen pen(userColor, 2);
+	p.setPen(pen);
+	QBrush brush(userColor);
+	p.setBrush(brush);
+	p.drawEllipse(10, 7, RADIUS, RADIUS);
+	QIcon userColorIcon(pm);
+	QListWidgetItem* lwi = new QListWidgetItem(userColorIcon, tr(username.toUtf8()), m_editingUsersList);
+	lwi->setTextAlignment(Qt::AlignCenter);
+	lwi->setSizeHint(QSize(100, 50));
+	lwi->setFlags(lwi->flags() & ~Qt::ItemIsSelectable);
+	QFont lwiFont = lwi->font();
+	lwiFont.setPointSize(lwiFont.pointSize() + 3);
+	lwi->setFont(lwiFont);
+}
+
+void Editor::removeEditingUser(int id, QString username) {
+	m_textEdit->removeCursor(id);
+	auto it = m_editingUsers.begin();
+	for (it; it != m_editingUsers.end(); it++) {
+		if (it->compare(username)) {
+			m_editingUsers.erase(it);
+			break;
+		}
+	}
+
+	QList<QListWidgetItem*> lwi = m_editingUsersList->findItems(username, Qt::MatchExactly);
+	m_editingUsersList->removeItemWidget(lwi.at(0));
+}
+
+void Editor::showEditingUsers() {
+	m_showingEditingUsers = true;
+	m_editingUsersList->show();
+}
+
+void Editor::mousePressEvent(QMouseEvent* e) {
+	if (m_showingEditingUsers) {
+		m_editingUsersList->hide();
+		m_showingEditingUsers = false;
+	}
+}
+
+void Editor::clickOnTextEdit() {
+	if (m_showingEditingUsers) {
+		m_editingUsersList->hide();
+		m_showingEditingUsers = false;
+	}
+}

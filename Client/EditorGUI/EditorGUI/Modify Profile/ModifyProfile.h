@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QWidget>
+#include "ui_ModifyProfile.h"
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QRubberBand>
@@ -7,21 +9,21 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QMessageBox>
-#include "ui_NewAccount.h"
 #include "SocketHandler/SocketHandler.h"
+#include "Serialization/Serialize.h"
 
-class NewAccount : public QMainWindow
+class ModifyProfile : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent = Q_NULLPTR);
-	~NewAccount();
+	ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent = Q_NULLPTR);
+	~ModifyProfile();
 
 private:
+	Ui::ModifyProfile ui;
 	QSharedPointer<SocketHandler> m_socketHandler;
 	QTimer* m_timer;
-	Ui::NewAccount ui;
 	QPixmap* m_croppedImage;
 	QPixmap* m_selectedImage;
 	QPixmap* m_resizedImage;
@@ -31,6 +33,7 @@ private:
 	QPoint myPoint;
 	QRect newSelection;
 	QSize m_originalSize;
+	QString username;
 
 	void closeEvent(QCloseEvent* event);
 

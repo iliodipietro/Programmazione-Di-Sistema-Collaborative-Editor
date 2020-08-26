@@ -1,44 +1,72 @@
 #include "FileBrowser.h"
 
-FileBrowser::FileBrowser(QWidget *parent, QString username)
-	: QMainWindow(parent)
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler)
 {
 	ui.setupUi(this);
 	ui.usernameLabel->setText(username);
 	this->username = username;
-	this->textEditor = Q_NULLPTR;
 	model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));
-	this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 FileBrowser::~FileBrowser()
 {
-	
 }
 
 void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
-	/*if (this->textEditor != Q_NULLPTR) {
-		delete this->textEditor;
-		this->textEditor = Q_NULLPTR;
-	}*/
-	
 	QString path = this->model.filePath(index);
-
-	this->textEditor = new Editor(this, path, this->username);
-	textEditor->show();
-	this->hide();
+	auto it = m_textEditors.find(path);
+	Editor* editor;
+	if (it == m_textEditors.end()) {
+		editor = new Editor(path, "prova");
+		m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
+		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
+		editor->show();
+	}
+	else {
+		editor = it->second;
+		editor->raise();
+	}
+	
 }
 
-void FileBrowser::closeEvent(QCloseEvent* event)
-{
+void FileBrowser::on_newFile_Clicked() {
+	auto model = ui.treeView->model();
+	QModelIndex parent = model->index(0, 0);
+	model->insertRow(0, parent);
+	model->setData(model->index(0, 0, parent), QString("Child Item"));
+	ui.treeView->setModel(model);
+}
+
+void FileBrowser::closeEvent(QCloseEvent* event){
 	qApp->quit();
 }
 
 void FileBrowser::on_logoutButton_clicked() {
-	//aggiungere 
-	QProcess process;
-	process.startDetached("EditorGUI.exe", QStringList());
-	qApp->quit();
+	emit showParent();
+	this->hide();
+}
+
+void FileBrowser::on_modifyProfile_clicked()
+{
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler,this->username);
+	m_modifyProfile->show();
+	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
+	this->hide();
+}
+
+
+void FileBrowser::childWindowClosed() {
+	this->show();
+}
+void FileBrowser::editorClosed(QString file) {
+	Editor* editor = m_textEditors.find(file)->second;
+	editor->deleteLater();
+	m_textEditors.erase(file);
+}
+
+void FileBrowser::mousePressEvent(QMouseEvent* event) {
+	show();
 }

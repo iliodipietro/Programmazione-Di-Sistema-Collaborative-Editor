@@ -54,7 +54,25 @@
     <ClCompile Include="NewAccount\NewAccount.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SocketHandler\SocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketHandler\SocketMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Serialization\Serialize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\CustomCursor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\MyTextEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,7 +89,25 @@
     <QtMoc Include="NewAccount\NewAccount.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="SocketHandler\SocketHandler.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SocketHandler\SocketMessage.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
     <QtMoc Include="Serialization\Serialize.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Modify Profile\ModifyProfile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Modify Profile\ModifyProfile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\CustomCursor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -91,6 +127,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="NewAccount\NewAccount.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Modify Profile\ModifyProfile.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -116,7 +155,13 @@
     <ClInclude Include="CRDT\Message.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Structures\MessageTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Serialization\define.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRDT\MessageType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

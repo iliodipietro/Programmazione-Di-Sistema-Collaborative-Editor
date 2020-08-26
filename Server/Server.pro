@@ -24,6 +24,8 @@ SOURCES += \
         CRDT/CRDT.cpp \
         CRDT/Message.cpp \
         CRDT/Symbol.cpp \
+        Client/Client.cpp \
+        RunnableTask/runnabletask.cpp \
         Serialize/Serialize.cpp \
         dbinteraction.cpp \
         main.cpp \
@@ -38,6 +40,9 @@ HEADERS += \
     CRDT/CRDT.h \
     CRDT/Message.h \
     CRDT/Symbol.h \
+    Client/Client.h \
+    ConnectionManager/connectionmanager.h \
+    RunnableTask/runnabletask.h \
     Serialize/Serialize.h \
     Serialize/define.h \
     dbinteraction.h \

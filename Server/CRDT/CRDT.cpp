@@ -13,8 +13,12 @@ il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anc
 
 */
 
-CRDT::CRDT(int id):_siteId(id),_counter(0)
+CRDT::CRDT(int id, std::string path) :_siteId(id), _counter(0),path(path)
 {
+	this->timer = new QTimer();
+	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
+	timer->start(TIMEOUT);
+	//this->localInsert(0, 'K', QFont(),QColor('red'),Qt::AlignmentFlag());
 }
 
 
@@ -73,23 +77,31 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
 
 	if (it != _symbols.end()) {
+
+
+		if (it == _symbols.begin()) {
+			index = 0;
+		}
+		else {
+
+			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+		   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+		   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+		}
+
 		//vuol dire che l'ho trovato
 		_symbols.erase(it);
-
-		index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-       //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
-	   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
 
 		return index;
 	}
 
-	return -1 ;
+	return -1;
 }
 __int64 CRDT::change_symbol(Symbol symbol) {
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos())); });
 
 	if (it != _symbols.end()) {
 		//vuol dire che l'ho trovato
@@ -107,7 +119,7 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 
 }
 
-__int64 CRDT::process(const Message & m)
+__int64 CRDT::process(const Message& m)
 {
 	__int64 index = 0;
 
@@ -145,7 +157,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 	//se è vuoto ha pos 0
 	if (_symbols.empty()) {
 		pos.push_back(0);
-        Symbol s(value, a = { this->_siteId,_counter++ }, pos, font,color,alignment);
+		Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 		_symbols.push_back(s);
 
 		//mando il messaggio
@@ -158,7 +170,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 		pos.push_back(tmp - 1);
 
 
-        Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color,alignment);
+		Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 		_symbols.insert(_symbols.begin() + index, s);
 
 		//mando il messaggio
@@ -196,7 +208,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 			//pos.push_back(1);//O(1)
 		}
 
-        Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color,alignment);
+		Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 		_symbols.insert(_symbols.begin() + index, s);
 
 
@@ -211,12 +223,12 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 		if ((unsigned)index == _symbols.size()) {
 			//inserisco in coda
 			pos.push_back(index);
-            Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color,alignment);
+			Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 			_symbols.push_back(s);
 			//mando il messaggio
 			Message m(s, INSERT, this->_siteId);
 
-            QTextStream(stdout) << font.toString() << endl;
+			QTextStream(stdout) << font.toString() << endl;
 
 			return m;
 
@@ -276,8 +288,8 @@ std::vector<Message> CRDT::getMessageArray()
 {
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
-	
-		Message m(s,INSERT,0);//il server ha id 0
+
+		Message m(s, INSERT, 0);//il server ha id 0
 		msgs.push_back(m);
 	}
 
@@ -288,6 +300,7 @@ std::vector<Message> CRDT::getMessageArray()
 
 
 // SERVER ONLYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//serve a leggere i caratteri salvati come stringa con formato json su file.
 QJsonObject ObjectFromString(const QString& in)
 {
 	QJsonObject obj;
@@ -313,14 +326,14 @@ QJsonObject ObjectFromString(const QString& in)
 
 	return obj;
 }
-std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
+std::vector<Message> CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
-	std::ifstream iFile(fileName);
+	std::ifstream iFile(this->path);
 	std::vector<Symbol> local_symbols;
-	if (iFile.is_open())
+	if (iFile.is_open())// se non riesco ad aprire il file vuol dire che è un file nuovo e che quindi ancpra va creato--> cio viene fatto nel primo save
 	{
 		std::string line;
-		
+
 
 		while (getline(iFile, line))
 		{
@@ -358,36 +371,41 @@ std::vector<Message> CRDT::readFromFile(std::string fileName)//NON USARE ANCORA 
 
 			Symbol s(c, a, pos, font, color, alignFlag);
 
-			
+
 			this->_symbols.push_back(s);
 
 			//per fare prove
 			//local_symbols.push_back(s);
-			}
+		}
 
 
 		iFile.close();
 		std::vector<Message> local_m;
 		//prima carico tutto e poi inizio a mandare i messaggi
-		for (auto symb : local_symbols) {
+		for (auto symb : this->_symbols) {
 
-			Message m(symb, INSERT, 0);//L'ID del server è 0 sempre
+			Message m(symb, CHANGE, 0);//L'ID del server è 0 sempre
 			local_m.push_back(m);
-			
+
 			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 		}
 		return local_m;
 	}
 }
 
+QTimer* CRDT::getTimer()
+{
+	return this->timer;
+}
+
 
 
 QString CRDT::crdt_serialize()
 {
-	QString text = ""; 
+	QString text = "";
 
 	for (auto s : this->_symbols) {
-		
+
 		QJsonObject obj;
 
 
@@ -440,26 +458,30 @@ QString CRDT::crdt_serialize()
 	}
 	return text;
 }
-void CRDT::saveOnFile(std::string filename)
+void CRDT::saveOnFile()
 {
-	
-	QString serialized_text = this->crdt_serialize();
+	if (this->_symbols.size() > 0) {
 
-	std::ofstream oFile(filename, std::ios_base::out | std::ios_base::trunc);
-	if (oFile.is_open())
-	{
+		QString serialized_text = this->crdt_serialize();
 
-		//std::string text = this->to_string();
+		std::ofstream oFile(this->path, std::ios_base::out | std::ios_base::trunc);
+		if (oFile.is_open())
 		{
-			//oFile << text;
-			oFile << serialized_text.toStdString();
+
+			//std::string text = this->to_string();
+			{
+				//oFile << text;
+				oFile << serialized_text.toStdString();
+			}
+			oFile.close();
 		}
-		oFile.close();
-	}
-	else {
-		std::cout << "Errore apertura file";
+		else {
+			std::cout << "Errore apertura file";
+		}
+
 	}
 
+	this->timer->start(TIMEOUT);
 }
 
 

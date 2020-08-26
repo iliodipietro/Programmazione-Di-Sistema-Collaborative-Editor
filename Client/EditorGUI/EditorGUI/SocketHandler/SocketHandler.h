@@ -6,26 +6,31 @@
 #include <QCloseEvent>
 #include <QSharedPointer>
 #include "SocketMessage.h"
+#include "Serialization/Serialize.h"
 
 class SocketHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit SocketHandler(QObject *parent = nullptr);
+    SocketHandler(QObject *parent = Q_NULLPTR);
 
     bool connectToServer();
-    bool writeData(SocketMessage data);
+    bool writeData(SocketMessage& data);
+    bool writeData(QByteArray& data);
+    QString writeDataAndWaitForResponse(QString data);
+
+    QAbstractSocket::SocketState getSocketState();
 
 private:
+    QSharedPointer<QByteArray> m_previousPacket;
     QSharedPointer<QTcpSocket> m_tcpSocket;
-    QSharedPointer<QNetworkSession> m_networkSession;
 
     void closeEvent(QCloseEvent* event);
     QByteArray intToArray(qint32 source);
     qint64 arrayToInt(QByteArray source);
 
 signals:
-    void dataReceived(QSharedPointer<SocketMessage>);
+    void dataReceived(QJsonObject);
 
 public slots:
 

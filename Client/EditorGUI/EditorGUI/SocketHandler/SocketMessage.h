@@ -1,11 +1,10 @@
 #pragma once
-
 #include <QObject>
 #include <QIODevice>
 #include <QDataStream>
 #include <QSharedPointer>
 
-enum MessageTypes{Insert, Delete, Login, Logout, NewUser};
+#include "Structures/MessageTypes.h"
 
 class SocketMessage : public QObject{
     Q_OBJECT
@@ -19,10 +18,13 @@ private:
     qint32 arrayToInt(QByteArray source);
 
 public:
+
     SocketMessage(MessageTypes messageType, QByteArray message):
         m_messageType(messageType), m_message(message){}
 
-    static QSharedPointer<SocketMessage> deserializeMessage(QByteArray message);
+    SocketMessage(QByteArray message);
+
+    //static QSharedPointer<SocketMessage> deserializeMessage(QByteArray message);
 
     QByteArray serializeMessage();
 };
