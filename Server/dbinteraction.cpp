@@ -53,6 +53,7 @@ DBInteraction* DBInteraction::startDBConnection(){
                     QSqlQuery query1, query2;
                     query1.prepare("CREATE TABLE users ("
                                   "Username VARCHAR(255) primary key, "
+                                  "UserId   INT          NOT NULL,"
                                   "Password VARCHAR(255) NOT NULL,"
                                   "Salt     VARCHAR(255) );");
 
@@ -127,6 +128,7 @@ void DBInteraction::registration(QString username, QString password, QTcpSocket 
     QByteArray response;
     QString message;
     int cnt = 0;
+    int userid = 0;
 
     query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
     query.bindValue(":username", username); // no matching member function for call to 'bindValue' --> risolto con #incliude <QVariant>
@@ -149,8 +151,18 @@ void DBInteraction::registration(QString username, QString password, QTcpSocket 
             hashed_pwd = QString(QCryptographicHash::hash(salted_pwd, QCryptographicHash::Sha256));
             qDebug()<<"new password: "<< hashed_pwd<<"\n";
 
-            query.prepare("INSERT INTO users(username, password, salt), VALUES ((:username), (:hashed_pwd), (:salt))");
+            QSqlQuery query2;
+            query2.prepare("SELECT COUNT(UserId) FROM users"); //l'id dell'utente è un intero crescente
+            if(query2.exec()){
+                if(query2.next()){
+                    userid = query2.value(0).toInt();
+                }
+            }
+            qDebug()<<"userid: "<< userid<<"\n";
+
+            query.prepare("INSERT INTO users(username, userid, password, salt), VALUES ((:username),(:userid), (:hashed_pwd), (:salt))");
             query.bindValue(":username", username);
+            query.bindValue(":userid", userid);
             query.bindValue(":password", hashed_pwd);
             query.bindValue(":salt", salt);
 
@@ -196,6 +208,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     QString message;
     QJsonArray files; // la lista è vuota?
     int cnt = 0;
+    int userid;
     bool err = false;
 
     query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
@@ -208,7 +221,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
         if(cnt == 1){
             QSqlQuery query;
             qDebug()<<"checking password...\n";
-            query.prepare("SELECT Password, Salt FROM users WHERE Username = (:username)");
+            query.prepare("SELECT Password, UserId, Salt FROM users WHERE Username = (:username)");
             query.bindValue(":username", username);
             if (query.exec()) {
 
@@ -220,7 +233,9 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
 
                     if(hashed_pwd.compare(QString(query.value("Password").toString()))){
                         //success
-                        users.insert(username);
+                        userid = query.value("UserId").toInt();
+
+                        users.insert(socket, userid);
                         QSqlQuery query2;
                         query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
                         query2.bindValue(":username", username);
