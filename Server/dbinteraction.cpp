@@ -17,30 +17,72 @@ DBInteraction::DBInteraction(){
 }
 
 DBInteraction* DBInteraction::startDBConnection(){
+    bool err = false;
+    QString path = "C:/Users/Ilio/Desktop/Progetto_Malnati_git/project.sqlite"; //project.db";scegliere path in cui salvare il DB
 
     if(!instance){
         instance = new DBInteraction();
         const QString DRIVER("QSQLITE");
+        bool exist = false;
+
+
         if(QSqlDatabase::isDriverAvailable(DRIVER)){
             qDebug("driver avaiable!\n");
 
+            if(QFile::exists(path)){
+                exist = true;
+            }
+
             instance->db = QSqlDatabase::addDatabase(DRIVER);
-            instance->db.setDatabaseName("project.db");
-            if(!instance->db.open()){
+            instance->db.setDatabaseName(path);
+
+
+
+
+            if(!instance->db.open()){ //la open apre il db se gia esistente oppure ne crea uno nuovo in caso non esista.
+                                      //In quest'ultimo caso devo creare le tabelle che lo compongono, quindi prima verifico l'esistenza del file (riga sopra) e se non esiste, creo le tabelle
 
                 qDebug("DB connection failed\n");
+                err = true;
             }
             else {
                 qDebug("DB connection established!!!\n");
+
+                if(!exist){
+                    qDebug("creation of tables!\n");
+                    QSqlQuery query1, query2;
+                    query1.prepare("CREATE TABLE users ("
+                                  "Username VARCHAR(255) primary key, "
+                                  "Password VARCHAR(255) NOT NULL,"
+                                  "Salt     VARCHAR(255) );");
+
+                    query2.prepare("CREATE TABLE files ("
+                                  "FileName VARCHAR(255) NOT NULL, "
+                                  "Id       INT          NOT NULL,"
+                                  "Username VARCHAR(255) NOT NULL,"
+                                  "PRIMARY KEY(Id, Username) );");
+                    if(query1.exec() && query2.exec()){
+                        qDebug("tables created!!!\n");
+                    }
+                }
+                else {
+                    qDebug("tables already existing!\n");
+                }
             }
         }
         else {
             qDebug("error: drivers not avaiable\n");
+            err = true;
         }
 
     }
+    if(err){
+        return nullptr;
+    }
+    else {
+        return DBInteraction::instance;
+    }
 
-    return DBInteraction::instance;
 }
 QString DBInteraction::generateRandomString(int len) {
    /* QString alphabet = { '0','1','2','3','4','5','6','7','8','9',
@@ -152,7 +194,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     QString salt;
     QByteArray response;
     QString message;
-    QJsonArray files;
+    QJsonArray files; // la lista Ë vuota?
     int cnt = 0;
     bool err = false;
 
@@ -183,27 +225,28 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                         query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
                         query2.bindValue(":username", username);
 
-                        if(query.exec()){
+                        if(query2.exec()){
 
-                            while(query.next()){
-                                //per ogni file creo un jsonObjest contenente nome del file, id del file e numero di client che lo stanno condividendo (?)
+                            if(query2.size() > 0){
 
-                                QString filename = query2.value("FileName").toString();
-                                int fileId = query2.value("Id").toInt();
+                                while(query2.next()){
+                                    //per ogni file creo un jsonObjest contenente nome del file, id del file e numero di client che lo stanno condividendo (?)
 
-                                if(!users_files.contains(username)){//funzioner√†!?!?!?!?!?!?
-                                    users_files.insert(username, QMap<int, QString>{{fileId, filename}});
+                                    QString filename = query2.value("FileName").toString();
+                                    int fileId = query2.value("Id").toInt();
+
+                                    if(!user_files.contains(username)){//funzioner‡ !?!?!?!?!?!?
+                                        user_files.insert(username, QMap<int, QString>{{fileId, filename}});
+                                    }
+                                    else{
+                                        user_files[username].insert(fileId, filename);
+                                    }
+
+                                   // QSqlQuery query3;
+                                    files = Serialize::singleFileSerialize(filename, fileId, files);
                                 }
-                                else{
-                                    users_files[username].insert(fileId, filename);
-
-                                }
-
-                               // QSqlQuery query3;
-                                files = Serialize::singleFileSerialize(filename, fileId, files);
                             }
                             response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(username, files, LOGIN));
-                            //sendMessage(socket, response);
                         }
                     }
                     else{
@@ -218,17 +261,11 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                     qDebug()<< "query.next() in SELECT Password error\n ";
                     err = true;
                 }
-
-
-
             }
             else {
                 qDebug()<< "SELECT Password NOT executed: "<< query.lastError()<<"\n";
                 err = true;
-
             }
-
-
         }
         else {
             qDebug()<< "Username not valid\n";
@@ -244,7 +281,6 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     if(err){
         message = "AUTHENTICATION_ERROR";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-        //sendMessage(socket, response);
     }
 
     sendMessage(socket, response);
@@ -279,24 +315,26 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
         else{
             //il file non esiste, quindi posso crearlo
             QSqlQuery query2;
-            query2.prepare("SELECT COUNT(Id) FROM files"); //l'id del file √® un intero crescente
+            query2.prepare("SELECT COUNT(Id) FROM files"); //l'id del file Ë un intero crescente
             if(query2.exec()){
                 if(query2.next()){
                     fileId = query2.value(0).toInt();
                 }
 
                 QSqlQuery query3;
-                query3.prepare("INSERT INTO files(FileName, Id, userName) VALUES ((:filename), (fileId), (username))");
+                query3.prepare("INSERT INTO files(FileName, Id, userName) VALUES ((:filename), (:fileId), (:username))");
                 query3.bindValue(":filename", filename);
                 query3.bindValue(":fileId", fileId);
                 query3.bindValue(":username", username);
 
                 if(query3.exec()){
                     QFile file(QString::number(fileId));
+
                     if(file.open(QIODevice::ReadWrite)){
                         //che cazzo devo fareeeeeeee
 
                     }
+
                     else {
                         qDebug() << "file not opened\n";
                     }
@@ -324,13 +362,16 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
 
 void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
 
-    if(users_files.contains(username)){
-        if(users_files[username].contains(fileId)){
+    if(user_files.contains(username)){
+        if(user_files[username].contains(fileId)){// un utente puÚ aprire solamente i file che "possiede".
+                                                  // Nel momento del login la mappa users_files viene popolata, e per ogni utente verr‡ caricata la lista di tutti i suoi file, presi dal DB. (DONE)
+                                                  // Ad ogni creazione di un file esso sar‡ associato all'utente che ne ha chiesto l'apertura. (TO DO)
+                                                  // Quando un utente1 sceglie di condividere un file con un utente2, quest'ultimo sar‡ aggiunto nella lista dei file dell'utente2 (TO DO)
             //SUCCESS
-            qDebug() <<"il client: "<< username << "HA accesso al file richiesto\n";
+            qDebug() <<"l'utente "<< username << "HA accesso al file richiesto\n";
 
             if(files.contains(fileId)){
-                //il file √® gia in RAM
+                //il file Ë gia in RAM
             }
             else {
                 //cercare il file nel DB ????

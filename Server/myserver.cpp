@@ -5,11 +5,12 @@
 
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)){
     //supporto al file system da implementare
-    db->startDBConnection();
+    db = DBInteraction::startDBConnection();
+    if(db == nullptr){
+        return; // giusto? ----------------------->(periodicamente riprovare la connessione al DB!!)
+    }
     connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
     connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
-
-
 }
 
 bool MyServer:: listen(QHostAddress &addr, quint16 port){
@@ -180,7 +181,12 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         qDebug("SERVER_ANSWER request");
 
         break;
+
+
+
     }
+
+
 }
 
 void MyServer::onDisconnect(){

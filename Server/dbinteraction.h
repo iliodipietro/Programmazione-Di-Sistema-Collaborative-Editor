@@ -38,11 +38,12 @@ public:
     void closeFile(int fileId, QString username, QTcpSocket *socket);
     void searchFile(); //?
     void deleteFile();
+    void renameFile();
 
 private:
     static DBInteraction* instance;
     QSqlDatabase db;
-    QMap<QString, QMap<int, QString>> users_files;
+    QMap<QString, QMap<int, QString>> user_files;
     QSet<QString> users;
     QMap<int, QString> files;
 
