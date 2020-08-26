@@ -79,34 +79,103 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	return list;
 }
 
+QJsonArray Serialize::singleFileSerialize(QString fileName, int fileId, QJsonArray files){
+    /*
+
+    Questa funzione, chiamata solo in caso di login verificato, per ogni file del client che ha appena effettuato login, serializza le relative info(nome 		e id del file) salvandole in un QJsonArray che alla fine conterrà tutti i file posseduti dal client.
+
+    INPUT:
+    - fileName: stringa che contiene il nome del file;
+    - fileId: intero rapprensentante identificativo univoco di un file;
+    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
+
+    RETURN:
+    - files: l'array che viene man mano aggiornato ad ogni chiamata.
+    */
+
+    QJsonObject obj;
+    obj.insert("filename", fileName);
+    obj.insert("fileId", fileId);
+    files.push_back(QJsonValue(obj));
 
 
+    return files;
+}
 
-QJsonObject Serialize::fileNameSerialize(QString fileName, int type)
+
+QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, int type){
+    /*
+
+    Questa funzione, una volta che tutti i file di un client sono stati correttamente serializzati nell'array files, lega l'utente ai file.
+
+    INPUT:
+    - username: stringa che contiene il nome dell'utente;
+    - files: array serializzato contenente i campi(filename e id) per ogni file posseduto dal singolo client;
+    - type: intero che è definito in define.h come LOGIN
+
+    RETURN:
+    - files: l'array che viene man mano aggiornato ad ogni chiamata.
+    */
+
+    QJsonObject obj;
+    obj.insert("username", username);
+    obj.insert("files", QJsonValue(files));
+    obj.insert("type", type);
+
+    return obj;
+}
+
+QPair<QString, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
+
+    /*
+
+    Questa funzione de-serializza il nome utente e tutti i file che possiede
+    INPUT:
+    - obj: e' un Qjson che contiene tutte le info
+
+    RETURN:
+    - una QPair<QString, QMap<int, QString>> con il nome dell'utente come primo elemento del QPair e come secondo una mappa contenente (fileId e FileName) di tutti i file dell'utente
+    */
+
+    QPair<QString, QMap<int, QString>> user_files;
+    QJsonArray files = obj.value("files").toArray();
+    int i;
+    QJsonObject singleFile;
+
+    user_files.first = obj.value("username").toString();
+
+    for(i = 0; i < files.size(); i++){
+        singleFile = files[i].toObject();
+        user_files.second.insert(singleFile["fileId"].toInt(), singleFile["filename"].toString());
+    }
+
+    return user_files;
+}
+
+
+QJsonObject Serialize::openCloseFileSerialize(int fileId, QString username, int type)
 {
 	/*
 
-	Questa funzione serializza il nome quando vuole fare un OPEN o CLOSE, cio e' discriminato dal valore di type
+    Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE, cio e' discriminato dal valore di type
 	INPUT:
-	- fileName: stringa che contiene il nome del file
+    - fileId: intero che contiene l'id del file
+    - username: stringa che rappresenta il possessore del file
 	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
 
 	RETURN:
-	- una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
+    - una Qstring che contiene il tutto serializzano come QJson
 	*/
 	QJsonObject obj;
 	obj.insert("type", QJsonValue(type));
-	obj.insert("filename", fileName);
+    obj.insert("user", username);
+    obj.insert("fileId", QJsonValue(fileId));
 
-
-	//QJsonDocument doc(obj);
-	//QString strJson(doc.toJson(QJsonDocument::Compact));
-	//return strJson.append("\r\n");
 
 	return obj;
 }
 
-QString Serialize::fileNameUnserialize(QJsonObject obj)
+QPair<int, QString> Serialize::openCloseFileUnserialize(QJsonObject obj)
 {
 	/*
 
@@ -117,9 +186,40 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 	RETURN:
 	- una QstringList con il nome del file
 	*/
-	return obj.value("filename").toString();
+    QPair<int, QString> user_file;
+    user_file.first = obj.value("fileId").toInt();
+    user_file.second = obj.value("user").toString();
+
+    return user_file;
 }
 
+QJsonObject Serialize::newFileSerialize(QString filename, QString username, int type){
+    /*
+
+    Questa funzione serializza lil nome del file quando vuole fare una NEW, cio e' discriminato dal valore di type
+    INPUT:
+    - filename: stringa che contiene il nome del file da creare
+    - username: stringa che rappresenta il client che ha fatto richiesta di creazione del file
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
+
+    RETURN:
+    - una Qstring che contiene il tutto serializzano come QJson
+    */
+
+    QJsonObject obj;
+    obj.insert("type", QJsonValue(type));
+    obj.insert("user", username);
+    obj.insert("filename", QJsonValue(filename));
+    return obj;
+}
+QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj){
+
+    QPair<QString, QString> user_file;
+    user_file.first = obj.value("filename").toString();
+    user_file.second = obj.value("user").toString();
+
+    return user_file;
+}
 
 
 

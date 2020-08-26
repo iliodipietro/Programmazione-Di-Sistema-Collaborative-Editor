@@ -5,11 +5,13 @@
 
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)){
     //supporto al file system da implementare
-    db->startDBConnection();
+    db = DBInteraction::startDBConnection();
+    if(db == nullptr){
+        return; // giusto? ----------------------->(periodicamente riprovare la connessione al DB!!)
+    }
     connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
     connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
-    //this->addFile(0, "C:/Users/Mattia Proietto/Desktop/prova_save_Copia.txt");
 }
 
 bool MyServer:: listen(QHostAddress &addr, quint16 port){
@@ -33,23 +35,67 @@ void MyServer::onNewConnection(){
 }
 
 void MyServer::readFromSocket(){
-    QTcpSocket *sender = static_cast<QTcpSocket*>(QObject::sender()); //sender() returns a pointer to the object that sent the signal, if called in a slot activated by a signal; otherwise it returns nullptr.
-    qint64 num_byte = sender->bytesAvailable();
-    QByteArray buffer;
+    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo Ã¨ necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
+    //In questa soluzione abbiamo scelto di inviare per prima cosa la dimensione "dim" del dato da leggere, per poi leggere tutti i restandi "dim" byte che rappresentano il dato completo
 
+    QTcpSocket *sender = static_cast<QTcpSocket*>(QObject::sender()); //sender() returns a pointer to the object that sent the signal, if called in a slot activated by a signal; otherwise it returns nullptr.
+    QByteArray *buffer;
+    QByteArray dataToHandle;
+    //quint64 dim = 0;
+    quint32 dim = 0;
     auto buffer_socket = socket_buffer.find(sender);
 
     if(buffer_socket == socket_buffer.end()){
-        socket_buffer.insert(sender, buffer);
+        socket_buffer.insert(sender, {buffer, dim});
     }
     else {
-        buffer = buffer_socket.value();
+        buffer = buffer_socket.value().first;
+        dim    = buffer_socket.value().second;
     }
 
+    while(sender->bytesAvailable() || buffer->size() != 0){
 
+        buffer->append(sender->readAll());
+        qDebug()<<"data read: "<< buffer<<"\n";
 
-    if(num_byte > 0){
+        while((dim == 0 && buffer->size() >= 8) || (dim > 0 && static_cast<quint64>(buffer->size()) >= dim)){
 
+            if(dim == 0 && buffer->size() >= 8){ // Ã¨ stata ricevuta la dimensione del buffer (primo parametro)
+                //dim = buffer->mid(0,8).toULongLong(); //prendo i primi 8 byte che rappresentano la dimensione
+
+                dim = atoi(buffer->mid(0,8).data());
+                qDebug()<< "size of data: "<< dim<< "\n";
+                buffer->remove(0,8); //rimuovo dal buffer i primi 8 byte, cosi da poter leggere i veri e propri dati
+            }
+            if(dim > 0 && static_cast<quint64>(buffer->size()) >= dim){ // ho precedentemente ricevuto la dimensione del dato, quindi adesso lo leggo tutto ed emetto il segnale per
+
+                /*if(dim <= std::numeric_limits<quint32>::max()){ //la dimensione del dato da leggere Ã¨ piÃ¹ piccola di un int: posso usare tranquillamente la funzione mid
+                    dataToHandle = buffer->mid(0, static_cast<quint32>(dim));
+                    buffer->remove(0, static_cast<quint32>(dim));
+                    dim = 0;
+                }
+                else{ // la dimensione Ã¨ piÃ¹ grande di un intero (32 bit)
+                    while(dim != 0){
+                        if(dim >= std::numeric_limits<quint32>::max()){
+                            dataToHandle = buffer->mid(0, std::numeric_limits<quint32>::max());
+                            buffer->remove(0, std::numeric_limits<quint32>::max());
+                            dim -= std::numeric_limits<quint32>::max();
+                        }
+                        else{
+                            //ora la dimensione (dim) Ã¨ sicuramente su 32 bit, allora posso fare tranquillamente il cast senza il rischio di perdere informazioni
+                            dataToHandle = buffer->mid(0, static_cast<quint32>((dim)));
+                            buffer->remove(0, static_cast<quint32>((dim)));
+                            dim = 0;
+                        }
+                    }
+                }*/
+                dataToHandle = buffer->mid(0, dim);
+                buffer->remove(0, dim);
+                dim = 0;
+
+                emit dataReady(sender, dataToHandle);
+            }
+        }
     }
 }
 
@@ -70,6 +116,8 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     */
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
+    int fileId;
+    QString username, filename;
 
     int type = Serialize::actionType(ObjData);
 
@@ -104,12 +152,26 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         qDebug("IMAGE request");
 
         break;
+    case (NEWFILE):
+        qDebug("NEWFILE request");
+        filename = Serialize::newFileUnserialize(ObjData).first;
+        username = Serialize::newFileUnserialize(ObjData).second;
+
+        db->createFile(filename, username, socket);
+
+        break;
     case (OPEN):
         qDebug("OPEN request");
+        fileId = Serialize::openCloseFileUnserialize(ObjData).first;
+        username = Serialize::openCloseFileUnserialize(ObjData).second;
+        db->openFile(fileId, username, socket);
 
         break;
     case (CLOSE):
         qDebug("CLOSE request");
+        fileId = Serialize::openCloseFileUnserialize(ObjData).first;
+        username = Serialize::openCloseFileUnserialize(ObjData).second;
+        db->closeFile(fileId, username, socket);
 
         break;
     case (CURSOR):
@@ -147,10 +209,10 @@ std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
 {
     auto it = this->fileId_CRDT.find(fileID);
 
-    if (this->addFile(fileID,path)) {//true se � andato a buon fine
+    if (this->addFile(fileID,path)) {//true se è andato a buon fine
         
 
-        //@TODO--> vedere se � la prima volta che il file viene creato o meno--> se � nuovo non faccio read
+        //@TODO--> vedere se è la prima volta che il file viene creato o meno--> se è nuovo non faccio read
         auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
 
         sendNewFile(vett, fileID);
