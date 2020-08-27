@@ -61,7 +61,8 @@ DBInteraction* DBInteraction::startDBConnection(){
                                   "FileName VARCHAR(255) NOT NULL, "
                                   "Id       INT          NOT NULL,"
                                   "Username VARCHAR(255) NOT NULL,"
-                                  "PRIMARY KEY(Id, Username) );");
+                                  "Path     VARCHAR(255),"
+                                  "PRIMARY KEY(FileName, Username) );");
                     if(query1.exec() && query2.exec()){
                         qDebug("tables created!!!\n");
                     }
@@ -128,7 +129,7 @@ void DBInteraction::registration(QString username, QString password, QTcpSocket 
     QByteArray response;
     QString message;
     int cnt = 0;
-    int userid = 0;
+    int userid = 1;
 
     query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
     query.bindValue(":username", username); // no matching member function for call to 'bindValue' --> risolto con #incliude <QVariant>
@@ -313,6 +314,10 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
     QSqlQuery query;
     int cnt = 0;
     int fileId = 0;
+    QString path = "C:/Users/Ilio/Desktop/Progetto_Malnati_git/";
+    QString message;
+    QByteArray response;
+    bool err = false;
 
 
     query.prepare("SELECT COUNT(*) FROM files WHERE UserName = (:username) AND FileName = (.filename)");
@@ -323,8 +328,9 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
             cnt = query.value(0).toInt();
         }
         if(cnt != 0){
+            message = "ERROR: the file does already exist!\n";
+            err = true;
             qDebug("ERROR: the file does already exist!\n");
-            //fare altro???
 
         }
         else{
@@ -335,43 +341,55 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
                 if(query2.next()){
                     fileId = query2.value(0).toInt();
                 }
+                path.append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
+                qDebug()<< "Path: " << path << "\n";
+
 
                 QSqlQuery query3;
-                query3.prepare("INSERT INTO files(FileName, Id, userName) VALUES ((:filename), (:fileId), (:username))");
+                query3.prepare("INSERT INTO files(FileName, Id, userName, Path) VALUES ((:filename), (:fileId), (:username), (:path))");
                 query3.bindValue(":filename", filename);
                 query3.bindValue(":fileId", fileId);
                 query3.bindValue(":username", username);
+                query3.bindValue(":path", path);
 
                 if(query3.exec()){
-                    QFile file(QString::number(fileId));
+                    File *newfile = new File(fileId, path);
+                    message = "OK file created\n";
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+                    sendMessage(socket, response);
 
-                    if(file.open(QIODevice::ReadWrite)){
-                        //che cazzo devo fareeeeeeee
-
-                    }
-
-                    else {
-                        qDebug() << "file not opened\n";
-                    }
+                    files.insert(fileId, newfile);
+                    newfile->addUser(socket);
 
 
                 }
                 else {
+                    message = "ERROR\n";
+                    err = true;
                     qDebug() << "INSERT failed: " << query2.lastError() << "\n";
                 }
 
 
             }
             else {
+                message = "ERROR\n";
+                err = true;
                 qDebug() << "SELECT COUNT(Id) failed: " << query2.lastError() << "\n";
             }
 
         }
     }
     else {
+        message = "ERROR\n";
+        err = true;
         qDebug()<< "SELECT COUNT(*) NOT executed: " << query.lastError() << "\n";
     }
 
+    if(err){
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+        sendMessage(socket, response);
+    }
+    return;
 
 }
 
