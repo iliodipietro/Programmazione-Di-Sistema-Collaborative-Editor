@@ -18,7 +18,7 @@ DBInteraction::DBInteraction(){
 
 DBInteraction* DBInteraction::startDBConnection(){
     bool err = false;
-    QString path = "C:/Users/Ilio/Desktop/Progetto_Malnati_git/project.sqlite"; //project.db";scegliere path in cui salvare il DB
+    QString path = "C:/Users/Mattia Proietto/source/repos/SOLO_SERVER/Server/project.sqlite"; //project.db";scegliere path in cui salvare il DB
 
     if(!instance){
         instance = new DBInteraction();

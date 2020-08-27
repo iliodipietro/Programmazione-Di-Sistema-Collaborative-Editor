@@ -47,7 +47,7 @@ private:
     QSqlDatabase db;
     QMap<QString, QMap<int, QString>> user_files;
     QMap<QTcpSocket*, int> users;
-    QMap<int, File> files;
+    QMap<int, File*> files;
 
 };
 
