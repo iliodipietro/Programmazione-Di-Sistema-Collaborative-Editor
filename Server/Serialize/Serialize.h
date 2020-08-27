@@ -38,8 +38,8 @@ public:
 
     //usate in DBInteraction per login
     static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);//ilio
-    static QJsonObject user_filesSerialize(QString username, QJsonArray files, int type);//ilio
-    static QPair<QString, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
+    static QJsonObject user_filesSerialize(int userId, QString username, QJsonArray files, int type);//ilio
+    static QPair<int, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
 
     //usate in myserver.cpp per open - close
     static QJsonObject openCloseFileSerialize(int fileId, QString username, int type); // ilio

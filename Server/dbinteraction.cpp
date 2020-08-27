@@ -205,7 +205,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     QByteArray salted_pwd;
     QString hashed_pwd;
     QString salt;
-    QByteArray response;
+    QByteArray response, response_ok;
     QString message;
     QJsonArray files; // la lista è vuota?
     int cnt = 0;
@@ -246,23 +246,18 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                             if(query2.size() > 0){
 
                                 while(query2.next()){
-                                    //per ogni file creo un jsonObjest contenente nome del file, id del file e numero di client che lo stanno condividendo (?)
+                                    //per ogni file creo un jsonObjest contenente nome del file e id
 
                                     QString filename = query2.value("FileName").toString();
                                     int fileId = query2.value("Id").toInt();
 
-                                    if(!user_files.contains(username)){//funzionerà !?!?!?!?!?!?
-                                        user_files.insert(username, QMap<int, QString>{{fileId, filename}});
-                                    }
-                                    else{
-                                        user_files[username].insert(fileId, filename);
-                                    }
-
-                                   // QSqlQuery query3;
                                     files = Serialize::singleFileSerialize(filename, fileId, files);
                                 }
                             }
-                            response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(username, files, LOGIN));
+                            message = "login OK";
+                            response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+                            sendMessage(socket, response_ok);
+                            response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(userid, username, files, LOGIN));
                         }
                     }
                     else{
@@ -360,23 +355,18 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
 
                     files.insert(fileId, newfile);
                     newfile->addUser(socket);
-
-
                 }
                 else {
                     message = "ERROR\n";
                     err = true;
                     qDebug() << "INSERT failed: " << query2.lastError() << "\n";
                 }
-
-
             }
             else {
                 message = "ERROR\n";
                 err = true;
                 qDebug() << "SELECT COUNT(Id) failed: " << query2.lastError() << "\n";
             }
-
         }
     }
     else {
@@ -395,33 +385,38 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
 
 void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
 
-    if(user_files.contains(username)){
-        if(user_files[username].contains(fileId)){// un utente può aprire solamente i file che "possiede".
-                                                  // Nel momento del login la mappa users_files viene popolata, e per ogni utente verrà caricata la lista di tutti i suoi file, presi dal DB. (DONE)
-                                                  // Ad ogni creazione di un file esso sarà associato all'utente che ne ha chiesto l'apertura. (TO DO)
-                                                  // Quando un utente1 sceglie di condividere un file con un utente2, quest'ultimo sarà aggiunto nella lista dei file dell'utente2 (TO DO)
-            //SUCCESS
-            qDebug() <<"l'utente "<< username << "HA accesso al file richiesto\n";
+    File *f = nullptr;
+    QString message;
+    QByteArray response;
+    bool err = false;
 
-            if(files.contains(fileId)){
-                //il file è gia in RAM
-            }
-            else {
-                //cercare il file nel DB ????
-            }
-
-
-
-        }
-        else{
-            qDebug() <<"il client: "<< username << "NON ha accesso al file richiesto\n";
-
-        }
+    if(files.contains(fileId)){
+        //il file è gia in RAM
+        f = files.value(fileId);
     }
-    else{
-        qDebug() <<"il client: "<< username << "NON ha accesso al file richiesto\n";
-
+    else {
+        //cercare il file nel DB
     }
+
+
+
+    if(f != nullptr){
+        message = "OK\n";
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+        f->addUser(socket);
+    }
+    else {
+
+        err = true;
+        message = "ERROR\n";
+    }
+
+    if(err){
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+    }
+
+    sendMessage(socket, response);
+
 
 
 }
@@ -435,7 +430,8 @@ void DBInteraction::closeFile(int fileId, QString username, QTcpSocket *socket){
 
 
 
-
-
-void DBInteraction::searchFile(){}
 void DBInteraction::deleteFile(){}
+
+File* DBInteraction::getFile(int fileid){
+    return files.value(fileid);
+}

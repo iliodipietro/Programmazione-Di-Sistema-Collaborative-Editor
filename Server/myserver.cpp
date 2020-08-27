@@ -119,6 +119,8 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     QStringList list;
     int fileId;
     QString username, filename;
+    //QPair<int, Message> fileid_message;
+    File *f;
 
     int type = Serialize::actionType(ObjData);
 
@@ -143,6 +145,11 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+
+        //fileid_message = Serialize::messageUnserialize(ObjData);
+
+        //f = db->getFile(fileid_message.first);
+        //f->messageHandler(socket, fileid_message.second, socketData);
 
         break;
     case (TEXT):

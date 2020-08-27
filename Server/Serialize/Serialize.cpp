@@ -103,7 +103,7 @@ QJsonArray Serialize::singleFileSerialize(QString fileName, int fileId, QJsonArr
 }
 
 
-QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, int type){
+QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){
     /*
 
     Questa funzione, una volta che tutti i file di un client sono stati correttamente serializzati nell'array files, lega l'utente ai file.
@@ -118,6 +118,7 @@ QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, i
     */
 
     QJsonObject obj;
+    obj.insert("userid", userId);
     obj.insert("username", username);
     obj.insert("files", QJsonValue(files));
     obj.insert("type", type);
@@ -125,7 +126,7 @@ QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, i
     return obj;
 }
 
-QPair<QString, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
+QPair<int, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
 
     /*
 
@@ -137,12 +138,12 @@ QPair<QString, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject 
     - una QPair<QString, QMap<int, QString>> con il nome dell'utente come primo elemento del QPair e come secondo una mappa contenente (fileId e FileName) di tutti i file dell'utente
     */
 
-    QPair<QString, QMap<int, QString>> user_files;
+    QPair<int, QMap<int, QString>> user_files;
     QJsonArray files = obj.value("files").toArray();
     int i;
     QJsonObject singleFile;
 
-    user_files.first = obj.value("username").toString();
+    user_files.first = obj.value("username").toInt();
 
     for(i = 0; i < files.size(); i++){
         singleFile = files[i].toObject();
