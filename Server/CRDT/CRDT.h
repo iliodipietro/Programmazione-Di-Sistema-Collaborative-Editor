@@ -14,11 +14,12 @@
 #define INSERT 0
 #define DELETE_S 1
 #define CHANGE 2
+#define CURSOR_S 3
 
 
 //altre define
-#define TIMEOUT 10000// dopo quanto tempo il crdt deve essere salvato su file
-
+#define TIMEOUT 2000// dopo quanto tempo il crdt deve essere salvato su file
+//#define TIMEOUT 10000 // 10 secondi
 
 class Message;
 
@@ -30,11 +31,6 @@ L'algoritmo è quello del lab e funzionava non so se il tutto funziona adesso dop
 IMPLEMENTATO UN MECCANISMO FUNZIONANTE
 
 
-
-TODO
-mancano le interazioni con la gui ossia i signal e slot per scatenare le insert.
-la process deve in qualche modo andare a modificare il testo????--> per ora ho solo un intero che dice a quale posizione
-dall'inizio del vettore si trova il carattere interessato
 */
 class CRDT: public QObject
 {

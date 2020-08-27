@@ -481,7 +481,7 @@ void CRDT::saveOnFile()
 
 	}
 
-	this->timer->start(TIMEOUT);
+	//this->timer->start(TIMEOUT);
 }
 
 
