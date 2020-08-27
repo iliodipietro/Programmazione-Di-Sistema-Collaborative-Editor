@@ -13,10 +13,12 @@ il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anc
 
 */
 
-CRDT::CRDT(int id, std::string path) :_siteId(id), _counter(0),path(path)
+CRDT::CRDT(int id, QString path) :_siteId(id), _counter(0),path(path)
 {
 	this->timer = new QTimer();
+	this->timer->setSingleShot(true);//altrimenti verrebbe chiamato ogni tot secondi
 	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
+	this->readFromFile();
 	timer->start(TIMEOUT);
 	//this->localInsert(0, 'K', QFont(),QColor('red'),Qt::AlignmentFlag());
 }
@@ -125,15 +127,15 @@ __int64 CRDT::process(const Message& m)
 
 	switch (m.getAction())
 	{
-	case DELETE:
+	case DELETE_SYMBOL:
 		index = delete_symbol(m.getSymbol());
 		//fare qualcosa con index
 		break;
-	case INSERT:
+	case INSERT_SYMBOL:
 		index = insert_symbol(m.getSymbol());
 		//fare qualcosa con index
 		break;
-	case CHANGE:
+	case CHANGE_SYMBOL:
 		index = change_symbol(m.getSymbol());
 		break;
 
@@ -161,7 +163,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 		_symbols.push_back(s);
 
 		//mando il messaggio
-		Message m(s, INSERT, this->_siteId);
+		Message m(s, INSERT_SYMBOL, this->_siteId);
 		return m;
 	}
 	//caso particolare se inserisco in zero
@@ -174,7 +176,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 		_symbols.insert(_symbols.begin() + index, s);
 
 		//mando il messaggio
-		Message m(s, INSERT, this->_siteId);
+		Message m(s, INSERT_SYMBOL, this->_siteId);
 
 		return m;
 
@@ -213,7 +215,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 
 
 		//mando il messaggio
-		Message m(s, INSERT, this->_siteId);
+		Message m(s, INSERT_SYMBOL, this->_siteId);
 
 
 		return m;
@@ -226,7 +228,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 			Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 			_symbols.push_back(s);
 			//mando il messaggio
-			Message m(s, INSERT, this->_siteId);
+			Message m(s, INSERT_SYMBOL, this->_siteId);
 
 			QTextStream(stdout) << font.toString() << endl;
 
@@ -251,7 +253,7 @@ Message CRDT::localErase(int index)
 
 
 	//mando il messaggio
-	Message m(s, DELETE, this->_siteId);
+	Message m(s, DELETE_SYMBOL, this->_siteId);
 
 	//elimino il simbolo dal vettore locale
 	_symbols.erase(_symbols.begin() + index);
@@ -265,7 +267,7 @@ Message CRDT::localChange(int index, char value, QFont font, QColor color, Qt::A
 	_symbols.at(index).setFont(font);
 	_symbols.at(index).setAlignment(alignment);
 	Symbol s = _symbols.at(index);
-	Message m(s, CHANGE, this->_siteId);
+	Message m(s, CHANGE_SYMBOL, this->_siteId);
 	return m;
 }
 
@@ -284,12 +286,17 @@ int CRDT::getId()
 	return this->_siteId;
 }
 
+bool CRDT::isEmpty()
+{
+	return this->_symbols.size() <= 0;
+}
+
 std::vector<Message> CRDT::getMessageArray()
 {
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
-		Message m(s, INSERT, 0);//il server ha id 0
+		Message m(s, INSERT_SYMBOL, 0);//il server ha id 0
 		msgs.push_back(m);
 	}
 
@@ -326,12 +333,95 @@ QJsonObject ObjectFromString(const QString& in)
 
 	return obj;
 }
-std::vector<Message> CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
+//std::vector<Message> CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
+//{
+//	std::ifstream iFile(this->path);
+//	std::vector<Symbol> local_symbols;
+//	if (iFile.is_open())// se non riesco ad aprire il file vuol dire che è un file nuovo e che quindi ancpra va creato--> cio viene fatto nel primo save
+//	{
+//		std::string line;
+//
+//
+//		while (getline(iFile, line))
+//		{
+//			QString str = QString::fromStdString(line);
+//			QJsonObject  obj = ObjectFromString(str);
+//
+//			char c = obj.value("character").toInt();
+//
+//			std::array<int, 2> a;
+//			QJsonArray id = obj.value("globalCharacterId").toArray();
+//			a[0] = id[0].toInt();
+//			a[1] = id[1].toInt();
+//
+//			std::vector<int> pos;
+//
+//			QJsonArray vett_pos = obj.value("position").toArray();
+//
+//			for (QJsonValue qj : vett_pos) {
+//
+//				pos.push_back(qj.toInt());
+//			}
+//
+//			QFont font;
+//			font.fromString(obj.value("font").toString());
+//
+//
+//			QString color_hex = obj.value("color").toString();
+//
+//			QColor color(color_hex);
+//
+//
+//			int align = obj.value("alignment").toInt();
+//			Qt::AlignmentFlag alignFlag = static_cast<Qt::AlignmentFlag>(align);
+//
+//
+//			Symbol s(c, a, pos, font, color, alignFlag);
+//
+//
+//			this->_symbols.push_back(s);
+//
+//			//per fare prove
+//			//local_symbols.push_back(s);
+//		}
+//
+//
+//		iFile.close();
+//		std::vector<Message> local_m;
+//		//prima carico tutto e poi inizio a mandare i messaggi
+//		for (auto symb : this->_symbols) {
+//
+//			Message m(symb, INSERT_SYMBOL, 0);//L'ID del server è 0 sempre
+//			local_m.push_back(m);
+//
+//			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+//		}
+//		return local_m;
+//	}
+//}
+
+
+
+void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
-	std::ifstream iFile(this->path);
+	if (!QFile::exists(QString(this->path))) {
+		// se non esiste lo creo
+		std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
+		return;
+	}
+	
+	
+	std::ifstream iFile(this->path.toStdString());
 	std::vector<Symbol> local_symbols;
 	if (iFile.is_open())// se non riesco ad aprire il file vuol dire che è un file nuovo e che quindi ancpra va creato--> cio viene fatto nel primo save
 	{
+		
+		if (iFile.peek() == std::ifstream::traits_type::eof()) {
+			//se il file esiste ma è vuoto non carico nulla e ritorno dopo aver chiuso il file
+			iFile.close();
+			return;
+		}
+
 		std::string line;
 
 
@@ -380,16 +470,10 @@ std::vector<Message> CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->
 
 
 		iFile.close();
-		std::vector<Message> local_m;
-		//prima carico tutto e poi inizio a mandare i messaggi
-		for (auto symb : this->_symbols) {
 
-			Message m(symb, CHANGE, 0);//L'ID del server è 0 sempre
-			local_m.push_back(m);
-
-			//emit robaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-		}
-		return local_m;
+	}
+	else {
+		qDebug()<<"FILE NON APERTO";
 	}
 }
 
@@ -464,7 +548,7 @@ void CRDT::saveOnFile()
 
 		QString serialized_text = this->crdt_serialize();
 
-		std::ofstream oFile(this->path, std::ios_base::out | std::ios_base::trunc);
+		std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
 		if (oFile.is_open())
 		{
 

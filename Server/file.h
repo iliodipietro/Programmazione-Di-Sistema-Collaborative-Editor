@@ -16,6 +16,7 @@ public:
     void removeUser(QTcpSocket* user);
     QVector<QTcpSocket*> getUsers();
     bool thereAreUsers();
+    void sendNewFile(QTcpSocket* socket);
 
 private:
     CRDT *handler = nullptr;

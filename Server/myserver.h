@@ -12,6 +12,7 @@
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "dbinteraction.h"
+#include "file.h"
 #include "CRDT/CRDT.h"
 #include "CRDT/Message.h"
 #include "CRDT/Symbol.h"

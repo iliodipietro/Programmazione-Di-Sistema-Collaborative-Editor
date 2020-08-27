@@ -8,12 +8,13 @@
 #include <iostream>
 #include <QTimer>
 #include <QObject>
-
+#include <QFile>
+#include <QDebug>
 
 //define per azioni
-#define INSERT 0
-#define DELETE_S 1
-#define CHANGE 2
+#define INSERT_SYMBOL 0
+#define DELETE_SYMBOL 1
+#define CHANGE_SYMBOL 2
 #define CURSOR_S 3
 
 
@@ -45,11 +46,11 @@ private:
 	__int64 delete_symbol(Symbol symbol);
 	__int64 change_symbol(Symbol symbol);
 	QString crdt_serialize();
-	std::string path;//path che mi dice dove salvare il file ogni volta che scade il timer
+	QString path;//path che mi dice dove salvare il file ogni volta che scade il timer
 	QTimer* timer;
 
 public:
-	CRDT(int id, std::string path);//vuole l'id e un path su cui si andrà nel caso a salvare il file
+	CRDT(int id, QString path);//vuole l'id e un path su cui si andrà nel caso a salvare il file
 	~CRDT();
 
 	Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
@@ -59,9 +60,11 @@ public:
 	__int64 process(const Message& m);
 	std::string to_string();//usare Qstring??
 	int getId();
+	bool isEmpty();
 	//SERVER ONLY
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta
-	std::vector<Message> readFromFile();
+	//std::vector<Message> readFromFile();
+	void readFromFile();
 
 	QTimer* getTimer();
 

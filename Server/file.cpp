@@ -6,13 +6,15 @@ File::File():handler(nullptr),id(0),path("")
 }
 
 File::File(int fileId, QString path): id(fileId),path(path){
-	this->handler = new CRDT(fileId, this->path.toStdString());
+	//creo il crdt e se il file puntato dal path non è vuoto questo viene caricato automaticamente nel CRDT
+	this->handler = new CRDT(fileId, this->path);
 }
 
 void File::messageHandler(QTcpSocket* sender, Message m, QByteArray bytes)
 {
 	if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
+		this->handler->getTimer()->start(TIMEOUT);
 	}
 	for (auto u : this->users) {
 		if (sender != u) {
@@ -25,20 +27,29 @@ void File::messageHandler(QTcpSocket* sender, Message m, QByteArray bytes)
 	/*faccio partire il timer della durata definita da TIMEOUT in CRDT.h se alla scadenza del timer non ho ancora ricevuto alcun nuovo messaggio
 	  salvo il credt su file altrimenti il timer viene fatto ripartire e si ricomincia dalla condizione precedente.
 	*/
-	this->handler->getTimer()->start(TIMEOUT);
+	
+}
+
+void File::sendNewFile(QTcpSocket* socket)
+{
+	if (!this->handler->isEmpty()) {
+		//se e esolo se non è vuoto--> nuovo file o senza caratteri
+		//prendo tutto il testo come vettore di messagi, e poi un messagio per volta lo serializzo, trasformo in array e lo invio
+		std::vector<Message> msgs = this->handler->getMessageArray();
+
+		for (auto m : msgs) {
+			QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, INSERT_SYMBOL));
+			this->writeData(socket, bytes);
+		}
+	}
 }
 
 void File::addUser(QTcpSocket* user)
 {
 	//quando aggiungo un nuovo utente gli mando l'intero testo
 	this->users.append(user);
-	//prendo tutto il testo come vettore di messagi, e poi un messagio per volta lo serializzo, trasformo in array e lo invio
-	std::vector<Message> msgs = this->handler->getMessageArray();
+	this->sendNewFile(user);
 
-	for (auto m : msgs) {
-		QByteArray bytes= Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, INSERT));
-		this->writeData(user, bytes);
-	}
 }
 
 void File::removeUser(QTcpSocket* user)
@@ -58,6 +69,8 @@ bool File::thereAreUsers()
 	//mi dice se qualcuno sta ancora lavorando o meno sul file
 	return this->users.size() > 0 ;
 }
+
+
 
 void File::writeData(QTcpSocket* socket, QByteArray bytes)
 {
