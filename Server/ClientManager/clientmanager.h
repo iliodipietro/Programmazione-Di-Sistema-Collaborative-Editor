@@ -20,7 +20,6 @@ signals:
     void disconnected();
 
 public slots:
-    void onNewConnection();
     void readyRead();
     void onDisconnect();
 
