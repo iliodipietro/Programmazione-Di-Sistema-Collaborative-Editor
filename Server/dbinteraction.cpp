@@ -5,6 +5,8 @@
 /*
     TO DO:
         - aggiunta e gestione delle immagini di profilo;
+
+
 */
 
 DBInteraction *DBInteraction::instance = nullptr;
@@ -15,30 +17,74 @@ DBInteraction::DBInteraction(){
 }
 
 DBInteraction* DBInteraction::startDBConnection(){
+    bool err = false;
+    QString path = "C:/Users/Mattia Proietto/source/repos/SOLO_SERVER/Server/project.sqlite"; //project.db";scegliere path in cui salvare il DB
 
     if(!instance){
         instance = new DBInteraction();
         const QString DRIVER("QSQLITE");
+        bool exist = false;
+
+
         if(QSqlDatabase::isDriverAvailable(DRIVER)){
             qDebug("driver avaiable!\n");
 
+            if(QFile::exists(path)){
+                exist = true;
+            }
+
             instance->db = QSqlDatabase::addDatabase(DRIVER);
-            instance->db.setDatabaseName("project.db");
-            if(!instance->db.open()){
+            instance->db.setDatabaseName(path);
+
+
+
+
+            if(!instance->db.open()){ //la open apre il db se gia esistente oppure ne crea uno nuovo in caso non esista.
+                                      //In quest'ultimo caso devo creare le tabelle che lo compongono, quindi prima verifico l'esistenza del file (riga sopra) e se non esiste, creo le tabelle
 
                 qDebug("DB connection failed\n");
+                err = true;
             }
             else {
                 qDebug("DB connection established!!!\n");
+
+                if(!exist){
+                    qDebug("creation of tables!\n");
+                    QSqlQuery query1, query2;
+                    query1.prepare("CREATE TABLE users ("
+                                  "Username VARCHAR(255) primary key, "
+                                  "UserId   INT          NOT NULL,"
+                                  "Password VARCHAR(255) NOT NULL,"
+                                  "Salt     VARCHAR(255) );");
+
+                    query2.prepare("CREATE TABLE files ("
+                                  "FileName VARCHAR(255) NOT NULL, "
+                                  "Id       INT          NOT NULL,"
+                                  "Username VARCHAR(255) NOT NULL,"
+                                  "Path     VARCHAR(255),"
+                                  "PRIMARY KEY(FileName, Username) );");
+                    if(query1.exec() && query2.exec()){
+                        qDebug("tables created!!!\n");
+                    }
+                }
+                else {
+                    qDebug("tables already existing!\n");
+                }
             }
         }
         else {
             qDebug("error: drivers not avaiable\n");
+            err = true;
         }
 
     }
+    if(err){
+        return nullptr;
+    }
+    else {
+        return DBInteraction::instance;
+    }
 
-    return DBInteraction::instance;
 }
 QString DBInteraction::generateRandomString(int len) {
    /* QString alphabet = { '0','1','2','3','4','5','6','7','8','9',
@@ -83,6 +129,7 @@ void DBInteraction::registration(QString username, QString password, QTcpSocket 
     QByteArray response;
     QString message;
     int cnt = 0;
+    int userid = 1;
 
     query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
     query.bindValue(":username", username); // no matching member function for call to 'bindValue' --> risolto con #incliude <QVariant>
@@ -105,8 +152,18 @@ void DBInteraction::registration(QString username, QString password, QTcpSocket 
             hashed_pwd = QString(QCryptographicHash::hash(salted_pwd, QCryptographicHash::Sha256));
             qDebug()<<"new password: "<< hashed_pwd<<"\n";
 
-            query.prepare("INSERT INTO users(username, password, salt), VALUES ((:username), (:hashed_pwd), (:salt))");
+            QSqlQuery query2;
+            query2.prepare("SELECT COUNT(UserId) FROM users"); //l'id dell'utente è un intero crescente
+            if(query2.exec()){
+                if(query2.next()){
+                    userid = query2.value(0).toInt();
+                }
+            }
+            qDebug()<<"userid: "<< userid<<"\n";
+
+            query.prepare("INSERT INTO users(username, userid, password, salt), VALUES ((:username),(:userid), (:hashed_pwd), (:salt))");
             query.bindValue(":username", username);
+            query.bindValue(":userid", userid);
             query.bindValue(":password", hashed_pwd);
             query.bindValue(":salt", salt);
 
@@ -148,10 +205,11 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     QByteArray salted_pwd;
     QString hashed_pwd;
     QString salt;
-    QByteArray response;
+    QByteArray response, response_ok;
     QString message;
-    QJsonArray files;
+    QJsonArray files; // la lista è vuota?
     int cnt = 0;
+    int userid;
     bool err = false;
 
     query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
@@ -164,7 +222,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
         if(cnt == 1){
             QSqlQuery query;
             qDebug()<<"checking password...\n";
-            query.prepare("SELECT Password, Salt FROM users WHERE Username = (:username)");
+            query.prepare("SELECT Password, UserId, Salt FROM users WHERE Username = (:username)");
             query.bindValue(":username", username);
             if (query.exec()) {
 
@@ -176,32 +234,30 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
 
                     if(hashed_pwd.compare(QString(query.value("Password").toString()))){
                         //success
-                        users.insert(username);
+                        userid = query.value("UserId").toInt();
+
+                        users.insert(socket, userid);
                         QSqlQuery query2;
                         query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
                         query2.bindValue(":username", username);
 
-                        if(query.exec()){
+                        if(query2.exec()){
 
-                            while(query.next()){
-                                //per ogni file creo un jsonObjest contenente nome del file, id del file e numero di client che lo stanno condividendo (?)
+                            if(query2.size() > 0){
 
-                                QString filename = query2.value("FileName").toString();
-                                int fileId = query2.value("Id").toInt();
+                                while(query2.next()){
+                                    //per ogni file creo un jsonObjest contenente nome del file e id
 
-                                if(!users_files.contains(username)){//funzionerà!?!?!?!?!?!?
-                                    users_files.insert(username, QMap<int, QString>{{fileId, filename}});
+                                    QString filename = query2.value("FileName").toString();
+                                    int fileId = query2.value("Id").toInt();
+
+                                    files = Serialize::singleFileSerialize(filename, fileId, files);
                                 }
-                                else{
-                                    users_files[username].insert(fileId, filename);
-
-                                }
-
-                               // QSqlQuery query3;
-                                files = Serialize::singleFileSerialize(filename, fileId, files);
                             }
-                            response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(username, files, LOGIN));
-                            //sendMessage(socket, response);
+                            message = "login OK";
+                            response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+                            sendMessage(socket, response_ok);
+                            response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(userid, username, files, LOGIN));
                         }
                     }
                     else{
@@ -216,17 +272,11 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                     qDebug()<< "query.next() in SELECT Password error\n ";
                     err = true;
                 }
-
-
-
             }
             else {
                 qDebug()<< "SELECT Password NOT executed: "<< query.lastError()<<"\n";
                 err = true;
-
             }
-
-
         }
         else {
             qDebug()<< "Username not valid\n";
@@ -242,7 +292,6 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     if(err){
         message = "AUTHENTICATION_ERROR";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-        //sendMessage(socket, response);
     }
 
     sendMessage(socket, response);
@@ -260,6 +309,10 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
     QSqlQuery query;
     int cnt = 0;
     int fileId = 0;
+    QString path = "C:/Users/Ilio/Desktop/Progetto_Malnati_git/";
+    QString message;
+    QByteArray response;
+    bool err = false;
 
 
     query.prepare("SELECT COUNT(*) FROM files WHERE UserName = (:username) AND FileName = (.filename)");
@@ -270,8 +323,9 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
             cnt = query.value(0).toInt();
         }
         if(cnt != 0){
+            message = "ERROR: the file does already exist!\n";
+            err = true;
             qDebug("ERROR: the file does already exist!\n");
-            //fare altro???
 
         }
         else{
@@ -282,70 +336,87 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
                 if(query2.next()){
                     fileId = query2.value(0).toInt();
                 }
+                path.append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
+                qDebug()<< "Path: " << path << "\n";
+
 
                 QSqlQuery query3;
-                query3.prepare("INSERT INTO files(FileName, Id, userName) VALUES ((:filename), (fileId), (username))");
+                query3.prepare("INSERT INTO files(FileName, Id, userName, Path) VALUES ((:filename), (:fileId), (:username), (:path))");
                 query3.bindValue(":filename", filename);
                 query3.bindValue(":fileId", fileId);
                 query3.bindValue(":username", username);
+                query3.bindValue(":path", path);
 
                 if(query3.exec()){
-                    QFile file(QString::number(fileId));
-                    if(file.open(QIODevice::ReadWrite)){
-                        //che cazzo devo fareeeeeeee
+                    File *newfile = new File(fileId, path);
+                    message = "OK file created\n";
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+                    sendMessage(socket, response);
 
-                    }
-                    else {
-                        qDebug() << "file not opened\n";
-                    }
-
-
+                    files.insert(fileId, newfile);
+                    newfile->addUser(socket);
                 }
                 else {
+                    message = "ERROR\n";
+                    err = true;
                     qDebug() << "INSERT failed: " << query2.lastError() << "\n";
                 }
-
-
             }
             else {
+                message = "ERROR\n";
+                err = true;
                 qDebug() << "SELECT COUNT(Id) failed: " << query2.lastError() << "\n";
             }
-
         }
     }
     else {
+        message = "ERROR\n";
+        err = true;
         qDebug()<< "SELECT COUNT(*) NOT executed: " << query.lastError() << "\n";
     }
 
+    if(err){
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+        sendMessage(socket, response);
+    }
+    return;
 
 }
 
 void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
 
-    if(users_files.contains(username)){
-        if(users_files[username].contains(fileId)){
-            //SUCCESS
-            qDebug() <<"il client: "<< username << "HA accesso al file richiesto\n";
+    File *f = nullptr;
+    QString message;
+    QByteArray response;
+    bool err = false;
 
-            if(files.contains(fileId)){
-                //il file è gia in RAM
-            }
-            else {
-                //cercare il file nel DB ????
-            }
-
-
-
-        }
-        else{
-            qDebug() <<"il client: "<< username << "NON ha accesso al file richiesto\n";
-
-        }
+    if(files.contains(fileId)){
+        //il file è gia in RAM
+        f = files.value(fileId);
     }
-    else{
-        qDebug() <<"il client: "<< username << "NON ha accesso al file richiesto\n";
-
+    else {
+        //cercare il file nel DB
     }
+
+
+
+    if(f != nullptr){
+        message = "OK\n";
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+        f->addUser(socket);
+    }
+    else {
+
+        err = true;
+        message = "ERROR\n";
+    }
+
+    if(err){
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+    }
+
+    sendMessage(socket, response);
+
 
 
 }
@@ -359,7 +430,8 @@ void DBInteraction::closeFile(int fileId, QString username, QTcpSocket *socket){
 
 
 
-
-
-void DBInteraction::searchFile(){}
 void DBInteraction::deleteFile(){}
+
+File* DBInteraction::getFile(int fileid){
+    return files.value(fileid);
+}

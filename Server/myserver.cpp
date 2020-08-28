@@ -119,6 +119,8 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     QStringList list;
     int fileId;
     QString username, filename;
+    //QPair<int, Message> fileid_message;
+    File *f;
 
     int type = Serialize::actionType(ObjData);
 
@@ -143,6 +145,11 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+
+        //fileid_message = Serialize::messageUnserialize(ObjData);
+
+        //f = db->getFile(fileid_message.first);
+        //f->messageHandler(socket, fileid_message.second, socketData);
 
         break;
     case (TEXT):
@@ -183,13 +190,76 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         qDebug("SERVER_ANSWER request");
 
         break;
+
+
+
     }
+
+
 }
 
 void MyServer::onDisconnect(){
 
 }
 
+void MyServer::handleMessage(int fileID, Message m)
+{
+    int senderId = m.getSenderId();
+
+    this->fileId_CRDT.at(fileID)->process(m);
+
+    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
+}
+
+//std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (this->addFile(fileID,path)) {//true se è andato a buon fine
+//
+//
+//        //@TODO--> vedere se è la prima volta che il file viene creato o meno--> se è nuovo non faccio read
+//        auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
+//
+//        sendNewFile(vett, fileID);
+//    }
+//    else {
+//        return std::vector<Message>();
+//    }
+//
+//    return std::vector<Message>();
+//}
+
+void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
+{
+    for (auto m : messages) {
+        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
+    }
+}
+
+//bool MyServer::addFile(int fileID, std::string path)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (it != fileId_CRDT.end())
+//        return false;//gia presente qull'ID
+//
+//    CRDT* file = new CRDT(fileID,path);
+//
+//    this->fileId_CRDT.insert(std::pair<int, CRDT*>(fileID, file));//non presente aggiungo
+//
+//    return true;
+//}
+//
+//void MyServer::removeFile(int fileID)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (it != fileId_CRDT.end()) {
+//
+//        this->fileId_CRDT.erase(it);
+//    }
+//}
 
 MyServer::~MyServer()
 {

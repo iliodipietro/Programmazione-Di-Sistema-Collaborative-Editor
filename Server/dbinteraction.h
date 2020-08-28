@@ -19,8 +19,10 @@
 #include <QFile>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
+#include "file.h"
 
 class Serialize;
+class File;
 
 class DBInteraction
 {
@@ -36,15 +38,16 @@ public:
     void createFile(QString filename, QString username, QTcpSocket *socket);
     void openFile(int fileId, QString username, QTcpSocket *socket);
     void closeFile(int fileId, QString username, QTcpSocket *socket);
-    void searchFile(); //?
     void deleteFile();
+    void renameFile();
+
+    File* getFile(int fileid);
 
 private:
     static DBInteraction* instance;
     QSqlDatabase db;
-    QMap<QString, QMap<int, QString>> users_files;
-    QSet<QString> users;
-    QMap<int, QString> files;
+    QMap<QTcpSocket*, int> users;
+    QMap<int, File*> files; // mappa fileId - File
 
 };
 

@@ -95,7 +95,7 @@ QJsonArray Serialize::singleFileSerialize(QString fileName, int fileId, QJsonArr
 }
 
 
-QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, int type){
+QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){
     /*
     Questa funzione, una volta che tutti i file di un client sono stati correttamente serializzati nell'array files, lega l'utente ai file.
     INPUT:
@@ -107,6 +107,7 @@ QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, i
     */
 
     QJsonObject obj;
+    obj.insert("userid", userId);
     obj.insert("username", username);
     obj.insert("files", QJsonValue(files));
     obj.insert("type", type);
@@ -114,7 +115,7 @@ QJsonObject Serialize::user_filesSerialize(QString username, QJsonArray files, i
     return obj;
 }
 
-QPair<QString, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
+QPair<int, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
 
     /*
     Questa funzione de-serializza il nome utente e tutti i file che possiede
@@ -124,12 +125,12 @@ QPair<QString, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject 
     - una QPair<QString, QMap<int, QString>> con il nome dell'utente come primo elemento del QPair e come secondo una mappa contenente (fileId e FileName) di tutti i file dell'utente
     */
 
-    QPair<QString, QMap<int, QString>> user_files;
+    QPair<int, QMap<int, QString>> user_files;
     QJsonArray files = obj.value("files").toArray();
     int i;
     QJsonObject singleFile;
 
-    user_files.first = obj.value("username").toString();
+    user_files.first = obj.value("username").toInt();
 
     for(i = 0; i < files.size(); i++){
         singleFile = files[i].toObject();
@@ -205,22 +206,22 @@ QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj){
 
 
 
-QJsonObject Serialize::messageSerialize(Message message, int type)
+QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
 {
     /*
     Questa funzione serializza i messaggi che vengono generati--> al suo interno sono contenuti il symbolo (lettera) e cosa si deve fare
     ossia insert/delte/style etc--> queste informazioni non sono contunte nel file json ma nel messaggio stesso
     INPUT:
     - message: messaggio che contiene il symbolo, cosa fare e tutte le informazioni necessarie
-    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui e' accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui è accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
      e sul server di inoltrarlo ad altri client connessi ed insieme aggiornareil crdt locale sul server
     RETURN:
     - una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
     */
     QJsonObject obj;
 
+    obj.insert("fileid", fileId);
     obj.insert("type", QJsonValue(type));
-
     int action = message.getAction();//insert, delete ecc.
 
     int senderId = message.getSenderId();//id del client o di chi manda
@@ -228,6 +229,14 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
     obj.insert("action", QJsonValue(action));
     obj.insert("sender", QJsonValue(senderId));
 
+    /*-------------------------------------------------------------------------------------------------------------------------------
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+    ----------------------------------------------------------------------------------------------------------------------------------*/
+    if (message.getCursorPosition() > 0) {
+        obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
+        return obj;
+    }
 
     Symbol s = message.getSymbol();
 
@@ -280,16 +289,40 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
     return obj;
 }
 
-Message Serialize::messageUnserialize(QJsonObject obj)
+QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 {
     /*
     Questa funzione de-serializza i messaggi
     INPUT:
-    - obj: e' un Qjson che contiene tutte le info
+    - obj: è un Qjson che contiene tutte le info
     RETURN:
-    - un oggetto di tipo message che puo essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
+    - un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
     vedi Message.h/cpp per specifiche
     */
+
+    int fileid = obj.value("fileid").toInt();
+
+    int action = obj.value("action").toInt();
+    int sender = obj.value("sender").toInt();
+
+   // QPair<int, Message> ret;
+    //ret.first = fileid;
+
+
+    /*-------------------------------------------------------------------------------------------------------------------------------
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+    ----------------------------------------------------------------------------------------------------------------------------------*/
+    if (action == CURSOR) {
+        __int64 cursorPosition = obj.value("cursor_position").toInt();
+        Message m(cursorPosition, action, sender);
+        QPair<int, Message> ret(fileid, m);
+
+
+        //ret.second.operator=(m);
+        return  ret;
+    }
+
     char c = obj.value("character").toInt();
 
     std::array<int, 2> a;
@@ -323,13 +356,12 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
     Symbol s(c, a, pos, font, color, alignFlag);
 
-    int action = obj.value("action").toInt();
-
-    int sender = obj.value("sender").toInt();
 
     Message m(s, action, sender);
 
-    return m;
+    QPair<int, Message> ret(fileid, m);
+
+    return ret;
 }
 
 QJsonObject Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server

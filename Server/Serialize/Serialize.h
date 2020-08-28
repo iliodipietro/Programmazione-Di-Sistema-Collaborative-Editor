@@ -36,8 +36,8 @@ public:
 
     //usate in DBInteraction per login
     static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);//ilio
-    static QJsonObject user_filesSerialize(QString username, QJsonArray files, int type);//ilio
-    static QPair<QString, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
+    static QJsonObject user_filesSerialize(int userId, QString username, QJsonArray files, int type);//ilio
+    static QPair<int, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
 
     //usate in myserver.cpp per open - close
     static QJsonObject openCloseFileSerialize(int fileId, QString username, int type); // ilio
@@ -47,8 +47,8 @@ public:
     static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
 
 
-    static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
-    static Message messageUnserialize(QJsonObject obj);
+    static QJsonObject messageSerialize(int fileId, Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+    static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
 
 
