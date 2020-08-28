@@ -45,15 +45,17 @@ void SocketHandler::bytesWritten(qint64 bytes)
 
 void SocketHandler::readyRead()
 {
-	while (m_tcpSocket->bytesAvailable()) {
+	while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
 		qint64 numBytes = m_tcpSocket->bytesAvailable();
 		QByteArray data = m_tcpSocket->readAll();
 		m_previousPacket->append(data);
-		while (m_previousPacket->size() >= 8) {
+		qint64 messageSize = 0;
+		while ((messageSize == 0 && m_previousPacket->size() >= 8) || (messageSize > 0 && m_previousPacket->size() >= messageSize)) {
 
-			qint64 messageSize = arrayToInt(m_previousPacket->mid(0, 8));
-
-			m_previousPacket->remove(0, 8);
+			if (messageSize == 0 && m_previousPacket->size() >= 8) {
+				messageSize = arrayToInt(m_previousPacket->mid(0, 8));
+				m_previousPacket->remove(0, 8);
+			}
 
 			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
 				QByteArray message = m_previousPacket->mid(0, static_cast<qint32>(messageSize));
