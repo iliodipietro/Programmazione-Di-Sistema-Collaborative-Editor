@@ -30,7 +30,7 @@ public:
 
 private slots:
     void onNewConnection();
-    void readFromSocket();
+    //void readFromSocket();
     void MessageHandler(QTcpSocket *socket, QByteArray socketData);
     void onDisconnect();
 signals:
