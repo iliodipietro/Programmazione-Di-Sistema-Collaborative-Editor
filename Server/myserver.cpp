@@ -2,18 +2,19 @@
 
 
 
-
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
 {
     //supporto al file system da implementare
     db->startDBConnection();
-    connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
-    connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
+    connect(_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    //listen(QHostAddress("192.168.0.6"), 44322);
+    listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
+    //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
 
 }
 
-bool MyServer:: listen(QHostAddress &addr, quint16 port){
+bool MyServer:: listen(QHostAddress addr, quint16 port){
 
     if(!_server->listen(addr, port)){
         qCritical("Cannot connect server: %s", qPrintable(_server->errorString()));
@@ -23,17 +24,20 @@ bool MyServer:: listen(QHostAddress &addr, quint16 port){
     return true;
 }
 
+//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperà di leggere e scrivere i messaggi
 void MyServer::onNewConnection(){
-    QTcpSocket *newConnection = _server->nextPendingConnection();
-    if(newConnection == nullptr) return;
+    while(_server->hasPendingConnections()){
+        QTcpSocket *newConnection = _server->nextPendingConnection();
+        if(newConnection == nullptr) return;
 
-    qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
-    ClientManager* client = new ClientManager(m_lastId++, newConnection, this);
-    m_connectedClients.push_back(client);
-    //connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
-    //connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
-    connect(client, &ClientManager::messageReceived, this, &MyServer::MessageHandler);
-    connect(client, &ClientManager::disconnected, this, &MyServer::onDisconnect);
+        qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
+        ClientManager* client = new ClientManager(m_lastId++, newConnection, this);
+        m_connectedClients.push_back(client); //ogni client viene inserito in una lista per tenere traccia di quelli connessi
+        //connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
+        //connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
+        connect(client, &ClientManager::messageReceived, this, &MyServer::MessageHandler);
+        connect(client, &ClientManager::disconnected, this, &MyServer::onDisconnect);
+    }
 }
 
 /*void MyServer::readFromSocket(){
@@ -123,7 +127,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     File *f;
 
     int type = Serialize::actionType(ObjData);
-
+    qDebug()<<type;
     switch (type) {
     case (LOGIN):
         qDebug("LOGIN request");
@@ -191,15 +195,26 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 
         break;
 
-
-
+    default:
+        QString str = QString::fromUtf8(socketData);
+        qDebug()<<str<<"\n";
+        break;
     }
 
 
 }
 
+//quando un client si disconnette viene rimosso dalla lista di quelli connessi
 void MyServer::onDisconnect(){
-
+    ClientManager* client = static_cast<ClientManager*>(sender());
+    auto it = m_connectedClients.begin();
+    for(it; it != m_connectedClients.end(); it++){
+        if((*it) == client){
+            m_connectedClients.erase(it);
+            break;
+        }
+    }
+    client->deleteLater();
 }
 
 void MyServer::handleMessage(int fileID, Message m)

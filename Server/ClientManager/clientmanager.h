@@ -13,6 +13,7 @@ public:
     ClientManager(int id, QTcpSocket* socket, QObject *parent = nullptr);
     void setUsername(QString username);
     void setColor(QColor color);
+    bool writeData(QByteArray& data);
     ~ClientManager();
 
 signals:
@@ -29,6 +30,9 @@ private:
     int m_id;
     QSharedPointer<QTcpSocket> m_clientSocket;
     QSharedPointer<QByteArray> m_socketBuffer;
+
+    qint64 arrayToInt(QByteArray source);
+    QByteArray intToArray(qint64 source);
 };
 
 #endif // CLIENTMANAGER_H

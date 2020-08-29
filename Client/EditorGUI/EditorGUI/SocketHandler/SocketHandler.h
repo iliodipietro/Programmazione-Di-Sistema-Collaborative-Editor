@@ -26,7 +26,7 @@ private:
     QSharedPointer<QTcpSocket> m_tcpSocket;
 
     void closeEvent(QCloseEvent* event);
-    QByteArray intToArray(qint32 source);
+    QByteArray intToArray(qint64 source);
     qint64 arrayToInt(QByteArray source);
 
 signals:

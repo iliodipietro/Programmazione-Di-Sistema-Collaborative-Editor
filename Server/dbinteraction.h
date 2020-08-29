@@ -49,6 +49,8 @@ private:
     QMap<QTcpSocket*, int> users;
     QMap<int, File*> files; // mappa fileId - File
 
+    QByteArray intToArray(qint64 source);
+
 };
 
 #endif // DBINTERACTION_H

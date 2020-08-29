@@ -450,7 +450,6 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 
     obj.insert("message", QJsonValue(message));
 
-
     return obj;
 }
 

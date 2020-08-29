@@ -58,8 +58,9 @@ void SocketHandler::readyRead()
 			}
 
 			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
-				QByteArray message = m_previousPacket->mid(0, static_cast<qint32>(messageSize));
-				m_previousPacket->remove(0, static_cast<qint32>(messageSize));
+				QByteArray message = m_previousPacket->mid(0, messageSize);
+				m_previousPacket->remove(0, messageSize);
+				messageSize = 0;
 				QJsonParseError parseError;
 				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
 				emit dataReceived(doc.object());
@@ -95,14 +96,13 @@ bool SocketHandler::writeData(QByteArray& data) {
 		m_tcpSocket->write(intToArray(data.size()));
 		m_tcpSocket->write(data);
 		return m_tcpSocket->waitForBytesWritten();
-		readyRead();
 	}
 	else {
 		return false;
 	}
 }
 
-QByteArray SocketHandler::intToArray(qint32 source) {
+QByteArray SocketHandler::intToArray(qint64 source) {
 	QByteArray temp;
 	QDataStream data(&temp, QIODevice::ReadWrite);
 	data << source;
