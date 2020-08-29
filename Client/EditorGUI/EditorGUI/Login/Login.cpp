@@ -6,9 +6,8 @@ Login::Login(QWidget* parent)
 	m_timer(QSharedPointer<QTimer>(new QTimer(this)))
 {
 	ui.setupUi(this);
-	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(loginResult(QJsonObject)));
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);
 	connect(m_timer.get(), SIGNAL(timeout()), this, SLOT(showErrorMessage()));
-	m_socketHandler->connectToServer();
 	m_fileBrowserWindow = Q_NULLPTR;
 	m_newAccountWindow = Q_NULLPTR;
 }
@@ -24,12 +23,12 @@ void Login::closeEvent(QCloseEvent* event)
 }
 
 void Login::openFileBrowser() {
+	m_timer->stop();
 	QString username = ui.usernameTextLine->text();
 	resetWindows();
 	m_fileBrowserWindow = new FileBrowser(m_socketHandler, username);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
-	m_timer->stop();
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
 	this->hide();
 }
@@ -41,11 +40,11 @@ void Login::on_loginButton_clicked()
 	//QString loginInfo = "";
 	//loginInfo.append(username).append(",").append(password);
 	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-	QJsonObject message = Serialize::userSerialize(username, password, username, 1);
+	QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
 	bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
 	if (true) {
 		m_timer->setSingleShot(true);
-		m_timer->setInterval(1000);
+		m_timer->setInterval(3000);
 		m_timer->start();
 		openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
 	}
@@ -59,8 +58,10 @@ void Login::showErrorMessage() {
 }
 
 void Login::loginResult(QJsonObject response) {
-	int result = Serialize::responseUnserialize(response)[0].toInt();;
-	if (true) {
+	m_timer->stop();
+	QStringList serverMessage = Serialize::responseUnserialize(response);
+	bool result = serverMessage[0] == "true" ? true : false;
+	if (result) {
 		openFileBrowser();
 	}
 	else {

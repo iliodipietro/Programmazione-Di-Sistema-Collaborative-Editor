@@ -374,7 +374,8 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
 	*/
 	QStringList list;
-	list.append(obj.value("res").toString());
+	bool res = obj.value("res").toBool();
+	list.append(res ? "true" : "false");
 	list.append(obj.value("message").toString());
 
 	return list;

@@ -1,7 +1,9 @@
 #include "SocketHandler.h"
 #include <QtCore\qjsondocument.h>
+#include <QDebug>
 
 #define SERVER_IP "192.168.0.6"
+#define PORT 44322
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
 	m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
@@ -12,10 +14,11 @@ SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSh
 	connect(m_tcpSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
 	connect(m_tcpSocket.get(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
 	//connect(this, SIGNAL(dataReceived(int)), this, SLOT(getMessage(int)));
+	connectToServer();
 }
 
 bool SocketHandler::connectToServer() {
-	m_tcpSocket->bind(QHostAddress(SERVER_IP), 0);
+	m_tcpSocket->connectToHost(QHostAddress(SERVER_IP), PORT);
 	if (!m_tcpSocket->waitForDisconnected(1000))
 	{
 		qDebug() << "Error: " << m_tcpSocket->errorString();
@@ -28,8 +31,8 @@ void SocketHandler::connected()
 {
 	qDebug() << "Connected!";
 	QByteArray data = QString("connesso").toUtf8();
-	m_tcpSocket->write(intToArray(data.size()));
-	m_tcpSocket->write(data);
+	m_tcpSocket->write(intToArray(data.size()).append(data));
+	qDebug() << data.size() << "\n";
 	m_tcpSocket->waitForBytesWritten(3000);
 }
 
@@ -54,12 +57,13 @@ void SocketHandler::readyRead()
 
 			if (messageSize == 0 && m_previousPacket->size() >= 8) {
 				messageSize = arrayToInt(m_previousPacket->mid(0, 8));
+				qDebug() << messageSize << "\n";
 				m_previousPacket->remove(0, 8);
 			}
 
 			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
-				QByteArray message = m_previousPacket->mid(0, static_cast<qint32>(messageSize));
-				m_previousPacket->remove(0, static_cast<qint32>(messageSize));
+				QByteArray message = m_previousPacket->mid(0, messageSize);
+				m_previousPacket->remove(0, messageSize);
 				QJsonParseError parseError;
 				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
 				emit dataReceived(doc.object());
@@ -92,17 +96,15 @@ bool SocketHandler::writeData(SocketMessage& data) {
 bool SocketHandler::writeData(QByteArray& data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{
-		m_tcpSocket->write(intToArray(data.size()));
-		m_tcpSocket->write(data);
+		m_tcpSocket->write(intToArray(data.size()).append(data));
 		return m_tcpSocket->waitForBytesWritten();
-		readyRead();
 	}
 	else {
 		return false;
 	}
 }
 
-QByteArray SocketHandler::intToArray(qint32 source) {
+QByteArray SocketHandler::intToArray(qint64 source) {
 	QByteArray temp;
 	QDataStream data(&temp, QIODevice::ReadWrite);
 	data << source;
