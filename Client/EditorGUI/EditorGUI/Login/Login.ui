@@ -29,7 +29,7 @@
       <x>360</x>
       <y>150</y>
       <width>441</width>
-      <height>361</height>
+      <height>421</height>
      </rect>
     </property>
     <property name="title">
@@ -98,12 +98,47 @@
       </item>
      </layout>
     </widget>
+    <widget class="QLabel" name="loginLabel_2">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>310</y>
+       <width>221</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Non sei ancora registrato?</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::PlainText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="newAccount">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>360</y>
+       <width>311</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Crea account</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QLabel" name="loginLabel">
     <property name="geometry">
      <rect>
-      <x>470</x>
-      <y>60</y>
+      <x>450</x>
+      <y>100</y>
       <width>221</width>
       <height>61</height>
      </rect>
@@ -119,19 +154,6 @@
     </property>
     <property name="wordWrap">
      <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="newAccount">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>50</y>
-      <width>191</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Crea account</string>
     </property>
    </widget>
   </widget>
