@@ -547,11 +547,11 @@ void Editor::on_textEdit_textChanged() {
 
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
-		//localDelete();
+		localDelete();
 	}
 	else {
 		//è una insert
-		//localInsert();
+		localInsert();
 	}
 	//aggiorno
 	this->lastText = m_textEdit->toPlainText();
