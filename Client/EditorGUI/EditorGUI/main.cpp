@@ -1,5 +1,6 @@
 #include "Login/Login.h"
 #include <QtWidgets/QApplication>
+#include <QCoreApplication>
 
 int main(int argc, char* argv[])
 {

@@ -1,7 +1,8 @@
 #include "SocketHandler.h"
 #include <QtCore\qjsondocument.h>
 
-#define SERVER_IP "192.168.0.6"
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT 80
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
 	m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
@@ -15,7 +16,7 @@ SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSh
 }
 
 bool SocketHandler::connectToServer() {
-	m_tcpSocket->bind(QHostAddress(SERVER_IP), 0);
+	m_tcpSocket->bind(QHostAddress(SERVER_IP), SERVER_PORT);
 	if (!m_tcpSocket->waitForDisconnected(1000))
 	{
 		qDebug() << "Error: " << m_tcpSocket->errorString();
