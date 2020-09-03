@@ -22,11 +22,11 @@ void Login::closeEvent(QCloseEvent* event)
 	qApp->quit();
 }
 
-void Login::openFileBrowser() {
+void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage) {
 	m_timer->stop();
 	QString username = ui.usernameTextLine->text();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, username);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, username);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
@@ -42,11 +42,11 @@ void Login::on_loginButton_clicked()
 	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
 	QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
 	bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
-	if (true) {
+	if (result) {
 		m_timer->setSingleShot(true);
 		m_timer->setInterval(3000);
 		m_timer->start();
-		openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+		//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
 	}
 	else {
 		qDebug() << m_socketHandler->getSocketState();
@@ -62,7 +62,10 @@ void Login::loginResult(QJsonObject response) {
 	QStringList serverMessage = Serialize::responseUnserialize(response);
 	bool result = serverMessage[0] == "true" ? true : false;
 	if (result) {
-		openFileBrowser();
+		QString profileImageBase64 = serverMessage[1];
+		QSharedPointer<QPixmap> profileImage;
+		profileImage->loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		openFileBrowser(profileImage);
 	}
 	else {
 		QMessageBox resultDialog(this);

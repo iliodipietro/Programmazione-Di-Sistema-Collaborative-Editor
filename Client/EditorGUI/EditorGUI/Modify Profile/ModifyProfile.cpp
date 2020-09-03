@@ -71,7 +71,7 @@ void ModifyProfile::on_submit_clicked() {
 		}
 		//if (m_croppedImage != Q_NULLPTR) {
 			//QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = Serialize::userSerialize(this->username, password, nickname, 2);//type da definire in define.h
+			QJsonObject userInfoSerialized = Serialize::userSerialize(this->username, password, nickname, 2, m_croppedImage);//type da definire in define.h
 			//bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
 			bool result2 = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 			if (result2) {

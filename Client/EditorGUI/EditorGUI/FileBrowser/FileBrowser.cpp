@@ -1,7 +1,7 @@
 #include "FileBrowser.h"
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username, QWidget* parent)
-	: QMainWindow(parent), m_socketHandler(socketHandler)
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage)
 {
 	ui.setupUi(this);
 	ui.usernameLabel->setText(" " + username);

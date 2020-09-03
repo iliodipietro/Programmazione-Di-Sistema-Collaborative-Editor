@@ -25,7 +25,7 @@ private:
 	QSharedPointer<SocketHandler> m_socketHandler;
 	QSharedPointer<QTimer> m_timer;
 
-	void openFileBrowser();
+	void openFileBrowser(QSharedPointer<QPixmap> profileImage);
 	void closeEvent(QCloseEvent* event);
 	void resetWindows();
 

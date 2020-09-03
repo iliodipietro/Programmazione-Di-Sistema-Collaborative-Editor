@@ -65,9 +65,9 @@ void NewAccount::on_submit_clicked() {
 			m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
 			ui.crop->setPixmap(*m_croppedImage);
 		}
-		//if (m_croppedImage != Q_NULLPTR) { -> da scommentare una volta che il caricamento delle immagini funziona
+		if (m_croppedImage != Q_NULLPTR) { //-> da scommentare una volta che il caricamento delle immagini funziona
 			//QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, REGISTER);
+			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, REGISTER, m_croppedImage);
 			//bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
 			bool result2 = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 			if (result2) {
@@ -81,10 +81,10 @@ void NewAccount::on_submit_clicked() {
 				resultDialog.exec();
 			}
 			//QMessageBox::information(this, "NewAccount", "New Account Created");
-		//}
-		//else {
-		//	QMessageBox::warning(this, "NewAccount", "A picture is needed");
-		//}
+		}
+		else {
+			QMessageBox::warning(this, "NewAccount", "A picture is needed");
+		}
 	}
 	else {
 		QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
