@@ -10,7 +10,7 @@ Serialize::Serialize(QObject* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type, QPixmap *profileImage)
 {
 	/*
 
@@ -33,6 +33,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
 	if (type == REGISTER) {
 		//il nickname serve solo in fase di register per salvarlo sul server
 		obj.insert("nickname", QJsonValue(nickname));
+		obj.insert("img", Serialize::jsonValFromPixmap(*profileImage));
 	}
 
 
@@ -74,6 +75,8 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	if (Serialize::actionType(obj) == REGISTER) {
 		QString nickname = obj.value("nickname").toString();
 		list.append(nickname);
+		QString img = obj.value("img").toString();
+		list.append(img);
 	}
 
 	return list;
@@ -147,7 +150,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
 	----------------------------------------------------------------------------------------------------------------------------------*/
 	if (message.getCursorPosition() > 0) {
-		obj.insert("cursor_position", QJsonValue( message.getCursorPosition()));
+		obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
 		return obj;
 	}
 
@@ -507,3 +510,5 @@ int Serialize::actionType(QJsonObject obj)
 //{
 //	this->type = type;
 //}
+
+

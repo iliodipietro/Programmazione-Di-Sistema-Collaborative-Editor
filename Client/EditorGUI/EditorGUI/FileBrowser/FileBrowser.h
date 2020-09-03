@@ -19,7 +19,7 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username = "", QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username = "", QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 private:
@@ -31,6 +31,7 @@ private:
 	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
+	QSharedPointer<QPixmap> m_profileImage;
 	void closeEvent(QCloseEvent* event);
 
 	void requestFiles();
