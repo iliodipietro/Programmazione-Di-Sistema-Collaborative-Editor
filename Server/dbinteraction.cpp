@@ -244,6 +244,8 @@ void DBInteraction::registration(QString username, QString password, QString nic
         instance->db.close();
     }
 
+    sendMessage(socket, response);
+
     return;
 }
 

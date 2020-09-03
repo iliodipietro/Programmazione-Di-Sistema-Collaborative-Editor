@@ -4,7 +4,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString us
 	: QMainWindow(parent), m_socketHandler(socketHandler)
 {
 	ui.setupUi(this);
-	ui.usernameLabel->setText(username);
+	ui.usernameLabel->setText(" " + username);
 	this->username = username;
 	/*model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);

@@ -78,22 +78,16 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
     return list;
 }
 
-QJsonArray Serialize::singleFileSerialize(QString fileName, int fileId, QJsonArray files){
-    /*
-    Questa funzione, chiamata solo in caso di login verificato, per ogni file del client che ha appena effettuato login, serializza le relative info(nome 		e id del file) salvandole in un QJsonArray che alla fine conterrà tutti i file posseduti dal client.
-    INPUT:
-    - fileName: stringa che contiene il nome del file;
-    - fileId: intero rapprensentante identificativo univoco di un file;
-    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
-    RETURN:
-    - files: l'array che viene man mano aggiornato ad ogni chiamata.
-    */
 
     QJsonObject obj;
     obj.insert("filename", fileName);
     obj.insert("fileId", fileId);
     files.push_back(QJsonValue(obj));
 
+    INPUT:
+    - fileName: stringa che contiene il nome del file;
+    - fileId: intero rapprensentante identificativo univoco di un file;
+    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
 
     return files;
 }

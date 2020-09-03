@@ -2,6 +2,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 
+#define RUBBER_SIZE 175
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
 	m_timer(new QTimer(this))
@@ -32,7 +33,7 @@ void NewAccount::on_selectImageButton_clicked() {
 	if (url.compare("") != 0) {
 		m_selectedImage = new QPixmap(url);
 		m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-		QSize rubberSize(50, 50);
+		QSize rubberSize(RUBBER_SIZE , RUBBER_SIZE);
 		QPoint point(ui.imageLabel->pos());
 		QRect size(point, rubberSize);
 		if (m_selectionArea == Q_NULLPTR)
