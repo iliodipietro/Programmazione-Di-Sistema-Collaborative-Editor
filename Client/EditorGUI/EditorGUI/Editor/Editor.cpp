@@ -14,8 +14,8 @@
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
 
-Editor::Editor(QString path, QString username, QWidget* parent)
-	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))),
+Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QString path, QString username, int fileId, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false)
 {
 	ui.setupUi(this);
@@ -54,7 +54,6 @@ Editor::Editor(QString path, QString username, QWidget* parent)
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
-	this->username = username;
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -1011,9 +1010,10 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 }
 
 void Editor::messageReceived(QJsonObject packet) {
+	Message m = Serialize::messageUnserialize(packet);
+	//TODO check se il messaggio che arriva è relativo al file gestito da questo editor
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
-	Message m = Serialize::messageUnserialize(packet);
 	remoteAction(m);
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);

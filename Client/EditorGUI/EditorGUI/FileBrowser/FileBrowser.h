@@ -33,13 +33,16 @@ private:
 	QLineEdit* m_newFileLabel;
 	void closeEvent(QCloseEvent* event);
 
+	void requestFiles();
+
 private slots:
-	void on_treeView_doubleClicked(const QModelIndex& index);
+	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
 	void on_logoutButton_clicked();
 	void on_modifyProfile_clicked();
 	void on_newFile_Clicked();
 	void editorClosed(QString);
 	void childWindowClosed();
+	void addFiles(QJsonObject message);
 
 signals:
 	void showParent();

@@ -2,20 +2,19 @@
 
 
 
-
-MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)){
+MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
+{
     //supporto al file system da implementare
-    db = DBInteraction::startDBConnection();
-    if(db == nullptr){
-        return; // giusto? ----------------------->(periodicamente riprovare la connessione al DB!!)
-    }
-    connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
-    connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
-    //File* file = new File(1, "C:/Users/Mattia Proietto/Desktop/prova_save_Copia.txt");
+    db->startDBConnection();
+    connect(_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    //listen(QHostAddress("192.168.0.6"), 44322);
+    listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
+    //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
+
 
 }
 
-bool MyServer:: listen(QHostAddress &addr, quint16 port){
+bool MyServer:: listen(QHostAddress addr, quint16 port){
 
     if(!_server->listen(addr, port)){
         qCritical("Cannot connect server: %s", qPrintable(_server->errorString()));
@@ -25,18 +24,24 @@ bool MyServer:: listen(QHostAddress &addr, quint16 port){
     return true;
 }
 
+//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperà di leggere e scrivere i messaggi
 void MyServer::onNewConnection(){
-    QTcpSocket *newConnection = _server->nextPendingConnection();
-    if(newConnection == nullptr) return;
+    while(_server->hasPendingConnections()){
+        QTcpSocket *newConnection = _server->nextPendingConnection();
+        if(newConnection == nullptr) return;
 
-    qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
-
-    connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
-    connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
+        qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
+        ClientManager* client = new ClientManager(m_lastId++, newConnection, this);
+        m_connectedClients.push_back(client); //ogni client viene inserito in una lista per tenere traccia di quelli connessi
+        //connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
+        //connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
+        connect(client, &ClientManager::messageReceived, this, &MyServer::MessageHandler);
+        connect(client, &ClientManager::disconnected, this, &MyServer::onDisconnect);
+    }
 }
 
-void MyServer::readFromSocket(){
-    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo Ã¨ necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
+/*void MyServer::readFromSocket(){
+    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo è necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
     //In questa soluzione abbiamo scelto di inviare per prima cosa la dimensione "dim" del dato da leggere, per poi leggere tutti i restandi "dim" byte che rappresentano il dato completo
 
     QTcpSocket *sender = static_cast<QTcpSocket*>(QObject::sender()); //sender() returns a pointer to the object that sent the signal, if called in a slot activated by a signal; otherwise it returns nullptr.
@@ -61,7 +66,7 @@ void MyServer::readFromSocket(){
 
         while((dim == 0 && buffer->size() >= 8) || (dim > 0 && static_cast<quint64>(buffer->size()) >= dim)){
 
-            if(dim == 0 && buffer->size() >= 8){ // Ã¨ stata ricevuta la dimensione del buffer (primo parametro)
+            if(dim == 0 && buffer->size() >= 8){ // è stata ricevuta la dimensione del buffer (primo parametro)
                 //dim = buffer->mid(0,8).toULongLong(); //prendo i primi 8 byte che rappresentano la dimensione
 
                 dim = atoi(buffer->mid(0,8).data());
@@ -70,12 +75,12 @@ void MyServer::readFromSocket(){
             }
             if(dim > 0 && static_cast<quint64>(buffer->size()) >= dim){ // ho precedentemente ricevuto la dimensione del dato, quindi adesso lo leggo tutto ed emetto il segnale per
 
-                /*if(dim <= std::numeric_limits<quint32>::max()){ //la dimensione del dato da leggere Ã¨ piÃ¹ piccola di un int: posso usare tranquillamente la funzione mid
+                /*if(dim <= std::numeric_limits<quint32>::max()){ //la dimensione del dato da leggere è più piccola di un int: posso usare tranquillamente la funzione mid
                     dataToHandle = buffer->mid(0, static_cast<quint32>(dim));
                     buffer->remove(0, static_cast<quint32>(dim));
                     dim = 0;
                 }
-                else{ // la dimensione Ã¨ piÃ¹ grande di un intero (32 bit)
+                else{ // la dimensione è più grande di un intero (32 bit)
                     while(dim != 0){
                         if(dim >= std::numeric_limits<quint32>::max()){
                             dataToHandle = buffer->mid(0, std::numeric_limits<quint32>::max());
@@ -83,14 +88,14 @@ void MyServer::readFromSocket(){
                             dim -= std::numeric_limits<quint32>::max();
                         }
                         else{
-                            //ora la dimensione (dim) Ã¨ sicuramente su 32 bit, allora posso fare tranquillamente il cast senza il rischio di perdere informazioni
+                            //ora la dimensione (dim) è sicuramente su 32 bit, allora posso fare tranquillamente il cast senza il rischio di perdere informazioni
                             dataToHandle = buffer->mid(0, static_cast<quint32>((dim)));
                             buffer->remove(0, static_cast<quint32>((dim)));
                             dim = 0;
                         }
                     }
                 }*/
-                dataToHandle = buffer->mid(0, dim);
+                /*dataToHandle = buffer->mid(0, dim);
                 buffer->remove(0, dim);
                 dim = 0;
 
@@ -98,7 +103,7 @@ void MyServer::readFromSocket(){
             }
         }
     }
-}
+}*/
 
 void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 
@@ -113,15 +118,16 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     CLOSE 8
     CURSOR 9
     SERVER_ANSWER 10
-
     */
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
     int fileId;
     QString username, filename;
+    //QPair<int, Message> fileid_message;
+    File *f;
 
     int type = Serialize::actionType(ObjData);
-
+    qDebug()<<type;
     switch (type) {
     case (LOGIN):
         qDebug("LOGIN request");
@@ -143,6 +149,11 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+
+        //fileid_message = Serialize::messageUnserialize(ObjData);
+
+        //f = db->getFile(fileid_message.first);
+        //f->messageHandler(socket, fileid_message.second, socketData);
 
         break;
     case (TEXT):
@@ -184,18 +195,27 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 
         break;
 
-
-
+    default:
+        QString str = QString::fromUtf8(socketData);
+        qDebug()<<str<<"\n";
+        break;
     }
 
 
 }
 
+//quando un client si disconnette viene rimosso dalla lista di quelli connessi
 void MyServer::onDisconnect(){
-
+    ClientManager* client = static_cast<ClientManager*>(sender());
+    auto it = m_connectedClients.begin();
+    for(it; it != m_connectedClients.end(); it++){
+        if((*it) == client){
+            m_connectedClients.erase(it);
+            break;
+        }
+    }
+    client->deleteLater();
 }
-
-
 
 void MyServer::handleMessage(int fileID, Message m)
 {
@@ -211,7 +231,7 @@ void MyServer::handleMessage(int fileID, Message m)
 //    auto it = this->fileId_CRDT.find(fileID);
 //
 //    if (this->addFile(fileID,path)) {//true se è andato a buon fine
-//        
+//
 //
 //        //@TODO--> vedere se è la prima volta che il file viene creato o meno--> se è nuovo non faccio read
 //        auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
@@ -221,14 +241,14 @@ void MyServer::handleMessage(int fileID, Message m)
 //    else {
 //        return std::vector<Message>();
 //    }
-//    
+//
 //    return std::vector<Message>();
 //}
 
 void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
 {
     for (auto m : messages) {
-        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file 
+        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
     }
 }
 
