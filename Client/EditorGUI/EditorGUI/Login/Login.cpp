@@ -63,7 +63,7 @@ void Login::loginResult(QJsonObject response) {
 	bool result = serverMessage[0] == "true" ? true : false;
 	if (result) {
 		QString profileImageBase64 = serverMessage[1];
-		QSharedPointer<QPixmap> profileImage;
+		QSharedPointer<QPixmap> profileImage = QSharedPointer<QPixmap>(new QPixmap());
 		profileImage->loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
 		openFileBrowser(profileImage);
 	}
