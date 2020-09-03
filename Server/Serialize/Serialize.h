@@ -30,7 +30,7 @@ public:
     static int actionType(QJsonObject obj);
 
     //usate in myserver.cpp per login o register
-    static QJsonObject userSerialize(QString user, QString password, QString nickname, int type);//type usato per discriminare login o register
+    static QJsonObject userSerialize(QString user, QString password, QString nickname, QPixmap profileImage, int type);//type usato per discriminare login o register
     static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
     //la register l'immagine viene serializzata a parte per ora
 

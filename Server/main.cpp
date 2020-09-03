@@ -1,9 +1,10 @@
 #include <QCoreApplication>
 #include "myserver.h"
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    MyServer myserver;
-
+    MyServer s;
     return a.exec();
 }
+//prova di commit a cazzo

@@ -10,7 +10,7 @@ Serialize::Serialize(QWidget* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, QPixmap profileImage, int type)
 {
     /*
     Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio e' discriminato dal valore di type
@@ -31,6 +31,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
     if (type == REGISTER) {
         //il nickname serve solo in fase di register per salvarlo sul server
         obj.insert("nickname", QJsonValue(nickname));
+        obj.insert("img", Serialize::jsonValFromPixmap(profileImage));
     }
 
 
@@ -69,27 +70,24 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
     if (Serialize::actionType(obj) == REGISTER) {
         QString nickname = obj.value("nickname").toString();
         list.append(nickname);
+        QString img = obj.value("img").toString();
+        list.append(img);
+        qDebug() << img;
     }
 
     return list;
 }
 
-QJsonArray Serialize::singleFileSerialize(QString fileName, int fileId, QJsonArray files){
-    /*
-    Questa funzione, chiamata solo in caso di login verificato, per ogni file del client che ha appena effettuato login, serializza le relative info(nome 		e id del file) salvandole in un QJsonArray che alla fine conterrà tutti i file posseduti dal client.
-    INPUT:
-    - fileName: stringa che contiene il nome del file;
-    - fileId: intero rapprensentante identificativo univoco di un file;
-    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
-    RETURN:
-    - files: l'array che viene man mano aggiornato ad ogni chiamata.
-    */
 
     QJsonObject obj;
     obj.insert("filename", fileName);
     obj.insert("fileId", fileId);
     files.push_back(QJsonValue(obj));
 
+    INPUT:
+    - fileName: stringa che contiene il nome del file;
+    - fileId: intero rapprensentante identificativo univoco di un file;
+    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
 
     return files;
 }
@@ -449,7 +447,6 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
     obj.insert("res", QJsonValue(res));
 
     obj.insert("message", QJsonValue(message));
-
 
     return obj;
 }

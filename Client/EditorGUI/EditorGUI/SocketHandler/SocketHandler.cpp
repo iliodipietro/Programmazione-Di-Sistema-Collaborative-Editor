@@ -57,13 +57,13 @@ void SocketHandler::readyRead()
 
 			if (messageSize == 0 && m_previousPacket->size() >= 8) {
 				messageSize = arrayToInt(m_previousPacket->mid(0, 8));
-				qDebug() << messageSize << "\n";
 				m_previousPacket->remove(0, 8);
 			}
 
 			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
 				QByteArray message = m_previousPacket->mid(0, messageSize);
 				m_previousPacket->remove(0, messageSize);
+				messageSize = 0;
 				QJsonParseError parseError;
 				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
 				emit dataReceived(doc.object());

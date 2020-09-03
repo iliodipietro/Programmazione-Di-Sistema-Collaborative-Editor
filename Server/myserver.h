@@ -8,14 +8,15 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <vector>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "dbinteraction.h"
+#include "file.h"
 #include "CRDT/CRDT.h"
 #include "CRDT/Message.h"
 #include "CRDT/Symbol.h"
 #include "ClientManager/clientmanager.h"
-#include <vector>
 
 class CRDT;
 class Serialize;
@@ -25,7 +26,7 @@ class MyServer : public QObject{
     Q_OBJECT
 public:
     MyServer(QObject *parent = nullptr);
-    bool listen(QHostAddress &addr, quint16 port);
+    bool listen(QHostAddress addr, quint16 port);
     ~MyServer();
 
 private slots:

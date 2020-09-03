@@ -1,0 +1,54 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1016,5): warning MSB8027: due o più file con il nome di CRDT.cpp produrranno output nello stesso percorso. Tale condizione può comportare un risultato di compilazione non corretto. I file interessati sono client\editorgui\editorgui\crdt\CRDT.cpp, server\crdt\CRDT.cpp.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1016,5): warning MSB8027: due o più file con il nome di Message.cpp produrranno output nello stesso percorso. Tale condizione può comportare un risultato di compilazione non corretto. I file interessati sono client\editorgui\editorgui\crdt\Message.cpp, server\crdt\Message.cpp.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1016,5): warning MSB8027: due o più file con il nome di Symbol.cpp produrranno output nello stesso percorso. Tale condizione può comportare un risultato di compilazione non corretto. I file interessati sono client\editorgui\editorgui\crdt\Symbol.cpp, server\crdt\Symbol.cpp.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1016,5): warning MSB8027: due o più file con il nome di main.cpp produrranno output nello stesso percorso. Tale condizione può comportare un risultato di compilazione non corretto. I file interessati sono client\editorgui\editorgui\main.cpp, server\main.cpp.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(1016,5): warning MSB8027: due o più file con il nome di Serialize.cpp produrranno output nello stesso percorso. Tale condizione può comportare un risultato di compilazione non corretto. I file interessati sono client\editorgui\editorgui\serialization\Serialize.cpp, server\serialize\Serialize.cpp.
+  moc_CRDT.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\Server\CRDT\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  moc_myserver.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\Server\myserver.h(4,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  CRDT.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  Message.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  Symbol.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  CustomCursor.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\editor\CustomCursor.h(2,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  Editor.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\editor\Editor.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'ui_Editor.h': No such file or directory
+  MyTextEdit.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\editor\MyTextEdit.h(2,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  FileBrowser.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\filebrowser\FileBrowser.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QMainWindow': No such file or directory
+  Login.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\login\Login.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QtWidgets/QMainWindow': No such file or directory
+  main.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\Login\Login.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QtWidgets/QMainWindow': No such file or directory
+  ModifyProfile.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\modify profile\ModifyProfile.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QWidget': No such file or directory
+  NewAccount.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\newaccount\NewAccount.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QMainWindow': No such file or directory
+  Serialize.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\serialization\Serialize.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QtWidgets/QWidget': No such file or directory
+  SocketHandler.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\sockethandler\SocketHandler.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  SocketMessage.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\client\editorgui\editorgui\sockethandler\SocketMessage.h(2,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  CRDT.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  Message.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  Symbol.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\crdt\Symbol.h(5,9): fatal error C1083: Non è possibile aprire il file inclusione: 'QFont': No such file or directory
+  dbinteraction.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\dbinteraction.h(6,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QSqlDatabase': No such file or directory
+  Generazione del codice in corso...
+  Compilazione in corso...
+  main.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\main.cpp(1,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QCoreApplication': No such file or directory
+  myserver.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\myserver.h(4,10): fatal error C1083: Non è possibile aprire il file inclusione: 'QObject': No such file or directory
+  Serialize.cpp
+C:\Users\Mattia Proietto\source\repos\SOLO_SERVER\server\serialize\Serialize.h(3,10): fatal error C1083: Non è possibile aprire il file inclusione: 'CRDT/Message.h': No such file or directory
+  Generazione del codice in corso...
