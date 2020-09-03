@@ -5,6 +5,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 {
 	ui.setupUi(this);
 	ui.usernameLabel->setText(" " + username);
+	ui.profileImage->setPixmap(*m_profileImage);
 	this->username = username;
 	/*model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);
