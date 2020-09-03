@@ -10,7 +10,7 @@ Serialize::Serialize(QWidget* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, QPixmap profileImage, int type)
 {
     /*
     Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio e' discriminato dal valore di type
@@ -31,6 +31,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
     if (type == REGISTER) {
         //il nickname serve solo in fase di register per salvarlo sul server
         obj.insert("nickname", QJsonValue(nickname));
+        obj.insert("img", Serialize::jsonValFromPixmap(profileImage));
     }
 
 
@@ -69,6 +70,9 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
     if (Serialize::actionType(obj) == REGISTER) {
         QString nickname = obj.value("nickname").toString();
         list.append(nickname);
+        QString img = obj.value("img").toString();
+        list.append(img);
+        qDebug() << img;
     }
 
     return list;

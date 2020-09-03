@@ -32,7 +32,7 @@ public:
     static QString generateRandomString(int len);
     static void sendMessage(QTcpSocket *socket, QByteArray obj);
 
-    void registration(QString username, QString password, QTcpSocket *socket);
+    void registration(QString username, QString password, QString nickname, QString profileImage, QTcpSocket *socket);
     void login(QString username, QString password, QTcpSocket *socket);
 
     void createFile(QString filename, QString username, QTcpSocket *socket);

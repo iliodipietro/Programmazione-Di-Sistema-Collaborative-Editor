@@ -136,13 +136,13 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
          db->login(list.at(0), list.at(1), socket);
 
         break;
-    case (REGISTER):
+    case (REGISTER): {
         qDebug("REGISTER request");
-
         list = Serialize::userUnserialize(ObjData);
-        db->registration(list.at(0), list.at(1), socket);
+        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), socket);
 
         break;
+    }
     case (FILENAME):
         qDebug("FILENAME request");
 
