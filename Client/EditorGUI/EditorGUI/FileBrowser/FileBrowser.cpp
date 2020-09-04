@@ -25,11 +25,11 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 	if (it == m_textEditors.end()) {
 		if (filename == "test file") {
 			QString path = QDir::currentPath().append("\\PROVA SCRITTURA.txt");
-			editor = new Editor(m_socketHandler, path, username);
+			editor = new Editor(m_socketHandler, m_profileImage, path, username);
 			m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
 		}
 		else {
-			editor = new Editor(m_socketHandler, filename, username);
+			editor = new Editor(m_socketHandler, m_profileImage, filename, username);
 			m_textEditors.insert(std::pair<QString, Editor*>(filename, editor));
 		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);

@@ -14,9 +14,11 @@
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
 
-Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QString path, QString username, int fileId, QWidget* parent)
+Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
+	QString path, QString username, int fileId, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
-	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false)
+	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
+	m_profileImage(profileImage)
 {
 	ui.setupUi(this);
 	m_textEdit = new MyTextEdit(this);
@@ -334,7 +336,7 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
-	m_actionShowEditingUsers = new QAction(QIcon("./Icons/user.png"), tr(m_username.toUtf8()), this);
+	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
 	connect(m_actionShowEditingUsers, &QAction::triggered, this, &Editor::showEditingUsers);

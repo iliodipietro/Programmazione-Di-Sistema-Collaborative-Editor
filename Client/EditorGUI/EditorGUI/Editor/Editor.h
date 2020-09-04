@@ -22,7 +22,8 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QSharedPointer<SocketHandler> socketHandler, QString path = "", QString username = "", int fileId = 0, QWidget* parent = Q_NULLPTR);
+	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
+		QString path = "", QString username = "", int fileId = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -53,6 +54,7 @@ private:
 	QComboBox* comboSize;
 	QListWidget* m_editingUsersList;
 	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<QPixmap> m_profileImage;
 	QTimer* m_timer;
 	QLabel* m_usernameLabel;
 	QString m_username;
