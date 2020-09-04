@@ -79,18 +79,6 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 }
 
 
-    /*QJsonObject obj;
-    obj.insert("filename", fileName);
-    obj.insert("fileId", fileId);
-    files.push_back(QJsonValue(obj));
-
-    INPUT:
-    - fileName: stringa che contiene il nome del file;
-    - fileId: intero rapprensentante identificativo univoco di un file;
-    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
-
-    return files;
-}*/
 
 
 QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){

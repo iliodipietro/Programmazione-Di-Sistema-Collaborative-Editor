@@ -47,6 +47,20 @@ void FileBrowser::on_newFile_Clicked() {
 	model->insertRow(0, parent);
 	model->setData(model->index(0, 0, parent), QString("Child Item"));
 	ui.treeView->setModel(model);*/
+	bool ok;
+	QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+		tr("User name:"), QLineEdit::Normal,
+		QDir::home().dirName(), &ok);
+	if (ok && !text.isEmpty()) {
+		std::cout << "ok";
+	}
+	else {
+		QMessageBox resultDialog(this);
+		QString res_text = "File name needed";
+		resultDialog.setInformativeText(res_text); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.exec();
+	}
+		
 }
 
 void FileBrowser::closeEvent(QCloseEvent* event) {
