@@ -46,7 +46,8 @@ public:
 private:
     static DBInteraction* instance;
     QSqlDatabase db;
-    QMap<QTcpSocket*, int> users;
+    //QMap<ClientManager*, int> users;
+    QMap<QString, ClientManager*>users;
     QMap<int, File*> files; // mappa fileId - File
 
     QByteArray intToArray(qint64 source);

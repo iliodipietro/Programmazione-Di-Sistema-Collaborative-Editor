@@ -36,16 +36,10 @@
   background: rgba(0, 0, 0, 80);
   border-radius: 8px;
  }
-QLabel { color: white; }
+
 QLineEdit { border-radius: 3px; }
 
-QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
+
 #IconButton{
 
   background-color:  rgba(0, 0, 0, 0);
@@ -53,7 +47,7 @@ QPushButton
   border-radius: 5px;
 
 }
-QPushButton:hover { background-color: #0080FF; }
+
 
 #centralWidget { background: rgba(32, 80, 96, 100); }
 #LoginClass { background: rgba(32, 80, 96, 100); }</string>
@@ -89,6 +83,16 @@ QPushButton:hover { background-color: #0080FF; }
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
+     </property>
      <property name="text">
       <string>Login</string>
      </property>
@@ -113,6 +117,9 @@ QPushButton:hover { background-color: #0080FF; }
             <pointsize>9</pointsize>
            </font>
           </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel { color: white; }</string>
+          </property>
           <property name="text">
            <string>Username:</string>
           </property>
@@ -132,6 +139,9 @@ QPushButton:hover { background-color: #0080FF; }
             <family>Arial</family>
             <pointsize>9</pointsize>
            </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel { color: white; }</string>
           </property>
           <property name="text">
            <string>Password:</string>
@@ -170,6 +180,9 @@ QPushButton:hover { background-color: #0080FF; }
        <pointsize>9</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel { color: white; }</string>
+     </property>
      <property name="text">
       <string>Non sei ancora registrato?</string>
      </property>
@@ -198,6 +211,16 @@ QPushButton:hover { background-color: #0080FF; }
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
+     </property>
      <property name="text">
       <string>Crea account</string>
      </property>
@@ -220,6 +243,9 @@ QPushButton:hover { background-color: #0080FF; }
       <family>Arial Black</family>
       <pointsize>30</pointsize>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel { color: white; }</string>
     </property>
     <property name="text">
      <string>Login</string>

@@ -2,7 +2,7 @@
 #include <QtCore\qjsondocument.h>
 #include <QDebug>
 
-#define SERVER_IP "192.168.0.6"
+#define SERVER_IP "127.0.0.1"
 #define PORT 44322
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),

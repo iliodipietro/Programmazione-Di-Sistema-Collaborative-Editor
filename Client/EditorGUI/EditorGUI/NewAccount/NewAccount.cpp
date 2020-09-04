@@ -62,7 +62,7 @@ void NewAccount::on_submit_clicked() {
 			QPoint areaPos = m_selectionArea->geometry().topLeft();
 			areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
 			areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-			m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
+			m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
 			ui.crop->setPixmap(*m_croppedImage);
 		}
 		if (m_croppedImage != Q_NULLPTR) { //-> da scommentare una volta che il caricamento delle immagini funziona

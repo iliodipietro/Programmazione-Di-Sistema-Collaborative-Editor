@@ -18,7 +18,7 @@ DBInteraction::DBInteraction(){
 
 DBInteraction* DBInteraction::startDBConnection(){
     bool err = false;
-    QString path = QDir::currentPath().append("\\project.sqlite"); //project.db";scegliere path in cui salvare il DB
+    QString path = QDir::currentPath().append("/project.sqlite"); //project.db";scegliere path in cui salvare il DB
 
     if(!instance){
         instance = new DBInteraction();
@@ -290,6 +290,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                             userid = query.value("UserId").toInt();
                             profileImagePath = query.value("ProfileImage").toString();
                             QFile file(profileImagePath);
+
                             if(file.open(QIODevice::ReadOnly)){
                                 QTextStream stream(&file);
                                 profileImage.append(stream.readAll());
@@ -303,7 +304,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                                 sendMessage(socket, response);
                                 return;
                             }
-                            instance->users.insert(socket, userid);
+                            instance->users.insert(username, new ClientManager(userid,socket));
 
                             /*QSqlQuery query2;
                             query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
@@ -359,11 +360,11 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
 
 
         if(err){
-            message = "AUTHENTICATION_ERROR";
+            message = "WRONG USERNAME OR PASSWORD";
             response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
         }
 
-        //sendMessage(socket, response);
+        sendMessage(socket, response);
 
         instance->db.close();
     }
@@ -426,7 +427,7 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
                         sendMessage(socket, response);
 
                         files.insert(fileId, newfile);
-                        newfile->addUser(socket);
+                        newfile->addUser(users.take(username));
                     }
                     else {
                         message = "ERROR\n";
@@ -477,7 +478,7 @@ void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
     if(f != nullptr){
         message = "OK\n";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
-        f->addUser(socket);
+        f->addUser(users.take(username));
     }
     else {
 

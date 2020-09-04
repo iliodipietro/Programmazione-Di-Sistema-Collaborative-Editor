@@ -69,7 +69,8 @@ void Login::loginResult(QJsonObject response) {
 	}
 	else {
 		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText(""); //mettere il messaggio di errore contenuto nel Json di risposta
+		QString res_text = response.value("message").toString();
+		resultDialog.setInformativeText(res_text); //mettere il messaggio di errore contenuto nel Json di risposta
 		resultDialog.exec();
 	}
 }
