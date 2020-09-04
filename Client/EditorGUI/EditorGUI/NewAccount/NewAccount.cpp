@@ -2,7 +2,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 
-#define RUBBER_SIZE 175
+#define RUBBER_SIZE 50
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
 	m_timer(new QTimer(this))

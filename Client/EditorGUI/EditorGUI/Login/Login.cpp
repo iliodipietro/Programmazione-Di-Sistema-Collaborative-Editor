@@ -81,11 +81,13 @@ void Login::on_newAccount_clicked() {
 	m_newAccountWindow->show();
 	this->newWindow = true;
 	connect(m_newAccountWindow, &NewAccount::showParent, this, &Login::childWindowClosed);
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);
 	this->hide();
 }
 
 void Login::childWindowClosed() {
 	this->show();
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);
 }
 
 void Login::resetWindows() {
