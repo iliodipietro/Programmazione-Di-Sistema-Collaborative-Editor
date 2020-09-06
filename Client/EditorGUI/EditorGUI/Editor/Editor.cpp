@@ -597,7 +597,7 @@ void Editor::localInsert() {
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
-		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		QJsonObject packet = Serialize::messageSerialize(m, MESSAGE);
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();

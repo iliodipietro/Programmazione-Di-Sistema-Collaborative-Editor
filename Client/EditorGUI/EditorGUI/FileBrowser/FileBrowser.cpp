@@ -11,7 +11,9 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	ui.treeView->setModel(&model);
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));*/
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::addFiles);
+	connect(ui.newFile, SIGNAL(clicked()), this, SLOT(on_newFile_Clicked()));
 	ui.fileList->addItem("test file");
+	
 }
 
 FileBrowser::~FileBrowser()
@@ -48,16 +50,18 @@ void FileBrowser::on_newFile_Clicked() {
 	model->setData(model->index(0, 0, parent), QString("Child Item"));
 	ui.treeView->setModel(model);*/
 	bool ok;
-	QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
-		tr("User name:"), QLineEdit::Normal,
+	QString filename = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+		tr("File name:"), QLineEdit::Normal,
 		QDir::home().dirName(), &ok);
-	if (ok && !text.isEmpty()) {
+	if (ok && !filename.isEmpty()) {
 		std::cout << "ok";
+		//send to server
+		Serialize::newFileSerialize(filename,this->username,NEWFILE);
 	}
 	else {
 		QMessageBox resultDialog(this);
 		QString res_text = "File name needed";
-		resultDialog.setInformativeText(res_text); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.setInformativeText(res_text); 
 		resultDialog.exec();
 	}
 		
