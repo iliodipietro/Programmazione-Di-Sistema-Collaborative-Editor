@@ -46,8 +46,11 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="newFile">
+    <item row="0" column="3" rowspan="8">
+     <widget class="QListWidget" name="fileList"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="renameFile">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -61,7 +64,14 @@ QPushButton:hover { background-color: #0080FF; }</string>
        </font>
       </property>
       <property name="text">
-       <string>Nuovo File</string>
+       <string>Rinomina</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="profileImage">
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </item>
@@ -83,28 +93,6 @@ QPushButton:hover { background-color: #0080FF; }</string>
        <string> Modifica Profilo </string>
       </property>
      </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="renameFile">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Rinomina</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3" rowspan="8">
-     <widget class="QListWidget" name="fileList"/>
     </item>
     <item row="1" column="1">
      <widget class="QPushButton" name="logoutButton">
@@ -131,10 +119,22 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="profileImage">
+    <item row="2" column="1">
+     <widget class="QPushButton" name="newFile">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="text">
-       <string/>
+       <string>Nuovo File</string>
       </property>
      </widget>
     </item>

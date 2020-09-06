@@ -1,7 +1,7 @@
 #include "ModifyProfile.h"
 #include <QMouseEvent>
 #include <QMessageBox>
-#define RUBBER_SIZE 175
+#define RUBBER_SIZE 150
 
 ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
 m_timer(new QTimer(this))
