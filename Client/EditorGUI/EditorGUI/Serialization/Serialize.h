@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <QtWidgets/QWidget>
@@ -25,9 +26,7 @@ public:
 	Serialize(QObject* parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
-
 															USO GENERALE
-
 	quando arriva dal socket un QByteArray si usa la funzione fromArrayToObject per ottenere il QJson Object corrispondente.
 	con tale oggetto si chiama la funzione actionType che mi dice il tipo di messaggio--> sono le define da decidere
 	in base a tale valore si puo capire quale dei deserializzatori usare con uno switch
@@ -37,7 +36,7 @@ public:
 	static int actionType(QJsonObject obj);
 
 
-	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type);//type usato per discriminare login o register
+	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
@@ -46,6 +45,9 @@ public:
 	static QJsonObject fileNameSerialize(QString fileName, int type);
 
 	static QString fileNameUnserialize(QJsonObject obj);
+
+	static QJsonObject newFileSerialize(QString filename, QString username, int type);//ilio
+	static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
 
 
 	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo

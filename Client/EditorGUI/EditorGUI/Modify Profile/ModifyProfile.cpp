@@ -1,7 +1,7 @@
 #include "ModifyProfile.h"
 #include <QMouseEvent>
 #include <QMessageBox>
-
+#define RUBBER_SIZE 150
 
 ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
 m_timer(new QTimer(this))
@@ -37,7 +37,7 @@ void ModifyProfile::on_selectImageButton_clicked() {
 	if (url.compare("") != 0) {
 		m_selectedImage = new QPixmap(url);
 		m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-		QSize rubberSize(50, 50);
+		QSize rubberSize(RUBBER_SIZE, RUBBER_SIZE);
 		QPoint point(ui.imageLabel->pos());
 		QRect size(point, rubberSize);
 		if (m_selectionArea == Q_NULLPTR)
@@ -61,20 +61,20 @@ void ModifyProfile::on_submit_clicked() {
 	QString password = ui.passwordLine_3->text();
 	QString password_re = ui.rePasswordLine_3->text();
 
-	QPoint areaPos = m_selectionArea->geometry().topLeft();
-
 	if (password.compare(password_re) == 0) {
-
-		areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
-		areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-		m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
-		ui.crop->setPixmap(*m_croppedImage);
-		if (m_croppedImage != Q_NULLPTR) {
-			QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = Serialize::userSerialize(this->username, password, nickname, 2);//type da definire in define.h
-			bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
+		if (m_selectionArea != Q_NULLPTR) {
+			QPoint areaPos = m_selectionArea->geometry().topLeft();
+			areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+			areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+			m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
+			ui.crop->setPixmap(*m_croppedImage);
+		}
+		//if (m_croppedImage != Q_NULLPTR) {
+			//QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
+			QJsonObject userInfoSerialized = Serialize::userSerialize(this->username, password, nickname, 2, m_croppedImage);//type da definire in define.h
+			//bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
 			bool result2 = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
-			if (result1 && result2) {
+			if (result2) {
 				m_timer->setSingleShot(true);
 				m_timer->setInterval(1000);
 				m_timer->start();
@@ -85,13 +85,13 @@ void ModifyProfile::on_submit_clicked() {
 				resultDialog.exec();
 			}
 			//QMessageBox::information(this, "NewAccount", "New Account Created");
-		}
+		/*}
 		else {
 			QMessageBox::warning(this, "NewAccount", "A picture is needed");
-		}
+		}*/
 	}
 	else {
-		QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
+		QMessageBox::warning(this, "Modifica Password", "The password is incorrect!");
 	}
 
 }

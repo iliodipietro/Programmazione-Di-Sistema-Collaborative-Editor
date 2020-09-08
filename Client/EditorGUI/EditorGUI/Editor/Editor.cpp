@@ -14,9 +14,11 @@
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
 
-Editor::Editor(QString path, QString username, QWidget* parent)
-	: QMainWindow(parent), m_socketHandler(QSharedPointer<SocketHandler>(new SocketHandler(this))),
-	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false)
+Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
+	QString path, QString username, int fileId, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
+	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
+	m_profileImage(profileImage)
 {
 	ui.setupUi(this);
 	m_textEdit = new MyTextEdit(this);
@@ -54,7 +56,6 @@ Editor::Editor(QString path, QString username, QWidget* parent)
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
-	this->username = username;
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -158,7 +159,7 @@ void Editor::createActions() {
 
 	ui.toolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
-	const QIcon openIcon = QIcon::fromTheme("document-open", QIcon(""));
+	const QIcon openIcon = QIcon::fromTheme("document-open", QIcon("./Icons/plus.png"));
 	this->openAct = new QAction(openIcon, tr("&Open..."), this);
 	this->openAct->setShortcuts(QKeySequence::Open);
 	this->openAct->setStatusTip(tr("Open an existing file"));
@@ -166,15 +167,15 @@ void Editor::createActions() {
 	ui.menuFile->addAction(this->openAct);
 	ui.toolBar->addAction(this->openAct);
 
-	const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon(""));
+	const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon("./Icons/013-cut.png"));
 	this->cutAct = new QAction(cutIcon, tr("&Cut..."), this);
 	this->cutAct->setShortcuts(QKeySequence::Cut);
 	this->cutAct->setStatusTip(tr("Cut text"));
 	ui.menuModifica->addAction(this->cutAct);
 	ui.toolBar->addAction(this->cutAct);
 
-	const QIcon copyIcon = QIcon::fromTheme("edit-copy", QIcon(""));
-	this->copyAct = new QAction(cutIcon, tr("&Copy..."), this);
+	const QIcon copyIcon = QIcon::fromTheme("edit-copy", QIcon("./Icons/011-copy.png"));
+	this->copyAct = new QAction(copyIcon, tr("&Copy..."), this);
 	this->copyAct->setShortcuts(QKeySequence::Cut);
 	this->copyAct->setStatusTip(tr("Copy text"));
 	ui.menuModifica->addAction(this->copyAct);
@@ -182,16 +183,16 @@ void Editor::createActions() {
 
 #ifndef QT_NO_PRINTER
 	//const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
-	this->printAction = ui.menuFile->addAction(cutIcon, tr("&Print..."), this, &Editor::filePrint);
+	this->printAction = ui.menuFile->addAction(QIcon("./Icons/export.png"), tr("&Print..."), this, &Editor::filePrint);
 	this->printAction->setPriority(QAction::LowPriority);
 	this->printAction->setShortcut(QKeySequence::Print);
 	ui.toolBar->addAction(this->printAction);
 
 	//const QIcon filePrintIcon = QIcon::fromTheme("fileprint", QIcon(rsrcPath + "/fileprint.png"));
-	ui.menuFile->addAction(cutIcon, tr("Print Preview..."), this, &Editor::filePrintPreview);
+	ui.menuFile->addAction(QIcon("./Icons/review.png"), tr("Print Preview..."), this, &Editor::filePrintPreview);
 
-	//const QIcon exportPdfIcon = QIcon::fromTheme("exportpdf", QIcon(rsrcPath + "/exportpdf.png"));
-	this->exportPDFAction = ui.menuFile->addAction(cutIcon, tr("&Export PDF..."), this, &Editor::filePrintPdf);
+	const QIcon exportPdfIcon = QIcon::fromTheme("exportpdf", QIcon("./Icons/pdf.png"));
+	this->exportPDFAction = ui.menuFile->addAction(exportPdfIcon, tr("&Export PDF..."), this, &Editor::filePrintPdf);
 	this->exportPDFAction->setPriority(QAction::LowPriority);
 	this->exportPDFAction->setShortcut(Qt::CTRL + Qt::Key_D);
 	ui.toolBar->addAction(this->exportPDFAction);
@@ -199,16 +200,17 @@ void Editor::createActions() {
 	//menu->addSeparator();
 #endif
 
-	//const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png"));
-	this->actionUndo = ui.menuModifica->addAction(cutIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
+	const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon("./Icons/058-undo.png"));
+	this->actionUndo = ui.menuModifica->addAction(undoIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
 	this->actionUndo->setShortcut(QKeySequence::Undo);
 	ui.toolBar->addAction(this->actionUndo);
 
-	this->actionRedo = ui.menuModifica->addAction(cutIcon, tr("&Redo"), m_textEdit, &QTextEdit::redo);
+	const QIcon redoIcon = QIcon::fromTheme("edit-redo", QIcon("./Icons/044-redo.png"));
+	this->actionRedo = ui.menuModifica->addAction(redoIcon, tr("&Redo"), m_textEdit, &QTextEdit::redo);
 	this->actionRedo->setShortcut(QKeySequence::Redo);
 	ui.toolBar->addAction(this->actionRedo);
 
-	this->italicAct = new QAction(cutIcon, tr("&Corsivo"), this);
+	this->italicAct = new QAction(QIcon("./Icons/031-italic.png"), tr("&Corsivo"), this);
 	this->italicAct->setCheckable(true);
 	this->italicAct->setChecked(false);
 	this->italicAct->setPriority(QAction::LowPriority);
@@ -217,7 +219,8 @@ void Editor::createActions() {
 	ui.menuModifica->addAction(this->italicAct);
 	ui.toolBar->addAction(this->italicAct);
 
-	this->boldAct = new QAction(cutIcon, tr("&Grassetto"), this);
+
+	this->boldAct = new QAction(QIcon("./Icons/004-bold.png"), tr("&Grassetto"), this);
 	this->boldAct->setCheckable(true);
 	this->boldAct->setPriority(QAction::LowPriority);
 	this->boldAct->setShortcut(Qt::CTRL + Qt::Key_B);
@@ -226,7 +229,7 @@ void Editor::createActions() {
 	ui.toolBar->addAction(this->boldAct);
 
 	//const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png"));
-	this->underLineAct = new QAction(cutIcon, tr("&Sottilinea"), this);
+	this->underLineAct = new QAction(QIcon("./Icons/057-underline.png"), tr("&Sottilinea"), this);
 	this->underLineAct->setShortcut(Qt::CTRL + Qt::Key_U);
 	this->underLineAct->setPriority(QAction::LowPriority);
 	ui.menuModifica->addAction(this->underLineAct);
@@ -234,10 +237,10 @@ void Editor::createActions() {
 	this->underLineAct->setCheckable(true);
 	connect(this->underLineAct, &QAction::triggered, this, &Editor::makeUnderlined);
 
-	this->actionImage = new QAction(cutIcon, tr("&Inserisci immagine"), this);
-	ui.menuModifica->addAction(this->actionImage);
-	ui.toolBar->addAction(this->actionImage);
-	connect(this->actionImage, &QAction::triggered, this, &Editor::insertImage);
+	//this->actionImage = new QAction(cutIcon, tr("&Inserisci immagine"), this);
+	//ui.menuModifica->addAction(this->actionImage);
+	//ui.toolBar->addAction(this->actionImage);
+	//connect(this->actionImage, &QAction::triggered, this, &Editor::insertImage);
 
 	ui.toolBar = addToolBar(tr("Format Actions"));
 	addToolBarBreak(Qt::TopToolBarArea);
@@ -291,22 +294,22 @@ void Editor::createActions() {
 #endif // !QT_NO_CLIPBOARD
 
 	//const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png"));
-	this->actionAlignLeft = new QAction(cutIcon, tr("&Left"), this);
+	this->actionAlignLeft = new QAction(QIcon("./Icons/left-align.png"), tr("&Left"), this);
 	this->actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
 	this->actionAlignLeft->setCheckable(true);
 	this->actionAlignLeft->setPriority(QAction::LowPriority);
 	//const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png"));
-	this->actionAlignCenter = new QAction(cutIcon, tr("C&enter"), this);
+	this->actionAlignCenter = new QAction(QIcon("./Icons/center-align.png"), tr("C&enter"), this);
 	this->actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
 	this->actionAlignCenter->setCheckable(true);
 	this->actionAlignCenter->setPriority(QAction::LowPriority);
 	//const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png"));
-	this->actionAlignRight = new QAction(cutIcon, tr("&Right"), this);
+	this->actionAlignRight = new QAction(QIcon("./Icons/right-align.png"), tr("&Right"), this);
 	this->actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
 	this->actionAlignRight->setCheckable(true);
 	this->actionAlignRight->setPriority(QAction::LowPriority);
 	//const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(rsrcPath + "/textjustify.png"));
-	this->actionAlignJustify = new QAction(cutIcon, tr("&Justify"), this);
+	this->actionAlignJustify = new QAction(QIcon("./Icons/justify.png"), tr("&Justify"), this);
 	this->actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
 	this->actionAlignJustify->setCheckable(true);
 	this->actionAlignJustify->setPriority(QAction::LowPriority);
@@ -333,7 +336,7 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
-	m_actionShowEditingUsers = new QAction(cutIcon, tr(m_username.toUtf8()), this);
+	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
 	connect(m_actionShowEditingUsers, &QAction::triggered, this, &Editor::showEditingUsers);
@@ -545,11 +548,11 @@ void Editor::on_textEdit_textChanged() {
 
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
-		//localDelete();
+		localDelete();
 	}
 	else {
 		//è una insert
-		//localInsert();
+		localInsert();
 	}
 	//aggiorno
 	this->lastText = m_textEdit->toPlainText();
@@ -594,7 +597,7 @@ void Editor::localInsert() {
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
-		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		QJsonObject packet = Serialize::messageSerialize(m, MESSAGE);
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
@@ -964,6 +967,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	this->comboFont->setCurrentFont(m_textEdit->currentFont());
 	QPixmap pix(16, 16);
 	pix.fill(m_textEdit->textColor());
+	//this->actionTextColor->setIcon(QIcon("./Icons/040-paint bucket.png"));
 	this->actionTextColor->setIcon(pix);
 	const QList<int> standardSizes = QFontDatabase::standardSizes();
 	int size = m_textEdit->font().pointSize();
@@ -1008,9 +1012,10 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 }
 
 void Editor::messageReceived(QJsonObject packet) {
+	Message m = Serialize::messageUnserialize(packet);
+	//TODO check se il messaggio che arriva è relativo al file gestito da questo editor
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
-	Message m = Serialize::messageUnserialize(packet);
 	remoteAction(m);
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);

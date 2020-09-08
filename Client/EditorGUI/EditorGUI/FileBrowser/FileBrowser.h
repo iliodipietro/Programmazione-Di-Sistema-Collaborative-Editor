@@ -19,7 +19,7 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username = "", QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username = "", QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 private:
@@ -31,15 +31,19 @@ private:
 	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
+	QSharedPointer<QPixmap> m_profileImage;
 	void closeEvent(QCloseEvent* event);
 
+	void requestFiles();
+
 private slots:
-	void on_treeView_doubleClicked(const QModelIndex& index);
+	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
 	void on_logoutButton_clicked();
 	void on_modifyProfile_clicked();
 	void on_newFile_Clicked();
 	void editorClosed(QString);
 	void childWindowClosed();
+	void addFiles(QJsonObject message);
 
 signals:
 	void showParent();

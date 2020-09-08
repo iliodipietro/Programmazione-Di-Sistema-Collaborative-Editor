@@ -22,7 +22,8 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QString path = "", QString username = "", QWidget* parent = Q_NULLPTR);
+	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
+		QString path = "", QString username = "", int fileId = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
 
@@ -53,10 +54,12 @@ private:
 	QComboBox* comboSize;
 	QListWidget* m_editingUsersList;
 	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<QPixmap> m_profileImage;
 	QTimer* m_timer;
 	QLabel* m_usernameLabel;
 	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
+	int m_fileId;
 	std::vector<QString> m_editingUsers;
 	bool m_showingEditingUsers;
 
@@ -77,8 +80,6 @@ private:
 	//servono a mantenere gli estremi di quando seleziono --> caso particolare nella delete
 	int lastStart;
 	int lastEnd;
-
-	QString username;
 
 	//FINE-------------------------------------------------------------------------------------------------------
 

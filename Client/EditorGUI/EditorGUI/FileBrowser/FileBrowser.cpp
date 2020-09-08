@@ -1,27 +1,39 @@
 #include "FileBrowser.h"
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username, QWidget* parent)
-	: QMainWindow(parent), m_socketHandler(socketHandler)
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username, QWidget* parent)
+	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage)
 {
 	ui.setupUi(this);
-	ui.usernameLabel->setText(username);
+	//ui.usernameLabel->setText(" " + username);
+	ui.profileImage->setPixmap(*m_profileImage);
 	this->username = username;
-	model.setRootPath(QDir::homePath());
+	/*model.setRootPath(QDir::homePath());
 	ui.treeView->setModel(&model);
-	ui.treeView->setRootIndex(model.index(QDir::currentPath()));
+	ui.treeView->setRootIndex(model.index(QDir::currentPath()));*/
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::addFiles);
+	connect(ui.newFile, SIGNAL(clicked()), this, SLOT(on_newFile_Clicked()));
+	ui.fileList->addItem("test file");
+	
 }
 
 FileBrowser::~FileBrowser()
 {
 }
 
-void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
-	QString path = this->model.filePath(index);
-	auto it = m_textEditors.find(path);
+void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
+	QString filename = item->text();
+	auto it = m_textEditors.find(filename);
 	Editor* editor;
 	if (it == m_textEditors.end()) {
-		editor = new Editor(path, "prova");
-		m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
+		if (filename == "test file") {
+			QString path = QDir::currentPath().append("\\PROVA SCRITTURA.txt");
+			editor = new Editor(m_socketHandler, m_profileImage, path, username);
+			m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
+		}
+		else {
+			editor = new Editor(m_socketHandler, m_profileImage, filename, username);
+			m_textEditors.insert(std::pair<QString, Editor*>(filename, editor));
+		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
 	}
@@ -29,18 +41,33 @@ void FileBrowser::on_treeView_doubleClicked(const QModelIndex& index) {
 		editor = it->second;
 		editor->raise();
 	}
-	
 }
 
 void FileBrowser::on_newFile_Clicked() {
-	auto model = ui.treeView->model();
+	/*auto model = ui.treeView->model();
 	QModelIndex parent = model->index(0, 0);
 	model->insertRow(0, parent);
 	model->setData(model->index(0, 0, parent), QString("Child Item"));
-	ui.treeView->setModel(model);
+	ui.treeView->setModel(model);*/
+	bool ok;
+	QString filename = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+		tr("File name:"), QLineEdit::Normal,
+		QDir::home().dirName(), &ok);
+	if (ok && !filename.isEmpty()) {
+		std::cout << "ok";
+		//send to server
+		Serialize::newFileSerialize(filename,this->username,NEWFILE);
+	}
+	else {
+		QMessageBox resultDialog(this);
+		QString res_text = "File name needed";
+		resultDialog.setInformativeText(res_text); 
+		resultDialog.exec();
+	}
+		
 }
 
-void FileBrowser::closeEvent(QCloseEvent* event){
+void FileBrowser::closeEvent(QCloseEvent* event) {
 	qApp->quit();
 }
 
@@ -51,7 +78,7 @@ void FileBrowser::on_logoutButton_clicked() {
 
 void FileBrowser::on_modifyProfile_clicked()
 {
-	this->m_modifyProfile = new ModifyProfile(m_socketHandler,this->username);
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username);
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
 	this->hide();
@@ -69,4 +96,14 @@ void FileBrowser::editorClosed(QString file) {
 
 void FileBrowser::mousePressEvent(QMouseEvent* event) {
 	show();
+}
+
+void FileBrowser::requestFiles() {
+	//aggiungere messaggio per la richiesta della lista dei file al server
+	//m_socketHandler->writeData();
+}
+
+void FileBrowser::addFiles(QJsonObject filesList) {
+	QString filename = Serialize::fileNameUnserialize(filesList);
+	ui.fileList->addItem(filename);
 }
