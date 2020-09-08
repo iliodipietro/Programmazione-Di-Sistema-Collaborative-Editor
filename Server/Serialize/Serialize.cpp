@@ -80,6 +80,10 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 
 
 
+QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){
+    /*
+
+
 
 QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){
     /*
@@ -87,7 +91,7 @@ QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonAr
     INPUT:
     - username: stringa che contiene il nome dell'utente;
     - files: array serializzato contenente i campi(filename e id) per ogni file posseduto dal singolo client;
-    - type: intero che Ë definito in define.h come LOGIN
+    - type: intero che √® definito in define.h come LOGIN
     RETURN:
     - files: l'array che viene man mano aggiornato ad ogni chiamata.
     */
@@ -199,7 +203,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     ossia insert/delte/style etc--> queste informazioni non sono contunte nel file json ma nel messaggio stesso
     INPUT:
     - message: messaggio che contiene il symbolo, cosa fare e tutte le informazioni necessarie
-    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui Ë accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui √® accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
      e sul server di inoltrarlo ad altri client connessi ed insieme aggiornareil crdt locale sul server
     RETURN:
     - una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
@@ -216,7 +220,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     obj.insert("sender", QJsonValue(senderId));
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciÚ accade il simbolo all'interno sar‡ vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ci√≤ accade il simbolo all'interno sar√† vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (message.getCursorPosition() > 0) {
@@ -280,9 +284,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     /*
     Questa funzione de-serializza i messaggi
     INPUT:
-    - obj: Ë un Qjson che contiene tutte le info
+    - obj: √® un Qjson che contiene tutte le info
     RETURN:
-    - un oggetto di tipo message che puÚ essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
+    - un oggetto di tipo message che pu√≤ essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
     vedi Message.h/cpp per specifiche
     */
 
@@ -296,7 +300,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciÚ accade il simbolo all'interno sar‡ vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ci√≤ accade il simbolo all'interno sar√† vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR) {

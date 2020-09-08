@@ -189,7 +189,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
         qDebug()<<"new password: "<< hashed_pwd<<"\n";
 
         QSqlQuery query2;
-        query2.prepare("SELECT COUNT(UserId) FROM users"); //l'id dell'utente è un intero crescente
+        query2.prepare("SELECT COUNT(UserId) FROM users"); //l'id dell'utente Ã¨ un intero crescente
         if(query2.exec()){
             if(query2.next()){
                 userid = query2.value(0).toInt();
@@ -255,10 +255,12 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
     QByteArray salted_pwd;
     QString hashed_pwd;
     QString salt;
+
     QString profileImage, profileImagePath;
+
     QByteArray response, response_ok;
     QString message;
-    QJsonArray files; // la lista è vuota?
+    QJsonArray files; // la lista Ã¨ vuota?
     int cnt = 0;
     int userid;
     bool err = false;
@@ -317,8 +319,10 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                                     while(query2.next()){
                                         //per ogni file creo un jsonObjest contenente nome del file e id
 
+
                                         QString filename = query2.value("FileName").toString();
                                         int fileId = query2.value("Id").toInt();
+
 
                                         files = Serialize::singleFileSerialize(filename, fileId, files);
                                     }
@@ -329,6 +333,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                                 sendMessage(socket, response_ok);
                                 //response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(userid, username, files, LOGIN));
                             //}
+
                         }
                         else{
                             //insuccess
@@ -404,13 +409,14 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
             else{
                 //il file non esiste, quindi posso crearlo
                 QSqlQuery query2;
-                query2.prepare("SELECT COUNT(Id) FROM files"); //l'id del file è un intero crescente
+                query2.prepare("SELECT COUNT(Id) FROM files"); //l'id del file Ã¨ un intero crescente
                 if(query2.exec()){
                     if(query2.next()){
                         fileId = query2.value(0).toInt();
                     }
                     path.append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
                     qDebug()<< "Path: " << path << "\n";
+
 
 
                     QSqlQuery query3;
@@ -434,12 +440,14 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
                         err = true;
                         qDebug() << "INSERT failed: " << query2.lastError() << "\n";
                     }
+
                 }
                 else {
                     message = "ERROR\n";
                     err = true;
                     qDebug() << "SELECT COUNT(Id) failed: " << query2.lastError() << "\n";
                 }
+
             }
         }
         else {
@@ -466,7 +474,7 @@ void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
     bool err = false;
 
     if(files.contains(fileId)){
-        //il file è gia in RAM
+        //il file Ã¨ gia in RAM
         f = files.value(fileId);
     }
     else {
@@ -478,7 +486,9 @@ void DBInteraction::openFile(int fileId, QString username, QTcpSocket *socket){
     if(f != nullptr){
         message = "OK\n";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, message, SERVER_ANSWER));
+
         f->addUser(users.take(username));
+
     }
     else {
 
@@ -517,3 +527,4 @@ QByteArray DBInteraction::intToArray(qint64 source) {
     data << source;
     return temp;
 }
+
