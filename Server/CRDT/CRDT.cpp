@@ -58,9 +58,20 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 			});
 
 		if (it != _symbols.end()) {
+
+
+
+			if (it == _symbols.begin()) {
+				index = 0;
+			}
+			else {
+
+				index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+			   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+			   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+			}
+
 			_symbols.insert(it, symbol);
-			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-													//all'inizio della Qstring che rappresenta il testo
 
 		}
 	}

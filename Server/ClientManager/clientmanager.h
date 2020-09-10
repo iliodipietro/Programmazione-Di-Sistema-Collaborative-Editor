@@ -14,10 +14,13 @@ public:
     void setUsername(QString username);
     void setColor(QColor color);
     bool writeData(QByteArray& data);
+    QTcpSocket* getSocket();
+    int getId();
+    void setId(int id);
     ~ClientManager();
 
 signals:
-    void messageReceived(QTcpSocket*, QByteArray);
+    void messageReceived(ClientManager*, QByteArray);
     void disconnected();
 
 public slots:

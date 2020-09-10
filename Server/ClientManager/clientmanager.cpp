@@ -28,7 +28,7 @@ void ClientManager::readyRead(){
                 dataToHandle = m_socketBuffer->mid(0, dim);
                 m_socketBuffer->remove(0, dim);
                 dim = 0;
-                emit messageReceived(m_clientSocket.get(), dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
+                emit messageReceived(this, dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
             }
         }
     }
@@ -45,6 +45,21 @@ bool ClientManager::writeData(QByteArray& data) {
     else {
         return false;
     }
+}
+
+QTcpSocket* ClientManager::getSocket()
+{
+    return this->m_clientSocket.get();
+}
+
+int ClientManager::getId()
+{
+    return this->m_id;
+}
+
+void ClientManager::setId(int id)
+{
+    this->m_id = id;
 }
 
 //la disconnessione viene segnalata al server

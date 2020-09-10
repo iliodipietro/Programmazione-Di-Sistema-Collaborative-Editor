@@ -351,7 +351,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 //-------------------------------------------------------------------------------
 
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int userID, int type)
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
@@ -369,8 +369,9 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 
 	obj.insert("res", QJsonValue(res));
 
-	obj.insert("message", QJsonValue(message));
+	obj.insert("userID", userID);
 
+	obj.insert("message", QJsonValue(message));
 
 	return obj;
 }
@@ -385,11 +386,28 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	- una QstringList che di lunghezza 2:
 	list[0]: valore booleano che mi dice OK/ERROR
 	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+	list[2]: userID
 	*/
 	QStringList list;
 	bool res = obj.value("res").toBool();
 	list.append(res ? "true" : "false");
 	list.append(obj.value("message").toString());
+	int i = obj.value("userID").toInt();
+	list.append(QString::number(obj.value("userID").toInt()));
+
+	QJsonDocument doc(obj);
+	QString strJson(doc.toJson(QJsonDocument::Compact));
+	std::ofstream oFile("C:/Users/Mattia Proietto/Desktop/NONFUNZIONA.txt", std::ios_base::out | std::ios_base::trunc);
+	if (oFile.is_open())
+	{
+
+		//std::string text = this->to_string();
+		{
+			//oFile << text;
+			oFile << strJson.toStdString();
+		}
+		oFile.close();
+	}
 
 	return list;
 }

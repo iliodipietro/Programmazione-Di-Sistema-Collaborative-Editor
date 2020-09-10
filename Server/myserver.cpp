@@ -11,6 +11,10 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
+ 
+    db->funzionedaeliminare();
+
+    
 
 }
 
@@ -22,6 +26,17 @@ bool MyServer:: listen(QHostAddress addr, quint16 port){
     }
     qDebug("Server is listening on: %s:%d", qPrintable(addr.toString()), port);
     return true;
+}
+
+void MyServer::forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data)
+{
+    //qDebug()<< data;
+    QPair<int,Message> fileid_message = Serialize::messageUnserialize(obj);
+
+    //File *f = db->getFile(fileid_message.first);
+    File* f = db->getFile(0);
+    f->messageHandler(user, fileid_message.second, data);
+
 }
 
 //ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperà di leggere e scrivere i messaggi
@@ -105,7 +120,7 @@ void MyServer::onNewConnection(){
     }
 }*/
 
-void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
+void MyServer::MessageHandler(ClientManager*socket, QByteArray socketData){
 
     /*
     LOGIN 1
@@ -123,6 +138,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     QStringList list;
     int fileId;
     QString username, filename;
+    
     //QPair<int, Message> fileid_message;
     File *f;
 
@@ -139,7 +155,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
     case (REGISTER): {
         qDebug("REGISTER request");
         list = Serialize::userUnserialize(ObjData);
-        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), socket);
+        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), socket->getSocket());
 
         break;
     }
@@ -149,6 +165,7 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+        forwardMessage(socket,ObjData,socketData);
 
         //fileid_message = Serialize::messageUnserialize(ObjData);
 
@@ -169,21 +186,21 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
         filename = Serialize::newFileUnserialize(ObjData).first;
         username = Serialize::newFileUnserialize(ObjData).second;
 
-        db->createFile(filename, username, socket);
+        db->createFile(filename, username, socket->getSocket());
 
         break;
     case (OPEN):
         qDebug("OPEN request");
         fileId = Serialize::openCloseFileUnserialize(ObjData).first;
         username = Serialize::openCloseFileUnserialize(ObjData).second;
-        db->openFile(fileId, username, socket);
+        db->openFile(fileId, username, socket->getSocket());
 
         break;
     case (CLOSE):
         qDebug("CLOSE request");
         fileId = Serialize::openCloseFileUnserialize(ObjData).first;
         username = Serialize::openCloseFileUnserialize(ObjData).second;
-        db->closeFile(fileId, username, socket);
+        db->closeFile(fileId, username, socket->getSocket());
 
         break;
     case (CURSOR):

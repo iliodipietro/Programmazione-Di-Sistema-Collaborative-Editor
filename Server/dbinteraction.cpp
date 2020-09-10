@@ -249,7 +249,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
     return;
 }
 
-void DBInteraction::login(QString username, QString password, QTcpSocket *socket){
+void DBInteraction::login(QString username, QString password, ClientManager*socket){
 
     QSqlQuery query;
     QByteArray salted_pwd;
@@ -303,10 +303,12 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                                 //inviare messaggio di successo sul socket
                                 message = "image not available!\n";
                                 response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-                                sendMessage(socket, response);
+                                sendMessage(socket->getSocket(), response);
                                 return;
                             }
-                            instance->users.insert(username, new ClientManager(userid,socket));
+                            socket->setId(userid);
+                            instance->users.insert(username, socket);
+                            instance->getFile(0)->addUser( instance->users.take(username));
 
                             /*QSqlQuery query2;
                             query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
@@ -328,9 +330,11 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
                                     }
                                 }*/
                                 //message = "login OK"; //in caso di successo il messaggio diventa l'immagine in base64 da mandare all'utente
-                                response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER));
+                                response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER,userid));
+                                //qDebug() << response_ok;
+                                sendMessage(socket->getSocket(), response_ok);
 
-                                sendMessage(socket, response_ok);
+                                return;
                                 //response = Serialize::fromObjectToArray(Serialize::user_filesSerialize(userid, username, files, LOGIN));
                             //}
 
@@ -369,7 +373,7 @@ void DBInteraction::login(QString username, QString password, QTcpSocket *socket
             response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
         }
 
-        sendMessage(socket, response);
+        sendMessage(socket->getSocket(), response);
 
         instance->db.close();
     }
@@ -381,6 +385,7 @@ void DBInteraction::createFile(QString filename, QString username, QTcpSocket *s
     /*
         TO DO
             - popolare la mappa files
+
     */
 
     QSqlQuery query;
@@ -518,7 +523,7 @@ void DBInteraction::closeFile(int fileId, QString username, QTcpSocket *socket){
 void DBInteraction::deleteFile(){}
 
 File* DBInteraction::getFile(int fileid){
-    return files.value(fileid);
+    return instance->files.value(fileid);
 }
 
 QByteArray DBInteraction::intToArray(qint64 source) {

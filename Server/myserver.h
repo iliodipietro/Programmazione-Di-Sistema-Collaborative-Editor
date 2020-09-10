@@ -27,12 +27,13 @@ class MyServer : public QObject{
 public:
     MyServer(QObject *parent = nullptr);
     bool listen(QHostAddress addr, quint16 port);
+    
     ~MyServer();
 
 private slots:
     void onNewConnection();
     //void readFromSocket();
-    void MessageHandler(QTcpSocket *socket, QByteArray socketData);
+    void MessageHandler(ClientManager *socket, QByteArray socketData);
     void onDisconnect();
 signals:
     void dataReady(QTcpSocket *socket, QByteArray socketData);
@@ -48,6 +49,10 @@ private:
     int m_lastId;
     //#####################################
     DBInteraction *db = nullptr;
+
+//---------------------------------------------------------------------------------------
+    void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);
+//----------------------------------------------------------------------------
     std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
 
     void handleMessage(int fileID, Message m);

@@ -420,25 +420,30 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
+
+
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID)
 {
     /*
-    res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
-    Type: qui dovrebbe essere sempre SERVER_ANSWER
-    */
+  res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
+  Type: qui dovrebbe essere sempre SERVER_ANSWER
+  */
 
-    /*
-    bool: successo o fallimento (OK, ERROR)
-    message: risposta del server
-    Type: qui dovrebbe essere sempre SERVER_ANSWER
-    */
+  /*
+  bool: successo o fallimento (OK, ERROR)
+  message: risposta del server
+  Type: qui dovrebbe essere sempre SERVER_ANSWER
+  */
     QJsonObject obj;
 
     obj.insert("type", QJsonValue(type));//??
 
     obj.insert("res", QJsonValue(res));
 
+
     obj.insert("message", QJsonValue(message));
+
+    obj.insert("userID", QJsonValue(userID));
 
     return obj;
 }
@@ -453,10 +458,13 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
     - una QstringList che di lunghezza 2:
     list[0]: valore booleano che mi dice OK/ERROR
     list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+    list[2]: userID
     */
     QStringList list;
-    list.append(obj.value("res").toString());
+    bool res = obj.value("res").toBool();
+    list.append(res ? "true" : "false");
     list.append(obj.value("message").toString());
+    list.append(obj.value("userID").toString());
 
     return list;
 }

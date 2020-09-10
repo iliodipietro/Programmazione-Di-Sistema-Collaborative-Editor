@@ -19,6 +19,7 @@ public:
 
 private:
 	bool newWindow = false;
+	int clientID;
 	Ui::LoginClass ui;
 	FileBrowser* m_fileBrowserWindow;
 	NewAccount* m_newAccountWindow;

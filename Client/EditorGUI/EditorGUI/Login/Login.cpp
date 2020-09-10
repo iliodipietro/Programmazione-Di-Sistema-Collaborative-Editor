@@ -26,10 +26,11 @@ void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage) {
 	m_timer->stop();
 	QString username = ui.usernameTextLine->text();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, username);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, username, this->clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);// altrimenti arriva sempre al login anche quando non deve
 	this->hide();
 }
 
@@ -61,6 +62,8 @@ void Login::loginResult(QJsonObject response) {
 	m_timer->stop();
 	QStringList serverMessage = Serialize::responseUnserialize(response);
 	bool result = serverMessage[0] == "true" ? true : false;
+	this-> clientID = serverMessage[2].toInt();
+
 	if (result) {
 		QString profileImageBase64 = serverMessage[1];
 		QSharedPointer<QPixmap> profileImage = QSharedPointer<QPixmap>(new QPixmap());
