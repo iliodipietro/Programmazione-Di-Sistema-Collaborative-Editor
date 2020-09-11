@@ -68,6 +68,9 @@ void Login::loginResult(QJsonObject response) {
 		QString profileImageBase64 = serverMessage[1];
 		QSharedPointer<QPixmap> profileImage = QSharedPointer<QPixmap>(new QPixmap());
 		profileImage->loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		//dato che ho successo elimino username e password dalla gui
+		ui.usernameTextLine->setText("");
+		ui.passwordTextLine->setText("");
 		openFileBrowser(profileImage);
 	}
 	else {

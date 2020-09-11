@@ -1039,7 +1039,7 @@ void Editor::writeText() {
 	int pos = TC.position();
 	addEditingUser(0, "prova", Qt::blue);
 	m_textEdit->setCursorPosition(0, 10);
-	//m_textEdit->insertText(0, QString("ciao"));
+	m_textEdit->insertText(0, QString("ciao"));
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);
 }

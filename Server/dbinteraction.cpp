@@ -244,7 +244,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
         instance->db.close();
     }
 
-    sendMessage(socket, response);
+    //sendMessage(socket, response);
 
     return;
 }
@@ -308,7 +308,7 @@ void DBInteraction::login(QString username, QString password, ClientManager*sock
                             }
                             socket->setId(userid);
                             instance->users.insert(username, socket);
-                            //instance->getFile(0)->addUser( instance->users.take(username));
+                            instance->getFile(0)->addUser( instance->users.take(username));
 
                             /*QSqlQuery query2;
                             query2.prepare("SELECT FileName, Id FROM files WHERE UserName =(:username)");
