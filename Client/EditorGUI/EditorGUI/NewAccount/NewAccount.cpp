@@ -57,37 +57,40 @@ void NewAccount::on_submit_clicked() {
 	QString password = ui.passwordLine->text();
 	QString password_re = ui.rePasswordLine->text();
 	QString email = ui.emailLine->text();
-	if (password.compare(password_re) == 0) {
-		if (m_selectionArea != Q_NULLPTR) {
-			QPoint areaPos = m_selectionArea->geometry().topLeft();
-			areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
-			areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-			m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
-			ui.crop->setPixmap(*m_croppedImage);
-		}
-		if (m_croppedImage != Q_NULLPTR) { //-> da scommentare una volta che il caricamento delle immagini funziona
-			//QJsonObject imageSerialized = Serialize::imageSerialize(*m_croppedImage, 2);
-			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, REGISTER, m_croppedImage);
-			//bool result1 = m_socketHandler->writeData(Serialize::fromObjectToArray(imageSerialized));
-			bool result2 = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
-			if (result2) {
-				m_timer->setSingleShot(true);
-				m_timer->setInterval(1500);
-				m_timer->start();
+	if (username != "" && email != "") {
+		if (password.compare(password_re) == 0) {
+			if (m_selectionArea != Q_NULLPTR) {
+				QPoint areaPos = m_selectionArea->geometry().topLeft();
+				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+				areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+				m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), 50, 50));
+				ui.crop->setPixmap(*m_croppedImage);
+			}
+			if (m_croppedImage != Q_NULLPTR) {
+				QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, REGISTER, m_croppedImage);
+				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
+				if (result) {
+					m_timer->setSingleShot(true);
+					m_timer->setInterval(4000);
+					m_timer->start();
+				}
+				else {
+					QMessageBox resultDialog(this);
+					resultDialog.setInformativeText("Errore di connessione");
+					resultDialog.exec();
+				}
+				//QMessageBox::information(this, "NewAccount", "New Account Created");
 			}
 			else {
-				QMessageBox resultDialog(this);
-				resultDialog.setInformativeText("Errore di connessione");
-				resultDialog.exec();
+				QMessageBox::warning(this, "NewAccount", "A picture is needed");
 			}
-			//QMessageBox::information(this, "NewAccount", "New Account Created");
 		}
 		else {
-			QMessageBox::warning(this, "NewAccount", "A picture is needed");
+			QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
 		}
 	}
 	else {
-		QMessageBox::warning(this, "NewAccount", "The password is incorrect!");
+		QMessageBox::warning(this, "NewAccount", "Username e/o email mancanti");
 	}
 
 }

@@ -37,23 +37,33 @@ void Login::on_loginButton_clicked()
 {
 	QString username = ui.usernameTextLine->text();
 	QString password = ui.passwordTextLine->text();
-	//QString loginInfo = "";
-	//loginInfo.append(username).append(",").append(password);
-	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-	QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
-	bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
-	if (result) {
-		m_timer->setSingleShot(true);
-		m_timer->setInterval(3000);
-		m_timer->start();
-		//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+	if (username != "" && password != "") {
+		//QString loginInfo = "";
+		//loginInfo.append(username).append(",").append(password);
+		//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
+		QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
+		bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
+		if (result) {
+			m_timer->setSingleShot(true);
+			m_timer->setInterval(3000);
+			m_timer->start();
+			//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+		}
+		else {
+			qDebug() << m_socketHandler->getSocketState();
+		}
 	}
 	else {
-		qDebug() << m_socketHandler->getSocketState();
+		QMessageBox errorDialog(this);
+		errorDialog.setInformativeText("L'username e la password non possono essere vuoti");
+		errorDialog.exec();
 	}
 }
 
 void Login::showErrorMessage() {
+	QMessageBox errorDialog(this);
+	errorDialog.setInformativeText("errore di connessione");
+	errorDialog.exec();
 	qDebug() << "messaggio di errore per il login";
 }
 
@@ -69,7 +79,7 @@ void Login::loginResult(QJsonObject response) {
 	}
 	else {
 		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText(""); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.setInformativeText(serverMessage[1]); //mettere il messaggio di errore contenuto nel Json di risposta
 		resultDialog.exec();
 	}
 }
