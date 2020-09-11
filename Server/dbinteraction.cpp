@@ -156,7 +156,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
              message = "SELECT COUNT2 query failed!";
              response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
              sendMessage(socket, response);
-             //sendMessage(socket, response);
+             return;
         }
 
         if(query.exec()){
@@ -169,7 +169,6 @@ void DBInteraction::registration(QString username, QString password, QString nic
                 message = "Username already used";
                 response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
                 sendMessage(socket, response);
-                //sendMessage(socket, response);
                 return;
             }
 
@@ -179,7 +178,8 @@ void DBInteraction::registration(QString username, QString password, QString nic
             //inviare messaggio di errore sul socket
              message = "SERVER_ERROR";
              response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-             //sendMessage(socket, response);
+             sendMessage(socket, response);
+             return;
         }
 
         qDebug("insertion...\n");
@@ -244,7 +244,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
         instance->db.close();
     }
 
-    sendMessage(socket, response);
+    //sendMessage(socket, response);
 
     return;
 }
