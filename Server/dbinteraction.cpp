@@ -522,6 +522,16 @@ void DBInteraction::closeFile(int fileId, QString username, QTcpSocket *socket){
 
 void DBInteraction::deleteFile(){}
 
+void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data)
+{
+    //qDebug()<< data;
+    QPair<int, Message> fileid_message = Serialize::messageUnserialize(obj);
+
+    //File *f = instance->getFile(fileid_message.first);
+    File* f = instance->getFile(0);// debug only
+    f->messageHandler(user, fileid_message.second, data);
+}
+
 File* DBInteraction::getFile(int fileid){
     return instance->files.value(fileid);
 }

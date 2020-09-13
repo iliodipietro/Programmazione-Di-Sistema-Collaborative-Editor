@@ -41,6 +41,9 @@ public:
     void deleteFile();
     void renameFile();
 
+
+    void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);
+
     File* getFile(int fileid);
 
     void funzionedaeliminare() {

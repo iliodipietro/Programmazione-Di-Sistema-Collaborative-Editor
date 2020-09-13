@@ -846,6 +846,7 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
+
 void Editor::localStyleChange()
 {
 	int start, end;
@@ -863,11 +864,20 @@ void Editor::localStyleChange()
 		QFont font = format.font();
 		QColor color = format.foreground().color();
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
-		Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
-		QJsonObject packet = Serialize::messageSerialize(m, MESSAGE);
-		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
-	}
 
+
+		Symbol s = this->_CRDT->getSymbol(pos);
+		
+		if (s.getAlignment()!=alignment || s.getColor()!= color || s.getFont() != font) {
+
+			//scrivo sul socket solo se c'e stato un vero cambio --> meno banda e carico per il server
+			Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
+			QJsonObject packet = Serialize::messageSerialize(m, MESSAGE);
+			m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		}
+
+	}
+	int cazzi = 0;
 	//this->lastStart = 0;
 	//this->lastEnd = 0;
 }
@@ -1039,7 +1049,7 @@ void Editor::writeText() {
 	int pos = TC.position();
 	addEditingUser(0, "prova", Qt::blue);
 	m_textEdit->setCursorPosition(0, 10);
-	m_textEdit->insertText(0, QString("ciao"));
+	//m_textEdit->insertText(0, QString("ciao"));
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);
 }
