@@ -29,7 +29,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	this->ID = clientID;
 	//m_textEdit->setText(path);
 	createActions();
-	this->loadFile(this->filePath);
+	//this->loadFile(this->filePath);
+	setCurrentFile(path);
 	QTextCursor TC = m_textEdit->textCursor();
 	TC.setPosition(0);
 	m_textEdit->setTextCursor(TC);

@@ -498,7 +498,9 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
 
                     if(query3.exec()){
                         File *newfile = new File(fileId, path);
-                        sendSuccess(client);
+                        response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
+                        //sendSuccess(client);
+                        client->writeData(response);
 
                         instance->files.insert(fileId, newfile);
                         newfile->addUser(client);
@@ -554,18 +556,25 @@ void DBInteraction::sendFileList(ClientManager* client){
         query.bindValue(":username", username);
 
         if(query.exec()){
+    
+            
+            bool atLeastOne = false;
 
-            if(query.size() > 0){
+            while(query.next()){
+                //per ogni file creo un jsonObject contenente nome del file e id
 
-                while(query.next()){
-                    //per ogni file creo un jsonObject contenente nome del file e id
+                QString filename = query.value("FileName").toString();
+                int fileId = query.value("Id").toInt();
 
-                    QString filename = query.value("FileName").toString();
-                    int fileId = query.value("Id").toInt();
+                //files = Serialize::singleFileSerialize(filename, fileId, files);
+                files.insert(fileId, filename);
 
-                    //files = Serialize::singleFileSerialize(filename, fileId, files);
-                    files.insert(fileId, filename);
-                }
+                atLeastOne = true;
+            }
+
+
+            if (atLeastOne) {
+
                 response = Serialize::fromObjectToArray(Serialize::FileListSerialize(files, SEND_FILES));
                 client->writeData(response);
             }

@@ -126,11 +126,69 @@ QJsonObject Serialize::newFileSerialize(QString filename, int type) {
 	obj.insert("filename", QJsonValue(filename));
 	return obj;
 }
-QString Serialize::newFileUnserialize(QJsonObject obj) {
+QPair<int, QString> Serialize::newFileUnserialize(QJsonObject obj) {
+	QPair<int,QString> pair;
+	pair.second = obj.value("filename").toString();
+	pair.first = obj.value("fileId").toInt();
+	return pair;
+}
 
-	QString filename = obj.value("filename").toString();
 
-	return filename;
+
+QJsonObject Serialize::FileListSerialize(QMap<int, QString> files, int type) {
+
+	/*
+	Questa funzione, una volta che tutti i file di un client sono stati correttamente serializzati nell'array files, lega l'utente ai file.
+	INPUT:
+	- username: stringa che contiene il nome dell'utente;
+	- files: array serializzato contenente i campi(filename e id) per ogni file posseduto dal singolo client;
+	- type: intero che è definito in define.h come SEND_FILES
+	RETURN:
+	- files: l'array che viene man mano aggiornato ad ogni chiamata.
+	*/
+
+	QJsonObject obj;
+	QList<int> ids = files.keys();
+	QList<QString> names = files.values();
+	int i;
+
+	//obj.insert("fileid", QJsonValue(ids));
+	//obj.insert("filename", QJsonValue(names));
+
+
+	for (i = 0; i < files.size(); i++) {
+		QString fileid = "fileid" + QString(i);
+		QString filename = "filename" + QString(i);
+		obj.insert(fileid, ids[i]);
+		obj.insert(filename, names[i]);
+	}
+	obj.insert("dim", i + 1);
+	obj.insert("type", type);
+
+	return obj;
+}
+
+QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj) {
+
+	/*
+	Questa funzione de-serializza il nome utente e tutti i file che possiede
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info
+	RETURN:
+	- una QPair<QString, QMap<int, QString>> con il nome dell'utente come primo elemento del QPair e come secondo una mappa contenente (fileId e FileName) di tutti i file dell'utente
+	*/
+
+	QMap<int, QString> fileList;
+	int size = obj.value("dim").toInt();
+	int i;
+
+	for (i = 0; i < size; i++) {
+		QString fileid = "fileid" + QString(i);
+		QString filename = "filename" + QString(i);
+		fileList.insert(obj.value(fileid).toInt(), obj.value(filename).toString());
+	}
+
+	return fileList;
 }
 
 QJsonObject Serialize::messageSerialize(Message message, int type)
