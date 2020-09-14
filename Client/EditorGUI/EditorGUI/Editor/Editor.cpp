@@ -537,9 +537,13 @@ void Editor::on_textEdit_textChanged() {
 
 	//il messaggio va mandato al serializzatore
 
-	if (this->remoteEvent)
+	if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
 		return;
 
+	if (this->styleBounce) {
+		this->styleBounce = false;
+		return;
+	}
 
 	QTextCursor TC = m_textEdit->textCursor();
 	//DEBUG
@@ -877,7 +881,7 @@ void Editor::localStyleChange()
 		}
 
 	}
-	int cazzi = 0;
+	this->styleBounce = true;
 	//this->lastStart = 0;
 	//this->lastEnd = 0;
 }

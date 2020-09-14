@@ -144,7 +144,7 @@ QJsonObject Serialize::openCloseFileSerialize(int fileId, QString username, int 
     */
     QJsonObject obj;
     obj.insert("type", QJsonValue(type));
-    obj.insert("user", username);
+    obj.insert("user", QJsonValue(username));
     obj.insert("fileId", QJsonValue(fileId));
 
 
@@ -180,7 +180,7 @@ QJsonObject Serialize::newFileSerialize(QString filename, QString username, int 
 
     QJsonObject obj;
     obj.insert("type", QJsonValue(type));
-    obj.insert("user", username);
+    obj.insert("user", QJsonValue(username));
     obj.insert("filename", QJsonValue(filename));
     return obj;
 }

@@ -82,6 +82,9 @@ private:
 	int lastStart;
 	int lastEnd;
 
+	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
+	bool styleBounce = false;
+
 	//FINE-------------------------------------------------------------------------------------------------------
 
 	void closeEvent(QCloseEvent* event);
