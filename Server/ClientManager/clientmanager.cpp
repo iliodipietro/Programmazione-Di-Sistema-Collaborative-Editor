@@ -1,9 +1,7 @@
 #include "clientmanager.h"
 #include <QDataStream>
 
-ClientManager::ClientManager(int id, QTcpSocket* socket, QObject *parent) : QObject(parent),
-    m_id(id), m_clientSocket(socket), m_socketBuffer(new QByteArray())
-{
+ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(parent), m_clientSocket(socket), m_socketBuffer(new QByteArray()){
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
     connect(m_clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnect()));
@@ -28,7 +26,7 @@ void ClientManager::readyRead(){
                 dataToHandle = m_socketBuffer->mid(0, dim);
                 m_socketBuffer->remove(0, dim);
                 dim = 0;
-                emit messageReceived(m_clientSocket.get(), dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
+                emit messageReceived(this, dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
             }
         }
     }
@@ -47,6 +45,13 @@ bool ClientManager::writeData(QByteArray& data) {
     }
 }
 
+QString ClientManager::getUsername(){
+    return this->m_username;
+}
+int ClientManager::getId(){
+    return this->m_id;
+}
+
 //la disconnessione viene segnalata al server
 void ClientManager::onDisconnect(){
     emit disconnected();
@@ -58,6 +63,12 @@ void ClientManager::setUsername(QString username){
 //Il colore del client viene aggiunto solo una volta che il login è stato effettuato con successo
 void ClientManager::setColor(QColor color){
     m_color = color;
+}
+
+//I'l colore'id del client viene aggiunto solo una volta che il login è stato effettuato con successo
+void ClientManager::setId(int id)
+{
+    m_id = id;
 }
 
 //conversione da QByteArray a qint64

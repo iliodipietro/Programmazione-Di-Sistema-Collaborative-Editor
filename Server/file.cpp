@@ -7,7 +7,9 @@ File::File():handler(nullptr),id(0),path("")
 
 File::File(int fileId, QString path): id(fileId),path(path){
 	//creo il crdt e se il file puntato dal path non è vuoto questo viene caricato automaticamente nel CRDT
-	this->handler = new CRDT(fileId, this->path);
+    this->handler = new CRDT(fileId, this->path);
+    this->modifiedName = false;
+    this->newName = nullptr;
 }
 
 void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
@@ -44,9 +46,22 @@ void File::sendNewFile(ClientManager* socket)
 	}
 }
 
+bool File::isModifiedName(){
+    return this->modifiedName;
+}
+
+QString File::getNewName(){
+    return this->newName;
+}
+
+void File::modifyName(QString newName){
+    this->modifiedName = true;
+    this->newName = newName;
+}
+
 void File::addUser(ClientManager* user)
 {
-	//quando aggiungo un nuovo utente gli mando l'intero testo
+    //quando aggiungo un nuovo utente gli mando l'intero testo
 	this->users.append(user);
 	this->sendNewFile(user);
 
@@ -54,7 +69,8 @@ void File::addUser(ClientManager* user)
 
 void File::removeUser(ClientManager* user)
 {
-	//rimuovo un utente che non lavora piu sul file
+    //rimuovo un utente che non lavora piu sul file
+
 	this->users.removeOne(user);
 }
 
