@@ -11,7 +11,7 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
- 
+    // solo per fare prove
     db->funzionedaeliminare();
 
     

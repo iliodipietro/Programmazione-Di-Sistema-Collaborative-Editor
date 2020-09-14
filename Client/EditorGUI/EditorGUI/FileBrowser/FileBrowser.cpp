@@ -13,7 +13,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));*/
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
 	connect(ui.newFile, SIGNAL(clicked()), this, SLOT(on_newFile_Clicked()));
-	ui.fileList->addItem("test file");
+	//ui.fileList->addItem("test file");
 	
 }
 
@@ -57,7 +57,8 @@ void FileBrowser::on_newFile_Clicked() {
 	if (ok && !filename.isEmpty()) {
 		std::cout << "ok";
 		//send to server
-		Serialize::newFileSerialize(filename,this->username,NEWFILE);
+		QByteArray data = Serialize::fromObjectToArray( Serialize::newFileSerialize(filename,NEWFILE));
+		this->m_socketHandler->writeData(data);
 	}
 	else {
 		QMessageBox resultDialog(this);

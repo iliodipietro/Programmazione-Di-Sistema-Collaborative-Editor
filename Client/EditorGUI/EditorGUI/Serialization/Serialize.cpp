@@ -111,30 +111,26 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 	return obj.value("filename").toString();
 }
 
-QJsonObject Serialize::newFileSerialize(QString filename, QString username, int type) {
+QJsonObject Serialize::newFileSerialize(QString filename, int type) {
 	/*
 	Questa funzione serializza lil nome del file quando vuole fare una NEW, cio e' discriminato dal valore di type
 	INPUT:
 	- filename: stringa che contiene il nome del file da creare
-	- username: stringa che rappresenta il client che ha fatto richiesta di creazione del file
-	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è
 	RETURN:
 	- una Qstring che contiene il tutto serializzano come QJson
 	*/
 
 	QJsonObject obj;
 	obj.insert("type", QJsonValue(type));
-	obj.insert("user", username);
 	obj.insert("filename", QJsonValue(filename));
 	return obj;
 }
-QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj) {
+QString Serialize::newFileUnserialize(QJsonObject obj) {
 
-	QPair<QString, QString> user_file;
-	user_file.first = obj.value("filename").toString();
-	user_file.second = obj.value("user").toString();
+	QString filename = obj.value("filename").toString();
 
-	return user_file;
+	return filename;
 }
 
 QJsonObject Serialize::messageSerialize(Message message, int type)

@@ -46,8 +46,10 @@ public:
 
 	static QString fileNameUnserialize(QJsonObject obj);
 
-	static QJsonObject newFileSerialize(QString filename, QString username, int type);//ilio
-	static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
+
+
+	static QJsonObject newFileSerialize(QString filename, int type);// ilio
+	static QString newFileUnserialize(QJsonObject obj);// ilio
 
 
 	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo

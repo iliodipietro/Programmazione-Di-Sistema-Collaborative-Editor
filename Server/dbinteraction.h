@@ -62,8 +62,8 @@ public:
 
 
     void funzionedaeliminare() {
-        File* primo_file = new File(0, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
-        instance->files.insert(0, primo_file);
+        File* primo_file = new File(-1, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
+        instance->files.insert(-1, primo_file);
     }
 private:
     static DBInteraction* instance;
