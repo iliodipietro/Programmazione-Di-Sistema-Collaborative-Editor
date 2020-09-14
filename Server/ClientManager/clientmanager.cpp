@@ -52,14 +52,16 @@ QTcpSocket* ClientManager::getSocket()
     return this->m_clientSocket.get();
 }
 
-int ClientManager::getId()
-{
-    return this->m_id;
-}
-
 void ClientManager::setId(int id)
 {
     this->m_id = id;
+}
+
+QString ClientManager::getUsername(){
+    return this->m_username;
+}
+int ClientManager::getId(){
+    return this->m_id;
 }
 
 //la disconnessione viene segnalata al server
@@ -73,6 +75,12 @@ void ClientManager::setUsername(QString username){
 //Il colore del client viene aggiunto solo una volta che il login è stato effettuato con successo
 void ClientManager::setColor(QColor color){
     m_color = color;
+}
+
+//I'l colore'id del client viene aggiunto solo una volta che il login è stato effettuato con successo
+void ClientManager::setId(int id)
+{
+    m_id = id;
 }
 
 //conversione da QByteArray a qint64

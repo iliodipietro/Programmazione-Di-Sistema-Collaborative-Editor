@@ -18,10 +18,15 @@ public:
     QList<ClientManager*> getUsers();
     bool thereAreUsers();
     void sendNewFile(ClientManager* socket);
+    bool isModifiedName();
+    QString getNewName();
+    void modifyName(QString newName);
 
 private:
     CRDT *handler = nullptr;
     int id;
+    bool modifiedName;
+    QString newName;
     //QMap<int,QTcpSocket*> owners;
     QString path;
     //QVector<ClientManager*> users;

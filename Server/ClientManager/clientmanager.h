@@ -10,12 +10,14 @@ class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    ClientManager(int id, QTcpSocket* socket, QObject *parent = nullptr);
+    ClientManager(QTcpSocket* socket, QObject *parent = nullptr);
     void setUsername(QString username);
     void setColor(QColor color);
+    void setId(int id);
     bool writeData(QByteArray& data);
-    QTcpSocket* getSocket();
+    QString getUsername();
     int getId();
+    QTcpSocket* getSocket();
     void setId(int id);
     ~ClientManager();
 
