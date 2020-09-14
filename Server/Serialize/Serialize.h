@@ -43,7 +43,7 @@ public:
     static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
     static int openCloseDeleteFileUnserialize(QJsonObject obj);// ilio
 
-    static QJsonObject newFileSerialize(QString filename, int type);// ilio
+    static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
     static QString newFileUnserialize(QJsonObject obj);// ilio
 
     static QJsonObject renameFileSerialize(int fileId, QString newName); // ilio

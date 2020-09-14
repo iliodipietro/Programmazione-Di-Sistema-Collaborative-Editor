@@ -107,7 +107,7 @@ QJsonObject Serialize::FileListSerialize(QMap<int, QString> files, int type){
         obj.insert(fileid, ids[i]);
         obj.insert(filename, names[i]);
     }
-    obj.insert("dim", i+1);
+    obj.insert("dim", files.size());
     obj.insert("type", type);
 
     return obj;
@@ -170,7 +170,7 @@ int Serialize::openCloseDeleteFileUnserialize(QJsonObject obj)
     return fileId;
 }
 
-QJsonObject Serialize::newFileSerialize(QString filename, int type){
+QJsonObject Serialize::newFileSerialize(QString filename,int id, int type){
     /*
     Questa funzione serializza lil nome del file quando vuole fare una NEW, cio e' discriminato dal valore di type
     INPUT:
@@ -182,6 +182,7 @@ QJsonObject Serialize::newFileSerialize(QString filename, int type){
 
     QJsonObject obj;
     obj.insert("type", QJsonValue(type));
+    obj.insert("fileId", QJsonValue(id));
     obj.insert("filename", QJsonValue(filename));
     return obj;
 }

@@ -1,6 +1,6 @@
 
 #pragma once
-
+#include "Serialize.h"
 #include <QtWidgets/QWidget>
 //#include "ui_Serialize.h"
 #include "CRDT/Message.h"
@@ -46,10 +46,12 @@ public:
 
 	static QString fileNameUnserialize(QJsonObject obj);
 
+	static QJsonObject FileListSerialize(QMap<int, QString> files, int type);// ilio
+	static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
 
 	static QJsonObject newFileSerialize(QString filename, int type);// ilio
-	static QString newFileUnserialize(QJsonObject obj);// ilio
+	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
 
 
 	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
