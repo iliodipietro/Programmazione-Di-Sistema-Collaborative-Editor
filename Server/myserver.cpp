@@ -178,7 +178,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
-        db->forwardMessage(socket,ObjData,socketData);
+        db->forwardMessage(client,ObjData,socketData);
 
         //fileid_message = Serialize::messageUnserialize(ObjData);
 

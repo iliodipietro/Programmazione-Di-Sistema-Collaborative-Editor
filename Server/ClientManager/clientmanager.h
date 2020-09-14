@@ -18,7 +18,6 @@ public:
     QString getUsername();
     int getId();
     QTcpSocket* getSocket();
-    void setId(int id);
     ~ClientManager();
 
 signals:

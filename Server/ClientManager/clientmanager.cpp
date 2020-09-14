@@ -1,8 +1,8 @@
 #include "clientmanager.h"
 #include <QDataStream>
 
-ClientManager::ClientManager(int id, QTcpSocket* socket, QObject *parent) : QObject(parent),
-    m_id(id), m_clientSocket(socket), m_socketBuffer(new QByteArray())
+ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(parent),
+m_clientSocket(socket), m_socketBuffer(new QByteArray())
 {
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
@@ -77,11 +77,6 @@ void ClientManager::setColor(QColor color){
     m_color = color;
 }
 
-//I'l colore'id del client viene aggiunto solo una volta che il login è stato effettuato con successo
-void ClientManager::setId(int id)
-{
-    m_id = id;
-}
 
 //conversione da QByteArray a qint64
 qint64 ClientManager::arrayToInt(QByteArray source){

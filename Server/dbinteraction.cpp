@@ -152,7 +152,7 @@ bool DBInteraction::checkPassword(QString password,  ClientManager* client){
 
         qDebug()<<"checking password...\n";
 
-        query.prepare("SELECT Password, UserId, Salt, ProfileImage FROM users WHERE Username = (:username)");
+        query.prepare("SELECT Password, userid, Salt, profileImage FROM users WHERE Username = (:username)");
         query.bindValue(":username", username);
         if (query.exec()) {
 
@@ -361,7 +361,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                 cnt = query.value(0).toInt();
             }
             if(cnt == 1){
-
+                incomingClient->setUsername(username);
                 if(checkPassword(password, incomingClient)){
                     //success
                     userid = query.value("UserId").toInt();
@@ -382,7 +382,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                         instance->db.close();
                         return;
                     }
-                    incomingClient->setUsername(username);
+
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                    // instance->users.insert(username, new ClientManager(userid,socket));
