@@ -98,7 +98,7 @@ bool SocketHandler::writeData(QByteArray& data) {
 	{
 		m_tcpSocket->write(intToArray(data.size()).append(data));
 		return m_tcpSocket->waitForBytesWritten();
-	}
+			}
 	else {
 		return false;
 	}

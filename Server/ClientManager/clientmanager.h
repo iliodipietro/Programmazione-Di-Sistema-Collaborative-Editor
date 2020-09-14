@@ -17,6 +17,7 @@ public:
     bool writeData(QByteArray& data);
     QString getUsername();
     int getId();
+    QTcpSocket* getSocket();
     ~ClientManager();
 
 signals:

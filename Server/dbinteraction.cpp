@@ -152,7 +152,7 @@ bool DBInteraction::checkPassword(QString password,  ClientManager* client){
 
         qDebug()<<"checking password...\n";
 
-        query.prepare("SELECT Password, UserId, Salt, ProfileImage FROM users WHERE Username = (:username)");
+        query.prepare("SELECT Password, userid, Salt, profileImage FROM users WHERE Username = (:username)");
         query.bindValue(":username", username);
         if (query.exec()) {
 
@@ -289,7 +289,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
             QDir().mkdir(images_directory_path);
         }
 
-        QString path(QDir::currentPath() + "\\ImmaginiProfilo\\" + username + "_profileImage.txt");
+        QString path(QDir::currentPath() + "/ImmaginiProfilo/" + username + "_profileImage.txt");
         QFile file(path);
         if(file.open(QIODevice::WriteOnly)){
             QTextStream stream(&file);
@@ -353,7 +353,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
 
     if(instance->db.open()){
 
-        query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
+        query.prepare("SELECT COUNT(*),* FROM users WHERE Username = (:username)");
         query.bindValue(":username", username);
         if(query.exec()){
 
@@ -361,6 +361,8 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                 cnt = query.value(0).toInt();
             }
             if(cnt == 1){
+
+                incomingClient->setUsername(username);
 
                 if(checkPassword(password, incomingClient)){
                     //success
@@ -382,12 +384,15 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                         instance->db.close();
                         return;
                     }
-                    incomingClient->setUsername(username);
+
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                    // instance->users.insert(username, new ClientManager(userid,socket));
                     response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER));
                     incomingClient->writeData(response);
+                    instance->db.close();
+                    //mando la lista dei file
+                    this->sendFileList(incomingClient);
                    // sendMessage(socket, response);
                 }
                 else {
@@ -399,8 +404,10 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                 message = "WRONG USERNAME OR PASSWORD";
                 response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
                 incomingClient->writeData(response);
-               // sendMessage(socket, response);
                 instance->db.close();
+
+               // sendMessage(socket, response);
+
                 return;
             }
         }
@@ -424,13 +431,13 @@ void DBInteraction::logout(ClientManager* client){
     if(!instance->isUserLogged(client)){
         return;
     }
-    for(File* f : files){
+    for(File* f : instance->files){
         if(f->getUsers().contains(client)){
             f->removeUser(client);
         }
     }
     sendSuccess(client); // ??
-    activeusers.removeOne(client);
+    instance->activeusers.removeOne(client);
 
 }
 
@@ -476,7 +483,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                                                              // 2 file.txt Mattia  --> COUNT ritornerebbe 4 ma io sono arrivato all'id 2, quindi il prossimo dovrebbe essere 3!!
                 if(query2.exec()){
                     if(query2.next()){
-                        fileId = query2.value(0).toInt();
+                        fileId = query2.value(0).toInt() +1;
                     }
                     qDebug()<< "fileId: "<< fileId << "\n";
                     path.append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
@@ -493,7 +500,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                         File *newfile = new File(fileId, path);
                         sendSuccess(client);
 
-                        files.insert(fileId, newfile);
+                        instance->files.insert(fileId, newfile);
                         newfile->addUser(client);
                         instance->db.close();
                     }
@@ -551,7 +558,7 @@ void DBInteraction::sendFileList(ClientManager* client){
             if(query.size() > 0){
 
                 while(query.next()){
-                    //per ogni file creo un jsonObjest contenente nome del file e id
+                    //per ogni file creo un jsonObject contenente nome del file e id
 
                     QString filename = query.value("FileName").toString();
                     int fileId = query.value("Id").toInt();
@@ -559,9 +566,12 @@ void DBInteraction::sendFileList(ClientManager* client){
                     //files = Serialize::singleFileSerialize(filename, fileId, files);
                     files.insert(fileId, filename);
                 }
+                response = Serialize::fromObjectToArray(Serialize::FileListSerialize(files, SEND_FILES));
+                client->writeData(response);
             }
-            response = Serialize::fromObjectToArray(Serialize::FileListSerialize(files, SEND_FILES));
-            client->writeData(response);
+            else {
+                qDebug() << "no files";
+            }
           //  sendMessage(socket, response);
             instance->db.close();
         }
@@ -590,7 +600,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
     }
 
 
-    if(files.value(fileId)->getUsers().contains(client)){
+    if(instance->files.value(fileId)->getUsers().contains(client)){
         qDebug()<<"file already opened!\n";
         message = "file already opened!";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
@@ -598,7 +608,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
         //sendMessage(socket, response);
         return;
     }
-    if(files.contains(fileId)){
+    if(instance->files.contains(fileId)){
         //il file è gia in RAM
         f = DBInteraction::getFile(fileId);
         f->addUser(client);
@@ -607,7 +617,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
         if(URI != nullptr){
             //caso in cui provengo da openSharedFile e quindi ho già la URI(path) del file. Evito cosi un'ulteriore query al server
             f = new File(fileId, URI);
-            files.insert(fileId, f);
+            instance->files.insert(fileId, f);
             f->addUser(client);
 
         }
@@ -625,7 +635,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
                     if(query.next()){
                         path = QString(query.value("path").toString());
                         f = new File(fileId, path);
-                        files.insert(fileId, f);
+                        instance->files.insert(fileId, f);
                         f->addUser(client);
                         qDebug() << "user added!\n";
                         sendSuccess(client);
@@ -671,7 +681,7 @@ void DBInteraction::closeFile(int fileId, ClientManager* client){
         return;
     }
 
-    if(!files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è già chiuso oppure che non esiste
+    if(!instance->files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è già chiuso oppure che non esiste
         qDebug()<<"this file does not exist or it is not opened!\n";
         message = "this file does not exist or it is not opened!";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
@@ -681,9 +691,9 @@ void DBInteraction::closeFile(int fileId, ClientManager* client){
 
     }
 
-    if(files.value(fileId)->getUsers().contains(client)){
+    if(instance->files.value(fileId)->getUsers().contains(client)){
         //se il file risulta aperto dall'utente allora lo può chiudere
-        f = files.value(fileId);
+        f = instance->files.value(fileId);
         f->removeUser(client);
 
         if(!f->thereAreUsers()){
@@ -721,7 +731,7 @@ void DBInteraction::closeFile(int fileId, ClientManager* client){
                     return;
                 }
             }
-            files.remove(fileId);
+            instance->files.remove(fileId);
         }
     }
     return;
@@ -782,7 +792,7 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
     instance->closeFile(fileId, client); // controllo prima se il file è rimasto aperto e se è cosi lo chiudo.
 
     // nel caso in cui il file sia condiviso tra più utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
-    f = files.value(fileId);
+    f = instance->files.value(fileId);
     f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarà l'ultima)
 
     sendSuccess(client);
@@ -897,8 +907,18 @@ void DBInteraction::changePassword(QString oldPassword, QString newPassword, Cli
 }
 
 
+void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data)
+{
+    //qDebug()<< data;
+    QPair<int, Message> fileid_message = Serialize::messageUnserialize(obj);
+
+    //File *f = instance->getFile(fileid_message.first);
+    File* f = instance->getFile(0);// debug only
+    f->messageHandler(user, fileid_message.second, data);
+}
+
 File* DBInteraction::getFile(int fileid){
-    return files.value(fileid);
+    return instance->files.value(fileid);
 }
 
 bool DBInteraction::isUserLogged(ClientManager* client){

@@ -23,9 +23,10 @@ class Editor : public QMainWindow, public Ui::Editor
 
 public:
 	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
-		QString path = "", QString username = "", int fileId = 0, QWidget* parent = Q_NULLPTR);
+		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
+	void remoteAction(Message m);
 
 private:
 	Ui::Editor ui;
@@ -81,6 +82,9 @@ private:
 	int lastStart;
 	int lastEnd;
 
+	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
+	bool styleBounce = false;
+
 	//FINE-------------------------------------------------------------------------------------------------------
 
 	void closeEvent(QCloseEvent* event);
@@ -112,7 +116,7 @@ private:
 	void updateLastPosition();
 	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
 
-	void remoteAction(Message m);
+
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
 	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);

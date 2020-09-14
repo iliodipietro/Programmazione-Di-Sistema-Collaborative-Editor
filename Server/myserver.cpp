@@ -11,6 +11,10 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
+    // solo per fare prove
+    db->funzionedaeliminare();
+
+    
 
 }
 
@@ -173,7 +177,8 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 
         break;
     case (MESSAGE):
-        qDebug("MESSAGE request\n");
+        qDebug("MESSAGE request");
+        db->forwardMessage(client,ObjData,socketData);
 
         //fileid_message = Serialize::messageUnserialize(ObjData);
 

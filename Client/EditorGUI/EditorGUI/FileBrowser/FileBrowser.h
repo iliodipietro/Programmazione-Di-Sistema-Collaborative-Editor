@@ -19,7 +19,7 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username = "", QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username = "", int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 private:
@@ -27,7 +27,7 @@ private:
 	std::map<QString, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
-
+	int clientID;
 	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
@@ -43,7 +43,9 @@ private slots:
 	void on_newFile_Clicked();
 	void editorClosed(QString);
 	void childWindowClosed();
-	void addFiles(QJsonObject message);
+	void addFiles(QJsonObject message);// cambiare nome -->gestisce tutti i messaggi dal serever
+	void handleNewMessage(QJsonObject message);
+	void processEditorMessage(QJsonObject message);
 
 signals:
 	void showParent();

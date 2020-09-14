@@ -31,7 +31,7 @@ void MyTextEdit::removeCursor(int id) {
 }
 
 void MyTextEdit::insertText(int id, QString& text) {
-    CustomCursor *cursor = m_cursorsToPrint.find(id)->second;
+    CustomCursor *cursor = m_cursorsToPrint.find(0)->second;
     cursor->insertText(text);
 }
 

@@ -14,7 +14,8 @@ public:
     void messageHandler(ClientManager* sender, Message m, QByteArray bytes);
     void addUser(ClientManager* user);
     void removeUser(ClientManager* user);
-    QVector<ClientManager*> getUsers();
+
+    QList<ClientManager*> getUsers();
     bool thereAreUsers();
     void sendNewFile(ClientManager* socket);
     bool isModifiedName();
@@ -28,7 +29,8 @@ private:
     QString newName;
     //QMap<int,QTcpSocket*> owners;
     QString path;
-    QVector<ClientManager*> users;
+    //QVector<ClientManager*> users;
+    QMap <int, ClientManager*> users;
 
 
 };

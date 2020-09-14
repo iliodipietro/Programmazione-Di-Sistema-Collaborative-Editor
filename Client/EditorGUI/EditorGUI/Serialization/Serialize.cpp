@@ -111,30 +111,26 @@ QString Serialize::fileNameUnserialize(QJsonObject obj)
 	return obj.value("filename").toString();
 }
 
-QJsonObject Serialize::newFileSerialize(QString filename, QString username, int type) {
+QJsonObject Serialize::newFileSerialize(QString filename, int type) {
 	/*
 	Questa funzione serializza lil nome del file quando vuole fare una NEW, cio e' discriminato dal valore di type
 	INPUT:
 	- filename: stringa che contiene il nome del file da creare
-	- username: stringa che rappresenta il client che ha fatto richiesta di creazione del file
-	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è
 	RETURN:
 	- una Qstring che contiene il tutto serializzano come QJson
 	*/
 
 	QJsonObject obj;
 	obj.insert("type", QJsonValue(type));
-	obj.insert("user", username);
 	obj.insert("filename", QJsonValue(filename));
 	return obj;
 }
-QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj) {
+QString Serialize::newFileUnserialize(QJsonObject obj) {
 
-	QPair<QString, QString> user_file;
-	user_file.first = obj.value("filename").toString();
-	user_file.second = obj.value("user").toString();
+	QString filename = obj.value("filename").toString();
 
-	return user_file;
+	return filename;
 }
 
 QJsonObject Serialize::messageSerialize(Message message, int type)
@@ -351,7 +347,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 //-------------------------------------------------------------------------------
 
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int userID, int type)
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
@@ -369,8 +365,9 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
 
 	obj.insert("res", QJsonValue(res));
 
-	obj.insert("message", QJsonValue(message));
+	obj.insert("userID", userID);
 
+	obj.insert("message", QJsonValue(message));
 
 	return obj;
 }
@@ -385,11 +382,28 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	- una QstringList che di lunghezza 2:
 	list[0]: valore booleano che mi dice OK/ERROR
 	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+	list[2]: userID
 	*/
 	QStringList list;
 	bool res = obj.value("res").toBool();
 	list.append(res ? "true" : "false");
 	list.append(obj.value("message").toString());
+	int i = obj.value("userID").toInt();
+	list.append(QString::number(obj.value("userID").toInt()));
+
+	QJsonDocument doc(obj);
+	QString strJson(doc.toJson(QJsonDocument::Compact));
+	std::ofstream oFile("C:/Users/Mattia Proietto/Desktop/NONFUNZIONA.txt", std::ios_base::out | std::ios_base::trunc);
+	if (oFile.is_open())
+	{
+
+		//std::string text = this->to_string();
+		{
+			//oFile << text;
+			oFile << strJson.toStdString();
+		}
+		oFile.close();
+	}
 
 	return list;
 }

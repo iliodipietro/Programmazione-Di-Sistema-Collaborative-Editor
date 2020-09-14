@@ -27,6 +27,7 @@ class MyServer : public QObject{
 public:
     MyServer(QObject *parent = nullptr);
     bool listen(QHostAddress addr, quint16 port);
+    
     ~MyServer();
 
 private slots:
@@ -48,6 +49,8 @@ private:
     int m_lastId;
     //#####################################
     DBInteraction *db = nullptr;
+
+
     std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
 
     void handleMessage(int fileID, Message m);

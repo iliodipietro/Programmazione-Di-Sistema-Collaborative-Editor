@@ -54,10 +54,17 @@ public:
     void changeNickname(QString username, QString newNickname, ClientManager* client);
     void changeProfilePic();
 
+
+    void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);
+
     File* getFile(int fileid);
     bool isUserLogged(ClientManager* client);
 
 
+    void funzionedaeliminare() {
+        File* primo_file = new File(-1, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
+        instance->files.insert(-1, primo_file);
+    }
 private:
     static DBInteraction* instance;
     QSqlDatabase db;

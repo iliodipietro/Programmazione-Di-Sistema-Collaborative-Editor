@@ -16,19 +16,24 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 {
 	if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
-		this->handler->getTimer()->start(TIMEOUT);
-	}
-	for (auto u : this->users) {
-		if (sender != u) {
-			//madare messaggi su tutti i socket tranne che al sender
-			//mando direttamente il messagio sotto forma di bytearray
-			u->writeData(bytes);
 
-		}
-	}
 	/*faccio partire il timer della durata definita da TIMEOUT in CRDT.h se alla scadenza del timer non ho ancora ricevuto alcun nuovo messaggio
 	  salvo il credt su file altrimenti il timer viene fatto ripartire e si ricomincia dalla condizione precedente.
 	*/
+		this->handler->getTimer()->start(TIMEOUT);
+	}
+
+	QList<int> keys = this->users.keys();
+
+	for (auto u : keys) {
+		if (sender->getId() != u) {
+			//madare messaggi su tutti i socket tranne che al sender
+			//mando direttamente il messagio sotto forma di bytearray
+			this->users.value(u)->writeData(bytes);
+
+		}
+	}
+
 	
 }
 
@@ -61,23 +66,28 @@ void File::modifyName(QString newName){
 
 void File::addUser(ClientManager* user)
 {
-    //quando aggiungo un nuovo utente gli mando l'intero testo
-	this->users.append(user);
-	this->sendNewFile(user);
+	//quando aggiungo un nuovo utente gli mando l'intero testo
+	if (!this->users.contains(user->getId())) {
+
+		this->users.insert(user->getId(), user);
+		//this->users.append(user);
+		this->sendNewFile(user);
+	}
+
 
 }
 
 void File::removeUser(ClientManager* user)
 {
-    //rimuovo un utente che non lavora piu sul file
-
-	this->users.removeOne(user);
+	//rimuovo un utente che non lavora piu sul file
+	this->users.remove(user->getId());
 }
 
-QVector<ClientManager*> File::getUsers()
+QList<ClientManager*> File::getUsers()
 {
 	//ritorno la lista di utenti attivi visti come socket
-	return this->users;
+	return this->users.values();
+	
 }
 
 bool File::thereAreUsers()
