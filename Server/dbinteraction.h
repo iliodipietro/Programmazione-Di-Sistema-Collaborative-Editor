@@ -65,6 +65,9 @@ public:
         File* primo_file = new File(-1, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
         instance->files.insert(-1, primo_file);
     }
+
+    inline QColor getUserColor(int userId){return m_colorPerUser.value(userId);}
+
 private:
     static DBInteraction* instance;
     QSqlDatabase db;
@@ -73,10 +76,10 @@ private:
     //QMap<QTcpSocket*, ClientManager*>users;
     QVector<ClientManager*> activeusers;
     QMap<int, File*> files; // mappa fileId - File contenente tutti i file attivi al momentento
-    std::vector<QColor> m_colorUsed; //lista dei colori usati
+    QMap<int, QColor> m_colorPerUser; //lista dei colori usati
 
     QByteArray intToArray(qint64 source);
-    QColor generateRandomColor();
+    QColor generateRandomColor(int);
     bool colorPresent(QColor);
 };
 

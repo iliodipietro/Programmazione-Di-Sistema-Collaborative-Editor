@@ -222,9 +222,9 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
     case (CURSOR):{
         qDebug("CURSOR request");
-        int fileId = ObjData.value("fileId").toInt();
-        File* f = db->getFile(fileId);
-        f->updateCursorPosition(client, socketData);
+        QPair<int, Message> m = Serialize::messageUnserialize(ObjData);
+        File* f = db->getFile(m.first);
+        //f->messageHandler(client, m.second, socketData); //Augusto - cursori disabilitati perchè non ancora funzionanti
 
         break;
     }
@@ -294,8 +294,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 void MyServer::onDisconnect(){
     ClientManager* client = static_cast<ClientManager*>(sender());
     db->logout(client);
-    auto it = m_connectedClients.begin();
-    for(it; it != m_connectedClients.end(); it++){
+    for(auto it = m_connectedClients.begin(); it != m_connectedClients.end(); it++){
         if((*it) == client){
             m_connectedClients.erase(it);
             break;

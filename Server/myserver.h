@@ -49,7 +49,7 @@ private:
     //AUGUSTO##############################
     std::vector<ClientManager*> m_connectedClients;
     int m_lastId;
-    QFile* m_logFile;
+    QFile* m_logFile; //file di log usato per debug
     QTextStream* m_logFileStream;
     //#####################################
     DBInteraction *db = nullptr;

@@ -78,6 +78,12 @@ public:
 	static QJsonObject cursorSerialize(CustomCursor cursor, int type);
 	static CustomCursor cursorUnserialize(QJsonObject obj);
 
+	static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type);
+	static QStringList addEditingUserUnserialize(QJsonObject obj);
+
+	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);
+	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);
+
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
 

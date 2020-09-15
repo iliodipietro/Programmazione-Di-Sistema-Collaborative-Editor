@@ -469,6 +469,7 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	list.append(obj.value("message").toString());
 	int i = obj.value("userID").toInt();
 	list.append(QString::number(obj.value("userID").toInt()));
+	list.append(obj.value("color").toString());
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -558,6 +559,68 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 
 	return vett;
 
+}
+
+QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type) {
+	/*Funzione usata per inviare a tutti i client lo userId e lo username del client che si ha appena aperto un file
+	  Viene anche usata per mandare al client che ha appena aperto il file le informazioni riguardanti tutti i client già connessi al file
+	*/
+
+	QJsonObject obj;
+	obj.insert("userId", userId);
+	obj.insert("username", username);
+	QString color = userColor.name();
+	obj.insert("userColor", color);
+	obj.insert("fileId", fileId);
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
+QStringList Serialize::addEditingUserUnserialize(QJsonObject obj) {
+	/*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
+	  OUTPUT:
+	  una QStringList di lunghezza 4 contenentee:
+	  -list[0] -> userId
+	  -list[1] -> username
+	  -list[2] -> userColor
+	  -list[3] -> fileId
+	*/
+
+	QStringList sl;
+	sl.append(obj.value("userId").toString());
+	sl.append(obj.value("username").toString());
+	sl.append(obj.value("userColor").toString());
+	sl.append(obj.value("fileId").toString());
+
+	return sl;
+}
+
+QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type) {
+	/*Funzione usata per inviare a tutti i client lo userId del client che ha chiuso il file
+	*/
+
+	QJsonObject obj;
+	obj.insert("userId", userId);
+	obj.insert("fileId", fileId);
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
+QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj) {
+	/*Funzione usata per de-serializzare lo userid del client che ha chiuso il file
+		OUTPUT:
+		una coppia di interi contenente:
+		-key -> lo userId
+		-value -> il fileId
+	*/
+
+	int userId = obj.value("userId").toInt();
+	int fileId = obj.value("fileId").toInt();
+	QPair<int, int> userFile(userId, fileId);
+
+	return userFile;
 }
 
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)

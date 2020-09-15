@@ -24,3 +24,4 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define CHANGE_NICK 19
 #define CHANGE_PROPIC 20
 #define NEWEDITINGUSER 21
+#define REMOVEEDITINGUSER 22

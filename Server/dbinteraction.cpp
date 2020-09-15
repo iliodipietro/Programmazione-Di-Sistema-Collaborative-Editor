@@ -388,7 +388,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
 
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
-                    QColor userColor = instance->generateRandomColor();
+                    QColor userColor = instance->generateRandomColor(userid);
                     incomingClient->setColor(userColor);
                    // instance->users.insert(username, new ClientManager(userid,socket));
                     response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, userid, userColor));
@@ -955,19 +955,20 @@ QByteArray DBInteraction::intToArray(qint64 source) {
     return temp;
 }
 
-QColor DBInteraction::generateRandomColor(){
+//generazione casuale di un colore ed inserimento nella lista così che non venga ripetuto
+QColor DBInteraction::generateRandomColor(int userId){
     QColor newColor;
     do{
        newColor = QColor::fromRgb(QRandomGenerator::global()->generate());
     }
     while(colorPresent(newColor));
-    m_colorUsed.push_back(newColor);
+    m_colorPerUser.insert(userId, newColor);
     return newColor;
 }
 
 bool DBInteraction::colorPresent(QColor color){
-    for(auto it = m_colorUsed.begin(); it != m_colorUsed.end(); it++){
-        if((*it) == color) return true;
+    for(auto it = m_colorPerUser.begin(); it != m_colorPerUser.end(); it++){
+        if(it.value() == color) return true;
     }
     return false;
 }
