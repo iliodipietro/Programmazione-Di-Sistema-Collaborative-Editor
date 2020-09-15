@@ -35,7 +35,7 @@ public:
 private slots:
     void onNewConnection();
     //void readFromSocket();
-    void MessageHandler(ClientManager *socket, QByteArray socketData);
+    void MessageHandler(ClientManager *client, QByteArray socketData);
     void onDisconnect();
 signals:
     void dataReady(QTcpSocket *socket, QByteArray socketData);
@@ -54,9 +54,7 @@ private:
     //#####################################
     DBInteraction *db = nullptr;
 
-//---------------------------------------------------------------------------------------
-    void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);
-//----------------------------------------------------------------------------
+
     std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
 
     void handleMessage(int fileID, Message m);

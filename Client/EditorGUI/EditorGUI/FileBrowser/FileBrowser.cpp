@@ -1,4 +1,5 @@
 #include "FileBrowser.h"
+#include <QMap>
 
 FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QString username, int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage)
@@ -13,7 +14,8 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	ui.treeView->setRootIndex(model.index(QDir::currentPath()));*/
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
 	connect(ui.newFile, SIGNAL(clicked()), this, SLOT(on_newFile_Clicked()));
-	ui.fileList->addItem("test file");
+	connect(ui.deleteFile, SIGNAL(clicked()), this, SLOT(on_deleteFile_Clicked()));
+	//ui.fileList->addItem("test file");
 	
 }
 
@@ -23,6 +25,9 @@ FileBrowser::~FileBrowser()
 
 void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 	QString filename = item->text();
+	if (filename == "") {
+		return;
+	}
 	auto it = m_textEditors.find(filename);
 	Editor* editor;
 	if (it == m_textEditors.end()) {
@@ -32,15 +37,20 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 			m_textEditors.insert(std::pair<QString, Editor*>(path, editor));
 		}
 		else {
-			editor = new Editor(m_socketHandler, m_profileImage, filename, username, clientID);
+			editor = new Editor(m_socketHandler, m_profileImage, filename, username, this->filename_id.value(filename),clientID);
 			m_textEditors.insert(std::pair<QString, Editor*>(filename, editor));
 		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
+		//chiamare la FILEOPEN
+		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(editor->getFileId(),OPEN));
+		this->m_socketHandler->writeData(data);
 	}
 	else {
 		editor = it->second;
 		editor->raise();
+		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(editor->getFileId(), OPEN));
+		this->m_socketHandler->writeData(data);
 	}
 }
 
@@ -57,7 +67,8 @@ void FileBrowser::on_newFile_Clicked() {
 	if (ok && !filename.isEmpty()) {
 		std::cout << "ok";
 		//send to server
-		Serialize::newFileSerialize(filename,this->username,NEWFILE);
+		QByteArray data = Serialize::fromObjectToArray( Serialize::newFileSerialize(filename,NEWFILE));
+		this->m_socketHandler->writeData(data);
 	}
 	else {
 		QMessageBox resultDialog(this);
@@ -68,8 +79,41 @@ void FileBrowser::on_newFile_Clicked() {
 		
 }
 
+void FileBrowser::on_deleteFile_Clicked()
+{
+	QListWidgetItem* current_item = ui.fileList->currentItem();
+	if (current_item == nullptr) {
+		QMessageBox resultDialog(this);
+		QString res_text = "Select a file";
+		resultDialog.setInformativeText(res_text);
+		resultDialog.exec();
+		return;
+	}
+	QString filename = current_item->text();
+	int id = this->filename_id.value(filename);
+	QByteArray data = Serialize::fromObjectToArray( Serialize::openCloseDeleteFileSerialize(id,DELETE_FILE));
+	this->m_socketHandler->writeData(data);
+	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
+	if (item != nullptr) {
+		delete item;
+		item = nullptr;
+		current_item = nullptr;
+	}
+}
+
 void FileBrowser::closeEvent(QCloseEvent* event) {
 	qApp->quit();
+}
+
+void FileBrowser::removeBlank()
+{
+	QList<QListWidgetItem*> items = ui.fileList->findItems("", Qt::MatchExactly);
+	for (auto it : items) {
+		ui.fileList->takeItem(ui.fileList->row(it));
+		delete it;
+		it = nullptr;
+	}
+
 }
 
 void FileBrowser::on_logoutButton_clicked() {
@@ -106,8 +150,22 @@ void FileBrowser::requestFiles() {
 }
 
 void FileBrowser::addFiles(QJsonObject filesList) {
-	QString filename = Serialize::fileNameUnserialize(filesList);
-	ui.fileList->addItem(filename);
+	
+	QMap<int,QString> map =  Serialize::fileListUnserialize(filesList);
+	
+	for (auto id : map.keys()) {
+
+		this->filename_id.insert(map.value(id),id);
+		ui.fileList->addItem(map.value(id));
+	}
+	removeBlank();
+}
+
+void FileBrowser::addFile(QJsonObject file) {
+	QPair<int,QString> pair = Serialize::newFileUnserialize(file);
+	this->filename_id.insert(pair.second,pair.first);
+	ui.fileList->addItem(pair.second);
+	removeBlank();
 }
 
 void FileBrowser::handleNewMessage(QJsonObject message)
@@ -119,8 +177,11 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 	case MESSAGE:
 		processEditorMessage(message);
 		break;
-	case SERVER_ANSWER:
+	case SEND_FILES:
 		addFiles(message);
+	case NEWFILE:
+		addFile(message);
+		break;
 	default:
 		break;
 	}

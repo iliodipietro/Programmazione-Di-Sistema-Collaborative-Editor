@@ -35,16 +35,27 @@ public:
     //la register l'immagine viene serializzata a parte per ora
 
     //usate in DBInteraction per login
-    static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);//ilio
-    static QJsonObject user_filesSerialize(int userId, QString username, QJsonArray files, int type);//ilio
-    static QPair<int, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
+    //static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);// ilio
+    static QJsonObject FileListSerialize(QMap<int, QString> files, int type);// ilio
+    static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
     //usate in myserver.cpp per open - close
-    static QJsonObject openCloseFileSerialize(int fileId, QString username, int type); // ilio
-    static QPair<int, QString> openCloseFileUnserialize(QJsonObject obj);// ilio
+    static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
+    static int openCloseDeleteFileUnserialize(QJsonObject obj);// ilio
 
-    static QJsonObject newFileSerialize(QString filename, QString username, int type);//ilio
-    static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
+    static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
+    static QString newFileUnserialize(QJsonObject obj);// ilio
+
+    static QJsonObject renameFileSerialize(int fileId, QString newName); // ilio
+    static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
+
+    static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
+    static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+
+    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
+    static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
+
+
 
 
     static QJsonObject messageSerialize(int fileId, Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo

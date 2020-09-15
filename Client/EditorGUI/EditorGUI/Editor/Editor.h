@@ -27,6 +27,7 @@ public:
 	~Editor();
 	void loadFile(const QString& fileName);
 	void messageReceived(Message);
+	int getFileId();
 
 private:
 	Ui::Editor ui;
@@ -82,6 +83,9 @@ private:
 	int lastStart;
 	int lastEnd;
 
+	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
+	bool styleBounce = false;
+
 	//FINE-------------------------------------------------------------------------------------------------------
 
 	void closeEvent(QCloseEvent* event);
@@ -128,8 +132,14 @@ private:
 	void remoteAction(Message m);
 
 protected:
-	void keyPressEvent(QKeyEvent *e);
+
 	void mousePressEvent(QMouseEvent* e);
+
+public slots:
+	void keyPressEvent(QKeyEvent* e);
+	void keyRelaseEvent(QKeyEvent* e);
+
+
 
 private slots:
 	void on_textEdit_textChanged();

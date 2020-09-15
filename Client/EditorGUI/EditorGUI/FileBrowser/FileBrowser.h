@@ -33,17 +33,21 @@ private:
 	QLineEdit* m_newFileLabel;
 	QSharedPointer<QPixmap> m_profileImage;
 	void closeEvent(QCloseEvent* event);
-
+	void removeBlank();
 	void requestFiles();
+
+	QMap<QString,int> filename_id;
 
 private slots:
 	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
 	void on_logoutButton_clicked();
 	void on_modifyProfile_clicked();
 	void on_newFile_Clicked();
+	void on_deleteFile_Clicked();
 	void editorClosed(QString);
 	void childWindowClosed();
-	void addFiles(QJsonObject message);// cambiare nome -->gestisce tutti i messaggi dal serever
+	void addFiles(QJsonObject message);
+	void addFile(QJsonObject message);
 	void handleNewMessage(QJsonObject message);
 	void processEditorMessage(QJsonObject message);
 
