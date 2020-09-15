@@ -205,7 +205,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->createFile(filename, client);
 
         break;
-    case (OPEN):
+    case (OPEN):{
         qDebug("OPEN request\n");
         fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
 
@@ -224,7 +224,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("CURSOR request");
         int fileId = ObjData.value("fileId").toInt();
         File* f = db->getFile(fileId);
-        f->updateCursorPosition(socket, socketData);
+        f->updateCursorPosition(client, socketData);
 
         break;
     }

@@ -389,7 +389,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                     QColor userColor = instance->generateRandomColor();
-                    socket->setColor(userColor);
+                    incomingClient->setColor(userColor);
                    // instance->users.insert(username, new ClientManager(userid,socket));
                     response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, userid, userColor));
                     incomingClient->writeData(response);
