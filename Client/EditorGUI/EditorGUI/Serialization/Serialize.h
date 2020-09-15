@@ -50,8 +50,8 @@ public:
 	static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
 
 
-	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
-	static Message messageUnserialize(QJsonObject obj);
+	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
 
 
@@ -66,7 +66,7 @@ public:
 
 	static QJsonObject ObjectFromString(QString& in);
 
-	static QJsonObject cursorPostionSerialize(int position, int user, int type);
+	static QJsonObject cursorPostionSerialize(int position, int user, int fileId, int type);
 	static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
 	static QJsonObject cursorSerialize(CustomCursor cursor, int type);

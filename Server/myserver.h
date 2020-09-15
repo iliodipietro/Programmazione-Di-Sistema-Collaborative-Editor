@@ -9,6 +9,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <vector>
+#include <QDir>
+#include <QDataStream>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "dbinteraction.h"
@@ -47,6 +49,8 @@ private:
     //AUGUSTO##############################
     std::vector<ClientManager*> m_connectedClients;
     int m_lastId;
+    QFile* m_logFile;
+    QTextStream* m_logFileStream;
     //#####################################
     DBInteraction *db = nullptr;
 

@@ -14,3 +14,4 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define CLOSE 9
 #define CURSOR 10
 #define SERVER_ANSWER 11
+#define NEWEDITINGUSER 14

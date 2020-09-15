@@ -26,7 +26,7 @@ public:
 		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
-	void remoteAction(Message m);
+	void messageReceived(Message);
 
 private:
 	Ui::Editor ui;
@@ -125,6 +125,7 @@ private:
 
 	void addEditingUser(int id, QString username, QColor userColor);
 	void removeEditingUser(int id, QString username);
+	void remoteAction(Message m);
 
 protected:
 	void keyPressEvent(QKeyEvent *e);
@@ -134,8 +135,7 @@ private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
-	void messageReceived(QJsonObject);
-	void writeText();
+	//void writeText();
 	void showEditingUsers();
 	void clickOnTextEdit();
 

@@ -73,6 +73,7 @@ void FileBrowser::closeEvent(QCloseEvent* event) {
 }
 
 void FileBrowser::on_logoutButton_clicked() {
+	//eseguire il logout prima
 	emit showParent();
 	this->hide();
 }
@@ -127,8 +128,10 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 
 void FileBrowser::processEditorMessage(QJsonObject message)
 {
-	Message m = Serialize::messageUnserialize(message);
+	QPair<int, Message> m = Serialize::messageUnserialize(message);
 
-	Editor* edit = m_textEditors.at(QDir::currentPath().append("\\PROVA SCRITTURA.txt"));
-	edit->remoteAction(m);
+	auto it = m_textEditors.find(QDir::currentPath().append("\\PROVA SCRITTURA.txt"));//cambiare la mappa per usare il file id
+	if (it != m_textEditors.end()) {
+		it->second->messageReceived(m.second);
+	}
 }

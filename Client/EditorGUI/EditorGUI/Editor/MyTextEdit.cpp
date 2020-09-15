@@ -13,7 +13,7 @@ void MyTextEdit::paintEvent(QPaintEvent* event)
     for (it; it != m_cursorsToPrint.end(); it++) {
         painter.setRenderHint(QPainter::Antialiasing, true);
         QRect rect = (it->second)->getCursorPos();
-        rect.setX(rect.x() - 1);
+        rect.setX(rect.x() + 5);
         painter.fillRect(rect, (it->second)->getCursorColor());
     }
 }
@@ -30,10 +30,10 @@ void MyTextEdit::removeCursor(int id) {
     m_cursorsToPrint.erase(id);
 }
 
-void MyTextEdit::insertText(int id, QString& text) {
+/*void MyTextEdit::insertText(int id, QString& text) {
     CustomCursor *cursor = m_cursorsToPrint.find(id)->second;
     cursor->insertText(text);
-}
+}*/
 
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
     CustomCursor* cursor = m_cursorsToPrint.find(id)->second;

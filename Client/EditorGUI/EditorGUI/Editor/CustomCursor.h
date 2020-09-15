@@ -15,7 +15,7 @@ public:
 	inline QColor getCursorColor() { return m_color; }
 	QRect getCursorPos();
 	void setActiveCursor();
-	void insertText(QString &text);
+	//void insertText(QString &text);
 	void updateLabelPosition();
 
 private:

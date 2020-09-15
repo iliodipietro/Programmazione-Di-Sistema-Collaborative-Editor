@@ -12,8 +12,15 @@ CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, in
 	palette.setColor(QPalette::Window, m_color);
 	palette.setColor(m_usernameLabel->foregroundRole(), Qt::white);
 	//m_usernameLabel->setPalette(palette);
-	m_usernameLabel->hide();
 	m_TextCursor->setPosition(position);
+	QPoint cursorPos = m_lastPosition.topLeft();
+	cursorPos.setY(cursorPos.y() - 2);
+	cursorPos.setX(cursorPos.x() + 9);
+	m_usernameLabel->move(cursorPos);
+	m_usernameLabel->setAttribute(Qt::WA_StyledBackground);
+	m_usernameLabel->setStyleSheet("QLabel{border-radius: 3px; background: blue; color: white;}");
+	m_usernameLabel->setContentsMargins(QMargins(4, 1, 4, 2));
+	m_usernameLabel->show();
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
@@ -34,6 +41,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	default:
 		break;
 	}
+	updateLabelPosition();
 }
 
 void CustomCursor::setCursorPosition(int pos) {
@@ -50,7 +58,7 @@ void CustomCursor::setActiveCursor() {
 	m_editor->setTextCursor(*m_TextCursor);
 }
 
-void CustomCursor::insertText(QString& text) {
+/*void CustomCursor::insertText(QString& text) {
 	//m_textDoc = m_editor->document();
 	//m_TextCursor = new QTextCursor(m_textDoc);
 	//m_textDoc->setPlainText(m_editor->toPlainText());
@@ -62,10 +70,10 @@ void CustomCursor::insertText(QString& text) {
 	m_lastPosition = m_editor->cursorRect();
 	//m_editor->setPlainText(m_textDoc->toPlainText());
 	updateLabelPosition();
-}
+}*/
 
 void CustomCursor::updateLabelPosition() {
-	QPoint cursorPos = m_lastPosition.topLeft();
+	QPoint cursorPos = m_editor->cursorRect().topLeft();
 	cursorPos.setY(cursorPos.y() - 2);
 	cursorPos.setX(cursorPos.x() + 9);
 	m_usernameLabel->move(cursorPos);

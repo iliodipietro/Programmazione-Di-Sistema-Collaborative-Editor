@@ -18,6 +18,7 @@ public:
     QList<ClientManager*> getUsers();
     bool thereAreUsers();
     void sendNewFile(ClientManager* socket);
+    void updateCursorPosition(ClientManager* sender, QByteArray message);
 
 private:
     CRDT *handler = nullptr;

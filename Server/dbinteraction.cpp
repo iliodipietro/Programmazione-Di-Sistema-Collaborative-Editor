@@ -1,6 +1,7 @@
 #include "dbinteraction.h"
 #include <QDir>
 #include <QDataStream>
+#include <QRandomGenerator>
 
 /*
     TO DO:
@@ -330,7 +331,9 @@ void DBInteraction::login(QString username, QString password, ClientManager*sock
                                     }
                                 }*/
                                 //message = "login OK"; //in caso di successo il messaggio diventa l'immagine in base64 da mandare all'utente
-                                response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER,userid));
+                                QColor userColor = instance->generateRandomColor();
+                                socket->setColor(userColor);
+                                response_ok = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, userid, userColor));
                                 //qDebug() << response_ok;
                                 sendMessage(socket->getSocket(), response_ok);
 
@@ -531,5 +534,22 @@ QByteArray DBInteraction::intToArray(qint64 source) {
     QDataStream data(&temp, QIODevice::ReadWrite);
     data << source;
     return temp;
+}
+
+QColor DBInteraction::generateRandomColor(){
+    QColor newColor;
+    do{
+       newColor = QColor::fromRgb(QRandomGenerator::global()->generate());
+    }
+    while(colorPresent(newColor));
+    m_colorUsed.push_back(newColor);
+    return newColor;
+}
+
+bool DBInteraction::colorPresent(QColor color){
+    for(auto it = m_colorUsed.begin(); it != m_colorUsed.end(); it++){
+        if((*it) == color) return true;
+    }
+    return false;
 }
 

@@ -54,10 +54,11 @@ private:
     //QMap<ClientManager*, int> users;
     QMap<QString, ClientManager*>users;
     QMap<int, File*> files; // mappa fileId - File
+    std::vector<QColor> m_colorUsed;
 
     QByteArray intToArray(qint64 source);
-
-
+    QColor generateRandomColor();
+    bool colorPresent(QColor);
 };
 
 #endif // DBINTERACTION_H

@@ -1,7 +1,5 @@
 #include "myserver.h"
 
-
-
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
 {
     //supporto al file system da implementare
@@ -14,7 +12,13 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
  
     db->funzionedaeliminare();
 
-    
+    QString path(QDir::currentPath() + "/log.txt");
+     m_logFile = new QFile(path);
+    if(m_logFile->open(QIODevice::WriteOnly)){
+        m_logFileStream = new QTextStream(m_logFile);
+        *m_logFileStream << "prova";
+        m_logFileStream->flush();
+    }
 
 }
 
@@ -32,14 +36,21 @@ void MyServer::forwardMessage(ClientManager* user, QJsonObject obj, QByteArray d
 {
     //qDebug()<< data;
     QPair<int,Message> fileid_message = Serialize::messageUnserialize(obj);
-
+    QString text;
+    text.append(fileid_message.second.getSenderId());
+    text.append(",");
+    text.append(fileid_message.second.getSymbol().getChar());
+    text.append(",");
+    text.append((int)fileid_message.second.getCursorPosition());
+    *m_logFileStream << text;
+    m_logFileStream->flush();
     //File *f = db->getFile(fileid_message.first);
     File* f = db->getFile(0);
     f->messageHandler(user, fileid_message.second, data);
 
 }
 
-//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperÃ  di leggere e scrivere i messaggi
+//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperÃ  di leggere e scrivere i messaggi
 void MyServer::onNewConnection(){
     while(_server->hasPendingConnections()){
         QTcpSocket *newConnection = _server->nextPendingConnection();
@@ -189,13 +200,14 @@ void MyServer::MessageHandler(ClientManager*socket, QByteArray socketData){
         db->createFile(filename, username, socket->getSocket());
 
         break;
-    case (OPEN):
+    case (OPEN):{
         qDebug("OPEN request");
         fileId = Serialize::openCloseFileUnserialize(ObjData).first;
         username = Serialize::openCloseFileUnserialize(ObjData).second;
         db->openFile(fileId, username, socket->getSocket());
 
         break;
+    }
     case (CLOSE):
         qDebug("CLOSE request");
         fileId = Serialize::openCloseFileUnserialize(ObjData).first;
@@ -203,10 +215,14 @@ void MyServer::MessageHandler(ClientManager*socket, QByteArray socketData){
         db->closeFile(fileId, username, socket->getSocket());
 
         break;
-    case (CURSOR):
+    case (CURSOR):{
         qDebug("CURSOR request");
+        int fileId = ObjData.value("fileId").toInt();
+        File* f = db->getFile(fileId);
+        f->updateCursorPosition(socket, socketData);
 
         break;
+    }
     case (SERVER_ANSWER):
         qDebug("SERVER_ANSWER request");
 
@@ -295,5 +311,5 @@ void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
 
 MyServer::~MyServer()
 {
-
+    m_logFile->close();
 }

@@ -220,7 +220,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     obj.insert("sender", QJsonValue(senderId));
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sar�  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (message.getCursorPosition() > 0) {
@@ -300,7 +300,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sar�  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR) {
@@ -422,7 +422,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 
 
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID, QColor color)
 {
     /*
   res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero

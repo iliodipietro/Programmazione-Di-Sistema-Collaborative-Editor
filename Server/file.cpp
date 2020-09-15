@@ -81,3 +81,10 @@ bool File::thereAreUsers()
 	return this->users.size() > 0 ;
 }
 
+void File::updateCursorPosition(ClientManager* sender, QByteArray message){
+    for(auto it = users.begin(); it != users.end(); it++){
+        if(it.key() != sender->getId()){
+            it.value()->writeData(message);
+        }
+    }
+}
