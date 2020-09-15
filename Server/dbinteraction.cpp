@@ -608,15 +608,18 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
         return;
     }
 
-
-    if(instance->files.value(fileId)->getUsers().contains(client)){
-        qDebug()<<"file already opened!\n";
-        message = "file already opened!";
-        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-        client->writeData(response);
-        //sendMessage(socket, response);
-        return;
+    if (instance->files.contains(fileId)) {
+        
+        if (instance->files.value(fileId)->getUsers().contains(client)) {
+            qDebug() << "file already opened!\n";
+            message = "file already opened!";
+            response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+            client->writeData(response);
+            //sendMessage(socket, response);
+            return;
+        }
     }
+
     if(instance->files.contains(fileId)){
         //il file è gia in RAM
         f = DBInteraction::getFile(fileId);
@@ -922,7 +925,7 @@ void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteAr
     QPair<int, Message> fileid_message = Serialize::messageUnserialize(obj);
 
     //File *f = instance->getFile(fileid_message.first);
-    File* f = instance->getFile(0);// debug only
+    File* f = instance->getFile(fileid_message.first);// debug only
     f->messageHandler(user, fileid_message.second, data);
 }
 

@@ -27,6 +27,7 @@ public:
 	~Editor();
 	void loadFile(const QString& fileName);
 	void remoteAction(Message m);
+	int getFileId();
 
 private:
 	Ui::Editor ui;
@@ -130,8 +131,14 @@ private:
 	void removeEditingUser(int id, QString username);
 
 protected:
-	void keyPressEvent(QKeyEvent *e);
+
 	void mousePressEvent(QMouseEvent* e);
+
+public slots:
+	void keyPressEvent(QKeyEvent* e);
+	void keyRelaseEvent(QKeyEvent* e);
+
+
 
 private slots:
 	void on_textEdit_textChanged();

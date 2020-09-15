@@ -15,7 +15,7 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define CLOSE 10
 #define CURSOR 11
 #define SERVER_ANSWER 12
-#define DELETE 13
+#define DELETE_FILE 13
 #define RENAME 14
 #define SHARE 15
 #define SEND_FILES 16

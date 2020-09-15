@@ -43,10 +43,14 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
 		//chiamare la FILEOPEN
+		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(editor->getFileId(),OPEN));
+		this->m_socketHandler->writeData(data);
 	}
 	else {
 		editor = it->second;
 		editor->raise();
+		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(editor->getFileId(), OPEN));
+		this->m_socketHandler->writeData(data);
 	}
 }
 
@@ -77,11 +81,39 @@ void FileBrowser::on_newFile_Clicked() {
 
 void FileBrowser::on_deleteFile_Clicked()
 {
-
+	QListWidgetItem* current_item = ui.fileList->currentItem();
+	if (current_item == nullptr) {
+		QMessageBox resultDialog(this);
+		QString res_text = "Select a file";
+		resultDialog.setInformativeText(res_text);
+		resultDialog.exec();
+		return;
+	}
+	QString filename = current_item->text();
+	int id = this->filename_id.value(filename);
+	QByteArray data = Serialize::fromObjectToArray( Serialize::openCloseDeleteFileSerialize(id,DELETE_FILE));
+	this->m_socketHandler->writeData(data);
+	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
+	if (item != nullptr) {
+		delete item;
+		item = nullptr;
+		current_item = nullptr;
+	}
 }
 
 void FileBrowser::closeEvent(QCloseEvent* event) {
 	qApp->quit();
+}
+
+void FileBrowser::removeBlank()
+{
+	QList<QListWidgetItem*> items = ui.fileList->findItems("", Qt::MatchExactly);
+	for (auto it : items) {
+		ui.fileList->takeItem(ui.fileList->row(it));
+		delete it;
+		it = nullptr;
+	}
+
 }
 
 void FileBrowser::on_logoutButton_clicked() {
@@ -125,12 +157,14 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 		this->filename_id.insert(map.value(id),id);
 		ui.fileList->addItem(map.value(id));
 	}
-
+	removeBlank();
 }
 
 void FileBrowser::addFile(QJsonObject file) {
 	QPair<int,QString> pair = Serialize::newFileUnserialize(file);
+	this->filename_id.insert(pair.second,pair.first);
 	ui.fileList->addItem(pair.second);
+	removeBlank();
 }
 
 void FileBrowser::handleNewMessage(QJsonObject message)

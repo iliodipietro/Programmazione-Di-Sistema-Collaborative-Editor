@@ -33,7 +33,7 @@ private:
 	QLineEdit* m_newFileLabel;
 	QSharedPointer<QPixmap> m_profileImage;
 	void closeEvent(QCloseEvent* event);
-
+	void removeBlank();
 	void requestFiles();
 
 	QMap<QString,int> filename_id;
