@@ -1,8 +1,8 @@
 #include "clientmanager.h"
 #include <QDataStream>
 
-ClientManager::ClientManager(int id, QTcpSocket* socket, QObject *parent) : QObject(parent),
-    m_id(id), m_clientSocket(socket), m_socketBuffer(new QByteArray())
+ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(parent),
+m_clientSocket(socket), m_socketBuffer(new QByteArray())
 {
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
@@ -28,7 +28,7 @@ void ClientManager::readyRead(){
                 dataToHandle = m_socketBuffer->mid(0, dim);
                 m_socketBuffer->remove(0, dim);
                 dim = 0;
-                emit messageReceived(m_clientSocket.get(), dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
+                emit messageReceived(this, dataToHandle); //il pacchetto letto viene mandato al message handler tramite un segnale
             }
         }
     }
@@ -47,6 +47,23 @@ bool ClientManager::writeData(QByteArray& data) {
     }
 }
 
+QTcpSocket* ClientManager::getSocket()
+{
+    return this->m_clientSocket.get();
+}
+
+void ClientManager::setId(int id)
+{
+    this->m_id = id;
+}
+
+QString ClientManager::getUsername(){
+    return this->m_username;
+}
+int ClientManager::getId(){
+    return this->m_id;
+}
+
 //la disconnessione viene segnalata al server
 void ClientManager::onDisconnect(){
     emit disconnected();
@@ -59,6 +76,7 @@ void ClientManager::setUsername(QString username){
 void ClientManager::setColor(QColor color){
     m_color = color;
 }
+
 
 //conversione da QByteArray a qint64
 qint64 ClientManager::arrayToInt(QByteArray source){

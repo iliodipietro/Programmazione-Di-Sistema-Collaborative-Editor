@@ -79,41 +79,41 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 }
 
 
-    /*QJsonObject obj;
-    obj.insert("filename", fileName);
-    obj.insert("fileId", fileId);
-    files.push_back(QJsonValue(obj));
 
-    INPUT:
-    - fileName: stringa che contiene il nome del file;
-    - fileId: intero rapprensentante identificativo univoco di un file;
-    - files: array serializzato contenente i precedenti campi(filename e id) per ogni file posseduto dal singolo client;
+QJsonObject Serialize::FileListSerialize(QMap<int, QString> files, int type){
 
-    return files;
-}*/
-
-
-QJsonObject Serialize::user_filesSerialize(int userId, QString username, QJsonArray files, int type){
     /*
     Questa funzione, una volta che tutti i file di un client sono stati correttamente serializzati nell'array files, lega l'utente ai file.
     INPUT:
     - username: stringa che contiene il nome dell'utente;
     - files: array serializzato contenente i campi(filename e id) per ogni file posseduto dal singolo client;
-    - type: intero che è definito in define.h come LOGIN
+    - type: intero che Ã¨ definito in define.h come SEND_FILES
     RETURN:
     - files: l'array che viene man mano aggiornato ad ogni chiamata.
     */
 
     QJsonObject obj;
-    obj.insert("userid", userId);
-    obj.insert("username", username);
-    obj.insert("files", QJsonValue(files));
+    QList<int> ids = files.keys();
+    QList<QString> names = files.values();
+    int i;
+
+    //obj.insert("fileid", QJsonValue(ids));
+    //obj.insert("filename", QJsonValue(names));
+
+
+    for(i = 0; i < files.size(); i++){
+        QString fileid = "fileid" + QString(i);
+        QString filename = "filename" + QString(i);
+        obj.insert(fileid, ids[i]);
+        obj.insert(filename, names[i]);
+    }
+    obj.insert("dim", files.size());
     obj.insert("type", type);
 
     return obj;
 }
 
-QPair<int, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj){
+QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj){
 
     /*
     Questa funzione de-serializza il nome utente e tutti i file che possiede
@@ -123,43 +123,39 @@ QPair<int, QMap<int, QString>> Serialize::user_filesUnserialize(QJsonObject obj)
     - una QPair<QString, QMap<int, QString>> con il nome dell'utente come primo elemento del QPair e come secondo una mappa contenente (fileId e FileName) di tutti i file dell'utente
     */
 
-    QPair<int, QMap<int, QString>> user_files;
-    QJsonArray files = obj.value("files").toArray();
+    QMap<int, QString> fileList;
+    int size = obj.value("dim").toInt();
     int i;
-    QJsonObject singleFile;
 
-    user_files.first = obj.value("username").toInt();
-
-    for(i = 0; i < files.size(); i++){
-        singleFile = files[i].toObject();
-        user_files.second.insert(singleFile["fileId"].toInt(), singleFile["filename"].toString());
+    for(i = 0; i < size; i++){
+        QString fileid = "fileid" + QString(i);
+        QString filename = "filename" + QString(i);
+        fileList.insert(obj.value(fileid).toInt(), obj.value(filename).toString());
     }
 
-    return user_files;
+    return fileList;
 }
 
 
-QJsonObject Serialize::openCloseFileSerialize(int fileId, QString username, int type)
+QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
 {
     /*
-    Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE, cio e' discriminato dal valore di type
+    Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
     INPUT:
     - fileId: intero che contiene l'id del file
-    - username: stringa che rappresenta il possessore del file
-    - type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE O DELETE
     RETURN:
     - una Qstring che contiene il tutto serializzano come QJson
     */
     QJsonObject obj;
     obj.insert("type", QJsonValue(type));
-    obj.insert("user", username);
     obj.insert("fileId", QJsonValue(fileId));
 
 
     return obj;
 }
 
-QPair<int, QString> Serialize::openCloseFileUnserialize(QJsonObject obj)
+int Serialize::openCloseDeleteFileUnserialize(QJsonObject obj)
 {
     /*
     Questa funzione de-serializza i nome del file
@@ -168,37 +164,107 @@ QPair<int, QString> Serialize::openCloseFileUnserialize(QJsonObject obj)
     RETURN:
     - una QstringList con il nome del file
     */
-    QPair<int, QString> user_file;
-    user_file.first = obj.value("fileId").toInt();
-    user_file.second = obj.value("user").toString();
+    int fileId;
+    fileId = obj.value("fileId").toInt();
 
-    return user_file;
+    return fileId;
 }
 
-QJsonObject Serialize::newFileSerialize(QString filename, QString username, int type){
+QJsonObject Serialize::newFileSerialize(QString filename,int id, int type){
     /*
     Questa funzione serializza lil nome del file quando vuole fare una NEW, cio e' discriminato dal valore di type
     INPUT:
     - filename: stringa che contiene il nome del file da creare
-    - username: stringa che rappresenta il client che ha fatto richiesta di creazione del file
-    - type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è
     RETURN:
     - una Qstring che contiene il tutto serializzano come QJson
     */
 
     QJsonObject obj;
     obj.insert("type", QJsonValue(type));
-    obj.insert("user", username);
+    obj.insert("fileId", QJsonValue(id));
     obj.insert("filename", QJsonValue(filename));
     return obj;
 }
-QPair<QString, QString> Serialize::newFileUnserialize(QJsonObject obj){
+QString Serialize::newFileUnserialize(QJsonObject obj){
 
-    QPair<QString, QString> user_file;
-    user_file.first = obj.value("filename").toString();
-    user_file.second = obj.value("user").toString();
+    QString filename = obj.value("filename").toString();
 
-    return user_file;
+    return filename;
+}
+
+QJsonObject Serialize::renameFileSerialize(int fileId, QString newName){
+    /*
+    Questa funzione serializza l'Id del file, l'utente che vuole rinominarlo e il nuovo nome, in caso di una RENAME( cio e' discriminato dal valore di type)
+    INPUT:
+    - fileId: stringa che contiene l'id del file da rinominare
+    -newName: nuovo nome da dare al file
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è RENAME
+    RETURN:
+    - una Qstring che contiene il tutto serializzano come QJson
+    */
+    QJsonObject obj;
+    obj.insert("fileId", fileId);
+    obj.insert("newname",newName);
+    return obj;
+
+}
+
+QPair<int, QString> Serialize::renameFileUnserialize(QJsonObject obj){
+    QStringList list;
+    QPair<int, QString> res;
+    res.first = obj.value("fileId").toInt();
+    res.second = obj.value("newname").toString();
+
+
+    return res;
+}
+
+
+QJsonObject Serialize::openSharedFileSerialize(QString URI, int type){
+    /*
+    Questa funzione serializza l'URI del file e l'utente che l'ha ricevuto e lo sta provando ad aprire, in caso di una SHARE( cio e' discriminato dal valore di type)
+    INPUT:
+    - URI: stringa che contiene l'URI del file da condividere
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è SHARE
+    RETURN:
+    - una Qstring che contiene il tutto serializzano come QJson
+    */
+    QJsonObject obj;
+    obj.insert("type", QJsonValue(type));
+    obj.insert("URI", URI);
+    return obj;
+}
+
+QString Serialize::openSharedFileUnserialize(QJsonObject obj){
+
+    return obj.value("URI").toString();
+}
+
+QJsonObject Serialize::changePasswordSerialize(QString oldPassword, QString newPassword){
+    /*
+    Questa funzione serializza la vecchia e nuova password dell'utente che vuole cambiare password, in caso di una CHANGE_PASSWORD( cio e' discriminato dal valore di type)
+    INPUT:
+    - oldPassword: stringa che contiene la vecchia password
+    - newPassword: nuova password
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è SHARE
+    RETURN:
+    - una Qstring che contiene il tutto serializzano come QJson
+    */
+    QJsonObject obj;
+    obj.insert("oldpassword", oldPassword);
+    obj.insert("newpassword", newPassword);
+
+    return obj;
+}
+
+QStringList Serialize::changePasswordUnserialize(QJsonObject obj){
+    QStringList list;
+
+    list.append(obj.value("oldpassword").toString());
+    list.append(obj.value("newpassword").toString());
+
+    return list;
 }
 
 
@@ -211,7 +277,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     ossia insert/delte/style etc--> queste informazioni non sono contunte nel file json ma nel messaggio stesso
     INPUT:
     - message: messaggio che contiene il symbolo, cosa fare e tutte le informazioni necessarie
-    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui è accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
+    - type: intero che basandomi sul file define.h mi dice cosa devo fare, qui Ã¨ accettato solo il tipo MESSAGE che indica sul client di inviare un messaggio
      e sul server di inoltrarlo ad altri client connessi ed insieme aggiornareil crdt locale sul server
     RETURN:
     - una Qstring che contiene il tutto serializzano come QJson e terminata con \r\n-> vedere se serve effettivamente altrimenti eliminare
@@ -228,7 +294,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     obj.insert("sender", QJsonValue(senderId));
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciÃ² accade il simbolo all'interno sarÃ  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (message.getCursorPosition() > 0) {
@@ -292,9 +358,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     /*
     Questa funzione de-serializza i messaggi
     INPUT:
-    - obj: è un Qjson che contiene tutte le info
+    - obj: Ã¨ un Qjson che contiene tutte le info
     RETURN:
-    - un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
+    - un oggetto di tipo message che puÃ² essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
     vedi Message.h/cpp per specifiche
     */
 
@@ -308,7 +374,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 
 
     /*-------------------------------------------------------------------------------------------------------------------------------
-    Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+    Nuovo elemento--> messagio che contine la posizione del cursore, se ciÃ² accade il simbolo all'interno sarÃ  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR) {
@@ -428,25 +494,33 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 }
 //-------------------------------------------------------------------------------
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type)
+
+
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID, QColor userColor)
 {
     /*
-    res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
-    Type: qui dovrebbe essere sempre SERVER_ANSWER
-    */
+  res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
+  Type: qui dovrebbe essere sempre SERVER_ANSWER
+  */
 
-    /*
-    bool: successo o fallimento (OK, ERROR)
-    message: risposta del server
-    Type: qui dovrebbe essere sempre SERVER_ANSWER
-    */
+  /*
+  bool: successo o fallimento (OK, ERROR)
+  message: risposta del server
+  Type: qui dovrebbe essere sempre SERVER_ANSWER
+  */
     QJsonObject obj;
 
     obj.insert("type", QJsonValue(type));//??
 
     obj.insert("res", QJsonValue(res));
 
+
     obj.insert("message", QJsonValue(message));
+
+    obj.insert("userID", QJsonValue(userID));
+
+    QString color = userColor.name();
+    obj.insert("color", color);
 
     return obj;
 }
@@ -461,10 +535,15 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
     - una QstringList che di lunghezza 2:
     list[0]: valore booleano che mi dice OK/ERROR
     list[1]: stringa eventuale mandata dal server per messaggi piu complessi
+    list[2]: userID
+    list[3]: userColor
     */
     QStringList list;
-    list.append(obj.value("res").toString());
+    bool res = obj.value("res").toBool();
+    list.append(res ? "true" : "false");
     list.append(obj.value("message").toString());
+    list.append(obj.value("userID").toString());
+    list.append(obj.value("color").toString());
 
     return list;
 }
@@ -539,6 +618,68 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 
     return vett;
 
+}
+
+QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type){
+    /*Funzione usata per inviare a tutti i client lo userId e lo username del client che si ha appena aperto un file
+      Viene anche usata per mandare al client che ha appena aperto il file le informazioni riguardanti tutti i client già connessi al file
+    */
+
+    QJsonObject obj;
+    obj.insert("userId", userId);
+    obj.insert("username", username);
+    QString color = userColor.name();
+    obj.insert("userColor", color);
+    obj.insert("fileId", fileId);
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
+}
+
+QStringList Serialize::addEditingUserUnserialize(QJsonObject obj){
+    /*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
+      OUTPUT:
+      una QStringList di lunghezza 4 contenentee:
+      -list[0] -> userId
+      -list[1] -> username
+      -list[2] -> userColor
+      -list[3] -> fileId
+    */
+
+    QStringList sl;
+    sl.append(obj.value("userId").toString());
+    sl.append(obj.value("username").toString());
+    sl.append(obj.value("userColor").toString());
+    sl.append(obj.value("fileId").toString());
+
+    return sl;
+}
+
+QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type){
+    /*Funzione usata per inviare a tutti i client lo userId del client che ha chiuso il file
+    */
+
+    QJsonObject obj;
+    obj.insert("userId", userId);
+    obj.insert("fileId", fileId);
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
+}
+
+QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj){
+    /*Funzione usata per de-serializzare lo userid del client che ha chiuso il file
+        OUTPUT:
+        una coppia di interi contenente:
+        -key -> lo userId
+        -value -> il fileId
+    */
+
+    int userId = obj.value("userId").toInt();
+    int fileId = obj.value("fileId").toInt();
+    QPair<int, int> userFile(userId, fileId);
+
+    return userFile;
 }
 
 QByteArray Serialize::fromObjectToArray(QJsonObject obj)

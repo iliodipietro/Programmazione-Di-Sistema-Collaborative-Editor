@@ -15,7 +15,7 @@
 #define RADIUS ICONSIZE/2
 
 Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
-	QString path, QString username, int fileId, QWidget* parent)
+	QString path, QString username, int fileId, int clientID , QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
 	m_profileImage(profileImage)
@@ -26,9 +26,11 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
 	this->parent = parent;
 	this->filePath = path;
+	this->ID = clientID;
 	//m_textEdit->setText(path);
 	createActions();
-	this->loadFile(this->filePath);
+	//this->loadFile(this->filePath);
+	setCurrentFile(path);
 	QTextCursor TC = m_textEdit->textCursor();
 	TC.setPosition(0);
 	m_textEdit->setTextCursor(TC);
@@ -40,22 +42,27 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
-	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
+	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 
+	//connect(m_textEdit, SIGNAL(QWidget::keyEvent), this, SLOT(keyPressEvent));
+	//connect(m_textEdit, SIGNAL(QWidget::keyReleaseEvent), this, SLOT(keyRelaseEvent));
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
 
 	//MATTIA--------------------------------------------------------------------------------------
 	//qui vanno fatte tutte le connect che sono in main window a debora??
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
-	connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
-
+	//connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
+	
 
 	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
+
 	this->remoteEvent = false;
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
+	//writeText();
+	addEditingUser(0, "prova", Qt::blue);
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -535,11 +542,17 @@ void Editor::on_textEdit_textChanged() {
 
 	//il messaggio va mandato al serializzatore
 
-	if (this->remoteEvent)
+	if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
 		return;
 
+	if (this->styleBounce) {
+		this->styleBounce = false;
+		return;
+	}
 
 	QTextCursor TC = m_textEdit->textCursor();
+
+
 	//DEBUG
 	int curr = TC.position();
 	int last = this->lastCursor;
@@ -564,6 +577,10 @@ void Editor::localInsert() {
 	QTextCursor TC = m_textEdit->textCursor();
 	int li = TC.anchor();
 
+	//if (this->lastStart != 0 && this->lastEnd != 0) {
+
+	//	this->localDelete();
+	//}
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
 	for (int i = lastCursor; i < TC.position(); i++) {
 		if (i < 0)
@@ -573,23 +590,23 @@ void Editor::localInsert() {
 
 		char chr = m_textEdit->toPlainText().at(pos).toLatin1();
 
-		std::vector<Message> vett;
-		//debug purposes
-		if (chr == '§') {
-			vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//std::vector<Message> vett;
+		////debug purposes
+		//if (chr == '§') {
+		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
 
-			QByteArray arr = Serialize::fromObjectToArray( Serialize::messageSerialize(vett[0], INSERT));
+		//	QByteArray arr = Serialize::fromObjectToArray( Serialize::messageSerialize(vett[0], INSERT));
 
-			qint64 len = arr.size();
+		//	qint64 len = arr.size();
 
-			for (auto v : vett) {
-				this->remoteAction(v);
-				std::cout << "inseriton" << std::endl;
-			}
-			std::cout << "FINE" << std::endl;
-			//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-			return;
-		}
+		//	for (auto v : vett) {
+		//		this->remoteAction(v);
+		//		std::cout << "inseriton" << std::endl;
+		//	}
+		//	std::cout << "FINE" << std::endl;
+		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
+		//	return;
+		//}
 
 		QTextCharFormat format = TC.charFormat();
 		QFont font = format.font();
@@ -597,7 +614,7 @@ void Editor::localInsert() {
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
-		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
@@ -615,14 +632,23 @@ void Editor::localDelete() {
 		end = this->lastEnd;
 	}
 	else {
-		start = TC.position();
-		end = lastCursor;
+		
+		if (m_textEdit->toPlainText().size() == 0) {
+				//vuol dire che ho eliminato tutto
+				start = 0;
+				end = this->lastText.size();
+			}
+			else {
+				start = TC.position();
+				end = lastCursor;
+			}
+
 	}
 
 
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
-		QJsonObject packet = Serialize::messageSerialize(m, 0);
+		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
 
@@ -684,7 +710,8 @@ void Editor::remoteAction(Message m)
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
 	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
-	m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
+	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
+	m_textEdit->handleMessage(0, m, index);
 	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);
@@ -705,6 +732,11 @@ void Editor::remoteAction(Message m)
 	//dei cursori degli altri client
 
 	this->remoteEvent = false;
+}
+
+int Editor::getFileId()
+{
+	return this->m_fileId;
 }
 
 void Editor::maybeincrement(__int64 index)
@@ -835,6 +867,7 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
+
 void Editor::localStyleChange()
 {
 	int start, end;
@@ -852,9 +885,20 @@ void Editor::localStyleChange()
 		QFont font = format.font();
 		QColor color = format.foreground().color();
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
-		Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
-	}
 
+
+		Symbol s = this->_CRDT->getSymbol(pos);
+		
+		if (s.getAlignment()!=alignment || s.getColor()!= color || s.getFont() != font) {
+
+			//scrivo sul socket solo se c'e stato un vero cambio --> meno banda e carico per il server
+			Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
+			QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
+			m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		}
+
+	}
+	this->styleBounce = true;
 	//this->lastStart = 0;
 	//this->lastEnd = 0;
 }
@@ -882,7 +926,14 @@ void Editor::keyPressEvent(QKeyEvent* e) {
 	//}
 	//au
 //	ui.label->setText(e->text());
+	int i = 0;
 }
+
+void Editor::keyRelaseEvent(QKeyEvent* e)
+{
+	int i = 0;
+}
+
 
 void Editor::insertImage() {
 	QString url = QFileDialog::getOpenFileName(this, tr("Scegli immagine"), QDir::homePath(), "Immagini (*.jpg *.png *.jpeg)");
@@ -974,14 +1025,14 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 
-    /*Message m(TC.position(), CURSOR, _CRDT->getId());
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, 0)));
-	QTextCharFormat format = TC.charFormat();
+    Message m(TC.position(), CURSOR, _CRDT->getId());
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, CURSOR)));
+	/*QTextCharFormat format = TC.charFormat();
 	int pos = TC.position();
 	char c = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();
 	QColor color = format.foreground().color();
 	Message m2 = _CRDT->localChange(TC.position()-1, c, format.font(), color, this->getAlignementFlag(m_textEdit->alignment()));
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m2, 0)));*/
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m2, m_fileId, MESSAGE)));*/
 }
 
 void Editor::colorChanged(const QColor& c) {
@@ -1011,9 +1062,7 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 	else return Qt::AlignJustify;
 }
 
-void Editor::messageReceived(QJsonObject packet) {
-	Message m = Serialize::messageUnserialize(packet);
-	//TODO check se il messaggio che arriva è relativo al file gestito da questo editor
+void Editor::messageReceived(Message m) {
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
 	remoteAction(m);
@@ -1021,15 +1070,15 @@ void Editor::messageReceived(QJsonObject packet) {
 	m_textEdit->setTextCursor(TC);
 }
 
-void Editor::writeText() {
+/*void Editor::writeText() {
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
 	addEditingUser(0, "prova", Qt::blue);
 	m_textEdit->setCursorPosition(0, 10);
-	m_textEdit->insertText(0, QString("ciao"));
+	//m_textEdit->insertText(0, QString("ciao"));
 	TC.setPosition(pos);
 	m_textEdit->setTextCursor(TC);
-}
+}*/
 
 void Editor::addEditingUser(int id, QString username, QColor userColor) { //da usare ogni volta che un nuove utente accede al file
 	m_textEdit->addCursor(id, userColor, username, 0);
@@ -1052,6 +1101,7 @@ void Editor::addEditingUser(int id, QString username, QColor userColor) { //da u
 	QFont lwiFont = lwi->font();
 	lwiFont.setPointSize(lwiFont.pointSize() + 3);
 	lwi->setFont(lwiFont);
+	//m_textEdit->insertText(0, QString("ciao"));
 }
 
 void Editor::removeEditingUser(int id, QString username) {

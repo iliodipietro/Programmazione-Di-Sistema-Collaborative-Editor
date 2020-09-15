@@ -7,30 +7,35 @@ File::File():handler(nullptr),id(0),path("")
 
 File::File(int fileId, QString path): id(fileId),path(path){
 	//creo il crdt e se il file puntato dal path non è vuoto questo viene caricato automaticamente nel CRDT
-	this->handler = new CRDT(fileId, this->path);
+    this->handler = new CRDT(fileId, this->path);
+    this->modifiedName = false;
+    this->newName = nullptr;
 }
 
-void File::messageHandler(QTcpSocket* sender, Message m, QByteArray bytes)
+void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 {
-	if (m.getAction() != CURSOR_S) {
+    if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
-		this->handler->getTimer()->start(TIMEOUT);
-	}
-	for (auto u : this->users) {
-		if (sender != u) {
-			//madare messaggi su tutti i socket tranne che al sender
-			//mando direttamente il messagio sotto forma di bytearray
-			this->writeData(u, bytes);
 
-		}
-	}
 	/*faccio partire il timer della durata definita da TIMEOUT in CRDT.h se alla scadenza del timer non ho ancora ricevuto alcun nuovo messaggio
 	  salvo il credt su file altrimenti il timer viene fatto ripartire e si ricomincia dalla condizione precedente.
 	*/
-	
+		this->handler->getTimer()->start(TIMEOUT);
+	}
+
+	QList<int> keys = this->users.keys();
+
+	for (auto u : keys) {
+		if (sender->getId() != u) {
+			//madare messaggi su tutti i socket tranne che al sender
+			//mando direttamente il messagio sotto forma di bytearray
+			this->users.value(u)->writeData(bytes);
+
+		}
+	}
 }
 
-void File::sendNewFile(QTcpSocket* socket)
+void File::sendNewFile(ClientManager* socket)
 {
 	if (!this->handler->isEmpty()) {
 		//se e esolo se non è vuoto--> nuovo file o senza caratteri
@@ -39,52 +44,53 @@ void File::sendNewFile(QTcpSocket* socket)
 
 		for (auto m : msgs) {
 			QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, INSERT_SYMBOL));
-			this->writeData(socket, bytes);
+			socket->writeData(bytes);
 		}
 	}
 }
 
-void File::addUser(QTcpSocket* user)
+bool File::isModifiedName(){
+    return this->modifiedName;
+}
+
+QString File::getNewName(){
+    return this->newName;
+}
+
+void File::modifyName(QString newName){
+    this->modifiedName = true;
+    this->newName = newName;
+}
+
+void File::addUser(ClientManager* user)
 {
 	//quando aggiungo un nuovo utente gli mando l'intero testo
-	this->users.append(user);
-	this->sendNewFile(user);
+	if (!this->users.contains(user->getId())) {
+
+		this->users.insert(user->getId(), user);
+		//this->users.append(user);
+		this->sendNewFile(user);
+	}
+
+
 
 }
 
-void File::removeUser(QTcpSocket* user)
+void File::removeUser(ClientManager* user)
 {
 	//rimuovo un utente che non lavora piu sul file
-	this->users.removeOne(user);
+	this->users.remove(user->getId());
 }
 
-QVector<QTcpSocket*> File::getUsers()
+QList<ClientManager*> File::getUsers()
 {
 	//ritorno la lista di utenti attivi visti come socket
-	return this->users;
+	return this->users.values();
+	
 }
 
 bool File::thereAreUsers()
 {
 	//mi dice se qualcuno sta ancora lavorando o meno sul file
 	return this->users.size() > 0 ;
-}
-
-
-
-void File::writeData(QTcpSocket* socket, QByteArray bytes)
-{
-	if (socket->state() == QAbstractSocket::ConnectedState) {
-		qint32 msg_size = bytes.size();
-		QByteArray toSend;
-		socket->write(toSend.number(msg_size), sizeof(quint64)); //la funzione number converte il numero che rappresenta la dimensione del dato da inviare (msg_size) in stringa (es. 100 --> "100").
-																  //Siccome una stringa occupa di piu del relativo numero ("100" occupa 8*3 bit mentre 100 ne occupa solo 8), tale stringa viene mandata sul socket
-																  // su 64 bit invece di 32 che rappresenta la massima dimensione possibile di un dato
-		socket->waitForBytesWritten();
-		qint32 byteWritten = 0;
-		while (byteWritten < msg_size) {
-			byteWritten += socket->write(bytes);
-			socket->waitForBytesWritten();
-		}
-	}
 }

@@ -41,7 +41,6 @@ HEADERS += \
     CRDT/Message.h \
     CRDT/Symbol.h \
     ClientManager/clientmanager.h \
-    ConnectionManager/connectionmanager.h \
     Serialize/Serialize.h \
     Serialize/define.h \
     dbinteraction.h \

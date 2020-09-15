@@ -9,6 +9,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <vector>
+#include <QDir>
+#include <QDataStream>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "dbinteraction.h"
@@ -27,12 +29,13 @@ class MyServer : public QObject{
 public:
     MyServer(QObject *parent = nullptr);
     bool listen(QHostAddress addr, quint16 port);
+    
     ~MyServer();
 
 private slots:
     void onNewConnection();
     //void readFromSocket();
-    void MessageHandler(QTcpSocket *socket, QByteArray socketData);
+    void MessageHandler(ClientManager *client, QByteArray socketData);
     void onDisconnect();
 signals:
     void dataReady(QTcpSocket *socket, QByteArray socketData);
@@ -46,8 +49,12 @@ private:
     //AUGUSTO##############################
     std::vector<ClientManager*> m_connectedClients;
     int m_lastId;
+    QFile* m_logFile; //file di log usato per debug
+    QTextStream* m_logFileStream;
     //#####################################
     DBInteraction *db = nullptr;
+
+
     std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
 
     void handleMessage(int fileID, Message m);

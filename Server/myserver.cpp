@@ -1,7 +1,5 @@
 #include "myserver.h"
 
-
-
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
 {
     //supporto al file system da implementare
@@ -11,6 +9,16 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
+    // solo per fare prove
+    db->funzionedaeliminare();
+
+    QString path(QDir::currentPath() + "/log.txt");
+     m_logFile = new QFile(path);
+    if(m_logFile->open(QIODevice::WriteOnly)){
+        m_logFileStream = new QTextStream(m_logFile);
+        *m_logFileStream << "prova";
+        m_logFileStream->flush();
+    }
 
 }
 
@@ -24,14 +32,14 @@ bool MyServer:: listen(QHostAddress addr, quint16 port){
     return true;
 }
 
-//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperÃ  di leggere e scrivere i messaggi
+//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperÃ  di leggere e scrivere i messaggi
 void MyServer::onNewConnection(){
     while(_server->hasPendingConnections()){
         QTcpSocket *newConnection = _server->nextPendingConnection();
         if(newConnection == nullptr) return;
 
         qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
-        ClientManager* client = new ClientManager(m_lastId++, newConnection, this);
+        ClientManager* client = new ClientManager(newConnection, this);
         m_connectedClients.push_back(client); //ogni client viene inserito in una lista per tenere traccia di quelli connessi
         //connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
         //connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
@@ -105,50 +113,76 @@ void MyServer::onNewConnection(){
     }
 }*/
 
-void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
+void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 
     /*
-    LOGIN 1
-    REGISTER 2
-    FILENAME 3
-    MESSAGE 4
-    TEXT 5
-    IMAGE 6
-    OPEN 7
-    CLOSE 8
-    CURSOR 9
-    SERVER_ANSWER 10
+
+#define LOGIN 1
+#define LOGOUT 2
+#define REGISTER 3
+#define FILENAME 4
+#define MESSAGE 5
+#define TEXT 6
+#define IMAGE 7
+#define NEWFILE 8
+#define OPEN 9
+#define CLOSE 10
+#define CURSOR 11
+#define SERVER_ANSWER 12
+#define DELETE 13
+#define RENAME 14
+#define SHARE 15
+#define SEND_FILES 16
+#define CHANGE_PASSWORD 17
+#define CHANGE_USERNAME 18
+#define CHANGE_NICK 19
+#define CHANGE_PROPIC 20
+
     */
+
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
     int fileId;
-    QString username, filename;
+    QString username, filename, newName, URI;
+    QPair<int, QString> rename;
     //QPair<int, Message> fileid_message;
-    File *f;
 
     int type = Serialize::actionType(ObjData);
-    qDebug()<<type;
+    qDebug()<<"request: "<<type<<"\n";
+
+
     switch (type) {
     case (LOGIN):
-        qDebug("LOGIN request");
+        qDebug("LOGIN request\n");
 
          list = Serialize::userUnserialize(ObjData);
-         db->login(list.at(0), list.at(1), socket);
+         db->login(list.at(0), list.at(1), client);
+
+         list.clear();
+
+        break;
+    case (LOGOUT):
+        qDebug("LOGOUT request\n");
+        //il messaggio di logout contiene solo il type LOGOUT
+        db->logout(client);
 
         break;
     case (REGISTER): {
-        qDebug("REGISTER request");
+        qDebug("REGISTER request\n");
         list = Serialize::userUnserialize(ObjData);
-        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), socket);
+        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), client);
+
+        list.clear();
 
         break;
     }
     case (FILENAME):
-        qDebug("FILENAME request");
+        qDebug("FILENAME request\n");
 
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+        db->forwardMessage(client,ObjData,socketData);
 
         //fileid_message = Serialize::messageUnserialize(ObjData);
 
@@ -157,41 +191,93 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 
         break;
     case (TEXT):
-        qDebug("TEXT request");
+        qDebug("TEXT request\n");
 
         break;
     case (IMAGE):
-        qDebug("IMAGE request");
+        qDebug("IMAGE request\n");
 
         break;
     case (NEWFILE):
-        qDebug("NEWFILE request");
-        filename = Serialize::newFileUnserialize(ObjData).first;
-        username = Serialize::newFileUnserialize(ObjData).second;
+        qDebug("NEWFILE request\n");
+        filename = Serialize::newFileUnserialize(ObjData);
 
-        db->createFile(filename, username, socket);
-
-        break;
-    case (OPEN):
-        qDebug("OPEN request");
-        fileId = Serialize::openCloseFileUnserialize(ObjData).first;
-        username = Serialize::openCloseFileUnserialize(ObjData).second;
-        db->openFile(fileId, username, socket);
+        db->createFile(filename, client);
 
         break;
+    case (OPEN):{
+        qDebug("OPEN request\n");
+        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+
+        db->openFile(fileId, client);
+
+        break;
+    }
     case (CLOSE):
-        qDebug("CLOSE request");
-        fileId = Serialize::openCloseFileUnserialize(ObjData).first;
-        username = Serialize::openCloseFileUnserialize(ObjData).second;
-        db->closeFile(fileId, username, socket);
+        qDebug("CLOSE request\n");
+        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+
+        db->closeFile(fileId, client);
 
         break;
-    case (CURSOR):
+    case (CURSOR):{
         qDebug("CURSOR request");
+        QPair<int, Message> m = Serialize::messageUnserialize(ObjData);
+        File* f = db->getFile(m.first);
+        //f->messageHandler(client, m.second, socketData); //Augusto - cursori disabilitati perchè non ancora funzionanti
 
         break;
+    }
     case (SERVER_ANSWER):
-        qDebug("SERVER_ANSWER request");
+        qDebug("SERVER_ANSWER request\n");
+
+        break;
+    case (DELETE):
+        qDebug("DELETE request\n");
+        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+
+        db->deleteFile(fileId, client);
+
+        break;
+    case (RENAME):
+        qDebug("RENAME request\n");
+        rename = Serialize::renameFileUnserialize(ObjData);
+
+        db->renameFile(rename.first, rename.second, client);
+
+        break;
+    case (SHARE):
+        qDebug("SHARE request\n");
+        URI = Serialize::openSharedFileUnserialize(ObjData);
+
+        db->openSharedFile(URI, client);
+
+        break;
+    case (SEND_FILES):
+        qDebug("SEND_FILES request\n");
+
+        db->sendFileList(client);
+
+        break;
+    case (CHANGE_PASSWORD):
+        qDebug("CHANGE_PASSWORD request\n");
+        list = Serialize::changePasswordUnserialize(ObjData);
+
+        db->changePassword(list.at(0), list.at(1), client);
+
+        list.clear();
+
+        break;
+    case (CHANGE_USERNAME):
+        qDebug("CHANGE_USERNAME request\n");
+
+        break;
+    case (CHANGE_NICK):
+        qDebug("CHANGE_NICK request\n");
+
+        break;
+    case (CHANGE_PROPIC):
+        qDebug("CHANGE_PROPIC request\n");
 
         break;
 
@@ -207,8 +293,8 @@ void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
 //quando un client si disconnette viene rimosso dalla lista di quelli connessi
 void MyServer::onDisconnect(){
     ClientManager* client = static_cast<ClientManager*>(sender());
-    auto it = m_connectedClients.begin();
-    for(it; it != m_connectedClients.end(); it++){
+    db->logout(client);
+    for(auto it = m_connectedClients.begin(); it != m_connectedClients.end(); it++){
         if((*it) == client){
             m_connectedClients.erase(it);
             break;
@@ -278,5 +364,5 @@ void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
 
 MyServer::~MyServer()
 {
-
+    m_logFile->close();
 }

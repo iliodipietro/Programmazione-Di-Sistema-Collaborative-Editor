@@ -1,5 +1,6 @@
-#pragma once
 
+#pragma once
+#include "Serialize.h"
 #include <QtWidgets/QWidget>
 //#include "ui_Serialize.h"
 #include "CRDT/Message.h"
@@ -25,9 +26,7 @@ public:
 	Serialize(QObject* parent = Q_NULLPTR);
 
 	/*-------------------------------------------------------------------------------------------------------------
-
 															USO GENERALE
-
 	quando arriva dal socket un QByteArray si usa la funzione fromArrayToObject per ottenere il QJson Object corrispondente.
 	con tale oggetto si chiama la funzione actionType che mi dice il tipo di messaggio--> sono le define da decidere
 	in base a tale valore si puo capire quale dei deserializzatori usare con uno switch
@@ -37,7 +36,7 @@ public:
 	static int actionType(QJsonObject obj);
 
 
-	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type, QPixmap *profileImage = Q_NULLPTR);//type usato per discriminare login o register
+	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
@@ -47,9 +46,18 @@ public:
 
 	static QString fileNameUnserialize(QJsonObject obj);
 
+	static QJsonObject FileListSerialize(QMap<int, QString> files, int type);// ilio
+	static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
-	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
-	static Message messageUnserialize(QJsonObject obj);
+
+	static QJsonObject newFileSerialize(QString filename, int type);// ilio
+	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
+
+	static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
+
+
+	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
 
 
@@ -59,16 +67,22 @@ public:
 	static QJsonObject imageSerialize(QPixmap img, int type);
 	static QPixmap imageUnserialize(QJsonObject obj);
 
-	static QJsonObject responseSerialize(bool res, QString message, int type);
+	static QJsonObject responseSerialize(bool res, QString message, int userID, int type);
 	static QStringList responseUnserialize(QJsonObject obj);
 
 	static QJsonObject ObjectFromString(QString& in);
 
-	static QJsonObject cursorPostionSerialize(int position, int user, int type);
+	static QJsonObject cursorPostionSerialize(int position, int user, int fileId, int type);
 	static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
 	static QJsonObject cursorSerialize(CustomCursor cursor, int type);
 	static CustomCursor cursorUnserialize(QJsonObject obj);
+
+	static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type);
+	static QStringList addEditingUserUnserialize(QJsonObject obj);
+
+	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);
+	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
@@ -85,6 +99,3 @@ private:
 	static QPixmap pixmapFrom(const QJsonValue& val);
 
 };
-
-
-

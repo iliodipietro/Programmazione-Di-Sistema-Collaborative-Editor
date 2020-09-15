@@ -35,16 +35,27 @@ public:
     //la register l'immagine viene serializzata a parte per ora
 
     //usate in DBInteraction per login
-    static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);//ilio
-    static QJsonObject user_filesSerialize(int userId, QString username, QJsonArray files, int type);//ilio
-    static QPair<int, QMap<int, QString>> user_filesUnserialize(QJsonObject obj);//ilio
+    //static QJsonArray singleFileSerialize(QString fileName, int fileId, QJsonArray files);// ilio
+    static QJsonObject FileListSerialize(QMap<int, QString> files, int type);// ilio
+    static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
     //usate in myserver.cpp per open - close
-    static QJsonObject openCloseFileSerialize(int fileId, QString username, int type); // ilio
-    static QPair<int, QString> openCloseFileUnserialize(QJsonObject obj);// ilio
+    static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
+    static int openCloseDeleteFileUnserialize(QJsonObject obj);// ilio
 
-    static QJsonObject newFileSerialize(QString filename, QString username, int type);//ilio
-    static QPair<QString, QString> newFileUnserialize(QJsonObject obj);//ilio
+    static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
+    static QString newFileUnserialize(QJsonObject obj);// ilio
+
+    static QJsonObject renameFileSerialize(int fileId, QString newName); // ilio
+    static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
+
+    static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
+    static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+
+    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
+    static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
+
+
 
 
     static QJsonObject messageSerialize(int fileId, Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
@@ -58,7 +69,7 @@ public:
     static QJsonObject imageSerialize(QPixmap img, int type);
     static QPixmap imageUnserialize(QJsonObject obj);
 
-    static QJsonObject responseSerialize(bool res, QString message, int type);
+    static QJsonObject responseSerialize(bool res, QString message, int type, int userID = -1, QColor color = Qt::black);
     static QStringList responseUnserialize(QJsonObject obj);
 
     static QJsonObject ObjectFromString(QString& in);
@@ -66,9 +77,14 @@ public:
     static QJsonObject cursorPostionSerialize(int position, int user, int type);
     static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
+    static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type);
+    static QStringList addEditingUserUnserialize(QJsonObject obj);
+
+    static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);
+    static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);
+
     static QByteArray fromObjectToArray(QJsonObject obj);
     static QJsonObject fromArrayToObject(QByteArray data);
-
 
     //void setType(QString type);
 
