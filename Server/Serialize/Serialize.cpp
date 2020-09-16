@@ -193,7 +193,7 @@ QString Serialize::newFileUnserialize(QJsonObject obj){
     return filename;
 }
 
-QJsonObject Serialize::renameFileSerialize(int fileId, QString newName){
+QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type){
     /*
     Questa funzione serializza l'Id del file, l'utente che vuole rinominarlo e il nuovo nome, in caso di una RENAME( cio e' discriminato dal valore di type)
     INPUT:
@@ -206,6 +206,7 @@ QJsonObject Serialize::renameFileSerialize(int fileId, QString newName){
     QJsonObject obj;
     obj.insert("fileId", fileId);
     obj.insert("newname",newName);
+    obj.insert("type", type);
     return obj;
 
 }

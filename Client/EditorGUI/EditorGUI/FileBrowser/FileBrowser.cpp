@@ -65,7 +65,6 @@ void FileBrowser::on_newFile_Clicked() {
 		tr("File name:"), QLineEdit::Normal,
 		QDir::home().dirName(), &ok);
 	if (ok && !filename.isEmpty()) {
-		std::cout << "ok";
 		//send to server
 		QByteArray data = Serialize::fromObjectToArray( Serialize::newFileSerialize(filename,NEWFILE));
 		this->m_socketHandler->writeData(data);
@@ -99,6 +98,41 @@ void FileBrowser::on_deleteFile_Clicked()
 		item = nullptr;
 		current_item = nullptr;
 	}
+}
+
+void FileBrowser::on_renameFile_Clicked()
+{
+	QListWidgetItem* current_item = ui.fileList->currentItem();
+	if (current_item == nullptr) {
+		QMessageBox resultDialog(this);
+		QString res_text = "Select a file";
+		resultDialog.setInformativeText(res_text);
+		resultDialog.exec();
+		return;
+	}
+	//vecchio nome
+	QString filename = current_item->text();
+	int id = this->filename_id.value(filename);
+
+	//prendo il nuovo nome
+	bool ok;
+	QString new_filename = QInputDialog::getText(this, tr("New Nmae"),
+		tr("New name:"), QLineEdit::Normal,
+		QDir::home().dirName(), &ok);
+	if (ok && !new_filename.isEmpty()) {
+		//send to server
+		QByteArray data = Serialize::fromObjectToArray(Serialize::renameFileSerialize(id,new_filename,RENAME));
+		this->m_socketHandler->writeData(data);
+		current_item->setText(new_filename);
+	}
+	else {
+		QMessageBox resultDialog(this);
+		QString res_text = "File name needed";
+		resultDialog.setInformativeText(res_text);
+		resultDialog.exec();
+	}
+
+
 }
 
 void FileBrowser::closeEvent(QCloseEvent* event) {
@@ -179,6 +213,9 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 	case SEND_FILES:
 		addFiles(message);
 	case NEWFILE:
+		addFile(message);
+		break;
+	case SHARE:
 		addFile(message);
 		break;
 	default:

@@ -16,6 +16,7 @@ public:
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
     void setCursorPosition(int id, int position);
+    int global_event;
 
 private:
 
@@ -24,9 +25,10 @@ private:
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
-
+    void keyPressEvent(QKeyEvent *e);
 signals:
     void textSizeChanged();
     void clickOnTextEdit();
+
 };
 

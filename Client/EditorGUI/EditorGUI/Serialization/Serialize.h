@@ -55,6 +55,8 @@ public:
 
 	static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
 
+	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
+
 
 	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static Message messageUnserialize(QJsonObject obj);

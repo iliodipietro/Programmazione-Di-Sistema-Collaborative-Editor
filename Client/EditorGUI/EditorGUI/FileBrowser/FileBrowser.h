@@ -44,6 +44,7 @@ private slots:
 	void on_modifyProfile_clicked();
 	void on_newFile_Clicked();
 	void on_deleteFile_Clicked();
+	void on_renameFile_Clicked();
 	void editorClosed(QString);
 	void childWindowClosed();
 	void addFiles(QJsonObject message);

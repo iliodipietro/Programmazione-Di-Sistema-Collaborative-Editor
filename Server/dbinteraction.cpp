@@ -388,7 +388,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                    // instance->users.insert(username, new ClientManager(userid,socket));
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER));
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER,userid));
                     incomingClient->writeData(response);
                     instance->db.close();
                     //mando la lista dei file

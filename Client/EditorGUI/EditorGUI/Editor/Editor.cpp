@@ -43,9 +43,9 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
-
-	//connect(m_textEdit, SIGNAL(QWidget::keyEvent), this, SLOT(keyPressEvent));
-	//connect(m_textEdit, SIGNAL(QWidget::keyReleaseEvent), this, SLOT(keyRelaseEvent));
+	this->setFocusPolicy(Qt::StrongFocus);
+	connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
+	connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
 
@@ -551,6 +551,7 @@ void Editor::on_textEdit_textChanged() {
 
 	QTextCursor TC = m_textEdit->textCursor();
 
+	this->keyPressEvent(this->m_textEdit->global_event);
 
 	//DEBUG
 	int curr = TC.position();
@@ -903,7 +904,7 @@ void Editor::localStyleChange()
 
 //FINE-------------------------------------------------------------------------------------------------------------
 
-void Editor::keyPressEvent(QKeyEvent* e) {
+void Editor::keyPressEvent(int e) {
 	//NON SO FARLO FUNZIONARE
 	//switch (e->key())
 	//{
@@ -924,7 +925,10 @@ void Editor::keyPressEvent(QKeyEvent* e) {
 	//}
 	//au
 //	ui.label->setText(e->text());
-	int i = 0;
+	if (e == Qt::Key_A) {
+		int i = 0;
+	}
+
 }
 
 void Editor::keyRelaseEvent(QKeyEvent* e)

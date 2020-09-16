@@ -135,7 +135,7 @@ protected:
 	void mousePressEvent(QMouseEvent* e);
 
 public slots:
-	void keyPressEvent(QKeyEvent* e);
+	void keyPressEvent(int e);
 	void keyRelaseEvent(QKeyEvent* e);
 
 
