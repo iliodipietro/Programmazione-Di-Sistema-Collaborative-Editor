@@ -1,6 +1,7 @@
 #include "dbinteraction.h"
 #include <QDir>
 #include <QDataStream>
+#include <QRandomGenerator>
 
 DBInteraction *DBInteraction::instance = nullptr;
 
@@ -387,8 +388,10 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
 
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
+                    QColor userColor = instance->generateRandomColor(userid);
+                    incomingClient->setColor(userColor);
                    // instance->users.insert(username, new ClientManager(userid,socket));
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER,userid));
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, userid, userColor));
                     incomingClient->writeData(response);
                     instance->db.close();
                     //mando la lista dei file
@@ -951,3 +954,22 @@ QByteArray DBInteraction::intToArray(qint64 source) {
     data << source;
     return temp;
 }
+
+//generazione casuale di un colore ed inserimento nella lista così che non venga ripetuto
+QColor DBInteraction::generateRandomColor(int userId){
+    QColor newColor;
+    do{
+       newColor = QColor::fromRgb(QRandomGenerator::global()->generate());
+    }
+    while(colorPresent(newColor));
+    m_colorPerUser.insert(userId, newColor);
+    return newColor;
+}
+
+bool DBInteraction::colorPresent(QColor color){
+    for(auto it = m_colorPerUser.begin(); it != m_colorPerUser.end(); it++){
+        if(it.value() == color) return true;
+    }
+    return false;
+}
+

@@ -69,7 +69,7 @@ public:
     static QJsonObject imageSerialize(QPixmap img, int type);
     static QPixmap imageUnserialize(QJsonObject obj);
 
-    static QJsonObject responseSerialize(bool res, QString message, int type, int userID = -1);
+    static QJsonObject responseSerialize(bool res, QString message, int type, int userID = -1, QColor color = Qt::black);
     static QStringList responseUnserialize(QJsonObject obj);
 
     static QJsonObject ObjectFromString(QString& in);
@@ -77,9 +77,14 @@ public:
     static QJsonObject cursorPostionSerialize(int position, int user, int type);
     static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
+    static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type);
+    static QStringList addEditingUserUnserialize(QJsonObject obj);
+
+    static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);
+    static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);
+
     static QByteArray fromObjectToArray(QJsonObject obj);
     static QJsonObject fromArrayToObject(QByteArray data);
-
 
     //void setType(QString type);
 

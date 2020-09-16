@@ -228,7 +228,7 @@ QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type
 
 }
 
-QJsonObject Serialize::messageSerialize(Message message, int type)
+QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 {
 	/*
 	Questa funzione serializza i messaggi che vengono generati--> al suo interno sono contenuti il symbolo (lettera) e cosa si deve fare
@@ -249,6 +249,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 
 	obj.insert("action", QJsonValue(action));
 	obj.insert("sender", QJsonValue(senderId));
+	obj.insert("fileId", QJsonValue(fileId));
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -310,7 +311,7 @@ QJsonObject Serialize::messageSerialize(Message message, int type)
 	return obj;
 }
 
-Message Serialize::messageUnserialize(QJsonObject obj)
+QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 {
 	/*
 	Questa funzione de-serializza i messaggi
@@ -324,6 +325,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
 	int action = obj.value("action").toInt();
 	int sender = obj.value("sender").toInt();
+	int fileId = obj.value("fileId").toInt();
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -332,7 +334,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 	if (action == CURSOR) {
 		__int64 cursorPosition = obj.value("cursor_position").toInt();
 		Message m(cursorPosition, action, sender);
-		return m;
+		return QPair<int, Message> (fileId, m);
 	}
 
 	char c = obj.value("character").toInt();
@@ -372,7 +374,7 @@ Message Serialize::messageUnserialize(QJsonObject obj)
 
 	Message m(s, action, sender);
 
-	return m;
+	return QPair<int, Message>(fileId, m);
 }
 
 QJsonObject Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server
@@ -485,6 +487,7 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	list.append(obj.value("message").toString());
 	int i = obj.value("userID").toInt();
 	list.append(QString::number(obj.value("userID").toInt()));
+	list.append(obj.value("color").toString());
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -531,7 +534,7 @@ QJsonObject Serialize::ObjectFromString(QString& in)//OLD
 	return obj;
 }
 
-QJsonObject Serialize::cursorPostionSerialize(int position, int userID, int type)
+QJsonObject Serialize::cursorPostionSerialize(int position, int userID, int fileId, int type)
 {
 	/*
 	Questa funzione serializza la posizione del cursore da mandare ai vari client
@@ -547,7 +550,7 @@ QJsonObject Serialize::cursorPostionSerialize(int position, int userID, int type
 	obj.insert("position", position);
 	obj.insert("userID", userID);
 	obj.insert("type", QJsonValue(type));
-
+	obj.insert("fileId", QJsonValue(fileId));
 
 
 	//QJsonDocument doc(obj);
@@ -570,9 +573,72 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 	std::vector<int> vett;
 	vett.push_back(obj.value("position").toInt());
 	vett.push_back(obj.value("userID").toInt());
+	vett.push_back(obj.value("fileId").toInt());
 
 	return vett;
 
+}
+
+QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type) {
+	/*Funzione usata per inviare a tutti i client lo userId e lo username del client che si ha appena aperto un file
+	  Viene anche usata per mandare al client che ha appena aperto il file le informazioni riguardanti tutti i client già connessi al file
+	*/
+
+	QJsonObject obj;
+	obj.insert("userId", userId);
+	obj.insert("username", username);
+	QString color = userColor.name();
+	obj.insert("userColor", color);
+	obj.insert("fileId", fileId);
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
+QStringList Serialize::addEditingUserUnserialize(QJsonObject obj) {
+	/*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
+	  OUTPUT:
+	  una QStringList di lunghezza 4 contenentee:
+	  -list[0] -> userId
+	  -list[1] -> username
+	  -list[2] -> userColor
+	  -list[3] -> fileId
+	*/
+
+	QStringList sl;
+	sl.append(obj.value("userId").toString());
+	sl.append(obj.value("username").toString());
+	sl.append(obj.value("userColor").toString());
+	sl.append(obj.value("fileId").toString());
+
+	return sl;
+}
+
+QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type) {
+	/*Funzione usata per inviare a tutti i client lo userId del client che ha chiuso il file
+	*/
+
+	QJsonObject obj;
+	obj.insert("userId", userId);
+	obj.insert("fileId", fileId);
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
+QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj) {
+	/*Funzione usata per de-serializzare lo userid del client che ha chiuso il file
+		OUTPUT:
+		una coppia di interi contenente:
+		-key -> lo userId
+		-value -> il fileId
+	*/
+
+	int userId = obj.value("userId").toInt();
+	int fileId = obj.value("fileId").toInt();
+	QPair<int, int> userFile(userId, fileId);
+
+	return userFile;
 }
 
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)

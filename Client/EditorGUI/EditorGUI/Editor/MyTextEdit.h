@@ -12,7 +12,7 @@ public:
 
     void addCursor(int id, QColor color, QString username, int position);
     void removeCursor(int id);
-    void insertText(int id, QString& text);
+    //void insertText(int id, QString& text);
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
     void setCursorPosition(int id, int position);

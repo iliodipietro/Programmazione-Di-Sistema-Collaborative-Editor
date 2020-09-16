@@ -21,6 +21,7 @@ public:
     bool isModifiedName();
     QString getNewName();
     void modifyName(QString newName);
+    void updateCursorPosition(ClientManager* sender, QByteArray message);
 
 private:
     CRDT *handler = nullptr;

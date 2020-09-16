@@ -14,7 +14,7 @@ File::File(int fileId, QString path): id(fileId),path(path){
 
 void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 {
-	if (m.getAction() != CURSOR_S) {
+    if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
 
 	/*faccio partire il timer della durata definita da TIMEOUT in CRDT.h se alla scadenza del timer non ho ancora ricevuto alcun nuovo messaggio
@@ -33,8 +33,6 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 
 		}
 	}
-
-	
 }
 
 void File::sendNewFile(ClientManager* socket)
@@ -75,6 +73,7 @@ void File::addUser(ClientManager* user)
 	}
 
 
+
 }
 
 void File::removeUser(ClientManager* user)
@@ -95,4 +94,3 @@ bool File::thereAreUsers()
 	//mi dice se qualcuno sta ancora lavorando o meno sul file
 	return this->users.size() > 0 ;
 }
-

@@ -1,7 +1,5 @@
 #include "myserver.h"
 
-
-
 MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
 {
     //supporto al file system da implementare
@@ -14,7 +12,13 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     // solo per fare prove
     db->funzionedaeliminare();
 
-    
+    QString path(QDir::currentPath() + "/log.txt");
+     m_logFile = new QFile(path);
+    if(m_logFile->open(QIODevice::WriteOnly)){
+        m_logFileStream = new QTextStream(m_logFile);
+        *m_logFileStream << "prova";
+        m_logFileStream->flush();
+    }
 
 }
 
@@ -201,13 +205,14 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->createFile(filename, client);
 
         break;
-    case (OPEN):
+    case (OPEN):{
         qDebug("OPEN request\n");
         fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
 
         db->openFile(fileId, client);
 
         break;
+    }
     case (CLOSE):
         qDebug("CLOSE request\n");
         fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
@@ -215,10 +220,14 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->closeFile(fileId, client);
 
         break;
-    case (CURSOR):
-        qDebug("CURSOR request\n");
+    case (CURSOR):{
+        qDebug("CURSOR request");
+        QPair<int, Message> m = Serialize::messageUnserialize(ObjData);
+        File* f = db->getFile(m.first);
+        //f->messageHandler(client, m.second, socketData); //Augusto - cursori disabilitati perchè non ancora funzionanti
 
         break;
+    }
     case (SERVER_ANSWER):
         qDebug("SERVER_ANSWER request\n");
 
@@ -285,8 +294,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 void MyServer::onDisconnect(){
     ClientManager* client = static_cast<ClientManager*>(sender());
     db->logout(client);
-    auto it = m_connectedClients.begin();
-    for(it; it != m_connectedClients.end(); it++){
+    for(auto it = m_connectedClients.begin(); it != m_connectedClients.end(); it++){
         if((*it) == client){
             m_connectedClients.erase(it);
             break;
@@ -356,5 +364,5 @@ void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
 
 MyServer::~MyServer()
 {
-
+    m_logFile->close();
 }
