@@ -127,7 +127,7 @@ QJsonObject Serialize::newFileSerialize(QString filename, int type) {
 	return obj;
 }
 QPair<int, QString> Serialize::newFileUnserialize(QJsonObject obj) {
-	QPair<int,QString> pair;
+	QPair<int, QString> pair;
 	pair.second = obj.value("filename").toString();
 	pair.first = obj.value("fileId").toInt();
 	return pair;
@@ -300,7 +300,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 	INPUT:
 	- obj: è un Qjson che contiene tutte le info
 	RETURN:
-	- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
+	- un oggetto pair contenente:
+		- un int che rappresenta il fileId a cui è relativo il messaggio
+		- un oggetto di tipo message che può essere usato chiamando la funzione process del crdt per aggiornare sia su client/server
 	vedi Message.h/cpp per specifiche
 	*/
 
@@ -316,7 +318,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 	if (action == CURSOR) {
 		__int64 cursorPosition = obj.value("cursor_position").toInt();
 		Message m(cursorPosition, action, sender);
-		return QPair<int, Message> (fileId, m);
+		return QPair<int, Message>(fileId, m);
 	}
 
 	char c = obj.value("character").toInt();
@@ -458,10 +460,11 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	INPUT:
 	- obj: e' un Qjson che contiene tutte le info sulla risposta data dal server
 	RETURN:
-	- una QstringList che di lunghezza 2:
+	- una QstringList che di lunghezza 3:
 	list[0]: valore booleano che mi dice OK/ERROR
 	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
 	list[2]: userID
+	list[3]: userColor
 	*/
 	QStringList list;
 	bool res = obj.value("res").toBool();
@@ -577,23 +580,23 @@ QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QCo
 	return obj;
 }
 
-QStringList Serialize::addEditingUserUnserialize(QJsonObject obj) {
+QPair<int, QStringList> Serialize::addEditingUserUnserialize(QJsonObject obj) {
 	/*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
 	  OUTPUT:
-	  una QStringList di lunghezza 4 contenentee:
-	  -list[0] -> userId
-	  -list[1] -> username
-	  -list[2] -> userColor
-	  -list[3] -> fileId
+	  un QPair<int,QStringList> contenente:
+		- l'id del file a cui è relativo il messaggio
+			una lista di lunghezza 3 contenentee:
+			-list[0] -> userId
+			-list[1] -> username
+			-list[2] -> userColor
 	*/
 
 	QStringList sl;
 	sl.append(obj.value("userId").toString());
 	sl.append(obj.value("username").toString());
 	sl.append(obj.value("userColor").toString());
-	sl.append(obj.value("fileId").toString());
 
-	return sl;
+	return QPair<int, QStringList>(obj.value("fileId").toInt(), sl);
 }
 
 QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type) {
@@ -618,9 +621,18 @@ QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj) {
 
 	int userId = obj.value("userId").toInt();
 	int fileId = obj.value("fileId").toInt();
-	QPair<int, int> userFile(userId, fileId);
+	QPair<int, int> userFile(fileId, userId);
 
 	return userFile;
+}
+
+QJsonObject Serialize::logoutUserSerialize(int type)
+{
+	//Funzione usata per creare un messaggio che contiene al suo interno solo la richiesta di logout dell'utente
+	QJsonObject obj;
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
 }
 
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)

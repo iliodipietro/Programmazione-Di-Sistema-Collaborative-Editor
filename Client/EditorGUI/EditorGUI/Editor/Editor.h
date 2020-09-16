@@ -22,12 +22,14 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
+	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
 		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
 	void messageReceived(Message);
 	int getFileId();
+	void addEditingUser(QStringList userInfo);
+	void removeEditingUser(int id);
 
 private:
 	Ui::Editor ui;
@@ -62,8 +64,9 @@ private:
 	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
 	int m_fileId;
-	std::vector<QString> m_editingUsers;
+	QMap<int, QString> m_editingUsers;
 	bool m_showingEditingUsers;
+	QColor m_userColor;
 
 	//MATTIA---------------------------------------------------------------------------------
 	CRDT* _CRDT;
@@ -127,8 +130,6 @@ private:
 
 	//FINE----------------------------------------------------------------------
 
-	void addEditingUser(int id, QString username, QColor userColor);
-	void removeEditingUser(int id, QString username);
 	void remoteAction(Message m);
 
 protected:
@@ -151,5 +152,5 @@ private slots:
 
 //---------------------------------------------------------------------------------------------------
 signals:
-	void editorClosed(QString);
+	void editorClosed(int);
 };

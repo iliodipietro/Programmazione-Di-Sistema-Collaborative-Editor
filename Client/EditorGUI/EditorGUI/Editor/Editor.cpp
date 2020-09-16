@@ -14,11 +14,11 @@
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
 
-Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage,
-	QString path, QString username, int fileId, int clientID , QWidget* parent)
+Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
+	QString path, QString username, int fileId, int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
-	m_profileImage(profileImage)
+	m_profileImage(profileImage), m_userColor(userColor)
 {
 	ui.setupUi(this);
 	m_textEdit = new MyTextEdit(this);
@@ -62,7 +62,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
 	//writeText();
-	addEditingUser(0, "prova", Qt::blue);
+	//addEditingUser(0, "prova", Qt::blue);
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -84,7 +84,7 @@ Editor::~Editor()
 }
 
 void Editor::closeEvent(QCloseEvent* event) {
-	emit editorClosed(this->filePath);
+	emit editorClosed(m_fileId);
 	this->close();
 }
 
@@ -1080,9 +1080,13 @@ void Editor::messageReceived(Message m) {
 	m_textEdit->setTextCursor(TC);
 }*/
 
-void Editor::addEditingUser(int id, QString username, QColor userColor) { //da usare ogni volta che un nuove utente accede al file
+void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un nuove utente accede al file
+	int id = userInfo[0].toInt();
+	QString username = userInfo[1];
+	QColor userColor(userInfo[2]);
+
 	m_textEdit->addCursor(id, userColor, username, 0);
-	m_editingUsers.push_back(username);
+	m_editingUsers.insert(id, username);
 
 	QPixmap pm(ICONSIZE, ICONSIZE);
 	pm.fill(Qt::white);
@@ -1104,15 +1108,10 @@ void Editor::addEditingUser(int id, QString username, QColor userColor) { //da u
 	//m_textEdit->insertText(0, QString("ciao"));
 }
 
-void Editor::removeEditingUser(int id, QString username) {
+void Editor::removeEditingUser(int id) {
 	m_textEdit->removeCursor(id);
-	auto it = m_editingUsers.begin();
-	for (it; it != m_editingUsers.end(); it++) {
-		if (it->compare(username)) {
-			m_editingUsers.erase(it);
-			break;
-		}
-	}
+	QString username = m_editingUsers.value(id);
+	m_editingUsers.remove(id);
 
 	QList<QListWidgetItem*> lwi = m_editingUsersList->findItems(username, Qt::MatchExactly);
 	m_editingUsersList->removeItemWidget(lwi.at(0));

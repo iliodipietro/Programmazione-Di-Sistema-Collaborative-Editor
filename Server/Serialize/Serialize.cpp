@@ -636,23 +636,23 @@ QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QCo
     return obj;
 }
 
-QStringList Serialize::addEditingUserUnserialize(QJsonObject obj){
+QPair<int, QStringList> Serialize::addEditingUserUnserialize(QJsonObject obj) {
     /*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
       OUTPUT:
-      una QStringList di lunghezza 4 contenentee:
-      -list[0] -> userId
-      -list[1] -> username
-      -list[2] -> userColor
-      -list[3] -> fileId
+      un QPair<int,QStringList> contenente:
+        - l'id del file a cui è relativo il messaggio
+        una lista di lunghezza 3 contenentee:
+            -list[0] -> userId
+            -list[1] -> username
+            -list[2] -> userColor
     */
 
     QStringList sl;
     sl.append(obj.value("userId").toString());
     sl.append(obj.value("username").toString());
     sl.append(obj.value("userColor").toString());
-    sl.append(obj.value("fileId").toString());
 
-    return sl;
+    return QPair<int, QStringList>(obj.value("fileId").toInt(), sl);
 }
 
 QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type){
@@ -677,9 +677,18 @@ QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj){
 
     int userId = obj.value("userId").toInt();
     int fileId = obj.value("fileId").toInt();
-    QPair<int, int> userFile(userId, fileId);
+    QPair<int, int> userFile(fileId, userId);
 
     return userFile;
+}
+
+QJsonObject Serialize::logoutUserSerialize(int type)
+{
+    //Funzione usata per creare un messaggio che contiene al suo interno solo la richiesta di logout dell'utente
+    QJsonObject obj;
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
 }
 
 QByteArray Serialize::fromObjectToArray(QJsonObject obj)

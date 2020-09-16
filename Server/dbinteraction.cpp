@@ -363,7 +363,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
             }
             if(cnt == 1){
 
-                incomingClient->setUsername(username);
+
 
                 if(checkPassword(password, incomingClient)){
                     //success
@@ -386,6 +386,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                         return;
                     }
 
+                    incomingClient->setUsername(username);
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                     QColor userColor = instance->generateRandomColor(userid);

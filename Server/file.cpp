@@ -69,10 +69,17 @@ void File::addUser(ClientManager* user)
 
 		this->users.insert(user->getId(), user);
 		//this->users.append(user);
+        for(auto it = users.begin(); it != users.end(); it++){
+            if((*it)->getId() != user->getId()){
+                QByteArray message = Serialize::fromObjectToArray(Serialize::addEditingUserSerialize(user->getId(), user->getUsername(), user->getColor(), this->id, NEWEDITINGUSER));
+                (*it)->writeData(message);
+                message = Serialize::fromObjectToArray(Serialize::addEditingUserSerialize((*it)->getId(), (*it)->getUsername(), (*it)->getColor(), this->id, NEWEDITINGUSER));
+                user->writeData(message);
+            }
+        }
 		this->sendNewFile(user);
+
 	}
-
-
 
 }
 
@@ -80,6 +87,12 @@ void File::removeUser(ClientManager* user)
 {
 	//rimuovo un utente che non lavora piu sul file
 	this->users.remove(user->getId());
+    for(auto it = users.begin(); it != users.end(); it++){
+        if((*it)->getId() != user->getId()){
+            QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(user->getId(), this->id, REMOVEEDITINGUSER));
+            (*it)->writeData(message);
+        }
+    }
 }
 
 QList<ClientManager*> File::getUsers()

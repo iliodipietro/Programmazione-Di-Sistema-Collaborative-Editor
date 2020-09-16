@@ -77,11 +77,13 @@ public:
     static QJsonObject cursorPostionSerialize(int position, int user, int type);
     static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
-    static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type);
-    static QStringList addEditingUserUnserialize(QJsonObject obj);
+    static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type); //augusto
+    static QPair<int, QStringList> addEditingUserUnserialize(QJsonObject obj);//augusto
 
-    static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);
-    static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);
+    static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);//augusto
+    static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);//augusto
+
+    static QJsonObject logoutUserSerialize(int type);//augusto
 
     static QByteArray fromObjectToArray(QJsonObject obj);
     static QJsonObject fromArrayToObject(QByteArray data);
