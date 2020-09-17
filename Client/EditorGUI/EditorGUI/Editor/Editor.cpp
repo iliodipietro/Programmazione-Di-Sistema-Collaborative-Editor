@@ -552,7 +552,7 @@ void Editor::on_textEdit_textChanged() {
 
 	QTextCursor TC = m_textEdit->textCursor();
 
-	this->keyPressEvent(this->m_textEdit->global_event);
+
 
 	//DEBUG
 	int curr = TC.position();

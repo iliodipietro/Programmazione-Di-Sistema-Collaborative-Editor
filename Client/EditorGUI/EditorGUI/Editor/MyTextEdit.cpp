@@ -57,6 +57,6 @@ void MyTextEdit::mousePressEvent(QMouseEvent* event) {
 void MyTextEdit::keyPressEvent(QKeyEvent* e)
 {
     QTextEdit::keyPressEvent(e);
-    this->global_event =  e->key();
+    //emit propaga(e->key());
     
 }

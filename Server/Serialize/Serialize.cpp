@@ -365,7 +365,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     vedi Message.h/cpp per specifiche
     */
 
-    int fileid = obj.value("fileid").toInt();
+    int fileid = obj.value("fileId").toInt();
 
     int action = obj.value("action").toInt();
     int sender = obj.value("sender").toInt();

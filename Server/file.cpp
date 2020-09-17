@@ -5,6 +5,13 @@ File::File():handler(nullptr),id(0),path("")
 
 }
 
+File::~File()
+{
+	this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
+	delete this->handler;
+	this->handler = nullptr;
+}
+
 File::File(int fileId, QString path): id(fileId),path(path){
 	//creo il crdt e se il file puntato dal path non è vuoto questo viene caricato automaticamente nel CRDT
     this->handler = new CRDT(fileId, this->path);

@@ -172,6 +172,9 @@ void FileBrowser::editorClosed(QString file) {
 	Editor* editor = m_textEditors.find(file)->second;
 	editor->deleteLater();
 	m_textEditors.erase(file);
+	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(filename_id.value(file),CLOSE));
+	this->m_socketHandler->writeData(data);
+	filename_id.remove(file);
 }
 
 void FileBrowser::mousePressEvent(QMouseEvent* event) {

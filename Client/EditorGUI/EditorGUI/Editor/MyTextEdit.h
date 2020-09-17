@@ -16,7 +16,6 @@ public:
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
     void setCursorPosition(int id, int position);
-    int global_event;
 
 private:
 
@@ -29,6 +28,7 @@ protected:
 signals:
     void textSizeChanged();
     void clickOnTextEdit();
+   // void propaga(int key);
 
 };
 
