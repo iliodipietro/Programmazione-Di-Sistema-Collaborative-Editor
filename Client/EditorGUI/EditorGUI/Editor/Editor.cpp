@@ -9,6 +9,7 @@
 #include <QColorDialog>
 #include <QChar>
 #include <Qdebug>
+#include <QTextCharFormat>
 
 #define PADDING 10
 #define	ICONSIZE 30
@@ -921,9 +922,42 @@ void Editor::alignmentChanged(Qt::Alignment a) {
 		this->actionAlignJustify->setChecked(true);
 }
 
+//funzione per cambiare la vista in caso cambi lo stile
+//devo fare cosa? come controllo lo stile? come setto l'azione?
+void Editor::styleChanged(QFont font){
+	if (font.bold()) {
+		this->boldAct->setChecked(true);
+	}
+	else {
+		this->boldAct->setChecked(false);
+	}
+
+	if (font.italic()) {
+		this->italicAct->setChecked(true);
+	}
+	else {
+		this->italicAct->setChecked(false);
+	}
+
+	if (font.underline()) {
+		this->underLineAct->setChecked(true);
+	}
+	else {
+		this->underLineAct->setChecked(false);
+	}
+}
+
+
 void Editor::on_textEdit_cursorPositionChanged() {
 	this->alignmentChanged(m_textEdit->alignment());
+	
+	/*this->styleChanged(m_textEdit->font());*/
+
 	QTextCursor TC = m_textEdit->textCursor();
+	QTextCharFormat fmt = TC.charFormat();
+	QFont font = fmt.font();
+
+	this->styleChanged(font);
 	QTextList* list = TC.currentList();
 	if (list) {
 		switch (list->format().style()) {
@@ -969,6 +1003,16 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	int size = m_textEdit->font().pointSize();
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
+	/*QTextCharFormat fmt = TC.charFormat();*/
+	/*fmt.setFontUnderline(this->underLineAct->isChecked());
+	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
+	fmt.setFontItalic(this->italicAct->isChecked());*/
+	/*fmt
+	this->mergeFormatOnWordOrSelection(fmt);*/
+	
+
+	
+	/*connect(m_textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(on_textEdit_cursorPositionChanged()));*/
 
     /*Message m(TC.position(), CURSOR, _CRDT->getId());
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, 0)));
@@ -985,6 +1029,8 @@ void Editor::colorChanged(const QColor& c) {
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
 }
+
+
 
 void Editor::textColor()
 {
