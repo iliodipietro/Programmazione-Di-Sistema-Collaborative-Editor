@@ -44,8 +44,10 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 	this->setFocusPolicy(Qt::StrongFocus);
-	connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
-	connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
+	//connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
+	//connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
+	//Q_ASSERT(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
+
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
 
@@ -936,6 +938,30 @@ void Editor::keyPressEvent(int e) {
 void Editor::keyRelaseEvent(QKeyEvent* e)
 {
 	int i = 0;
+}
+
+void Editor::tastoPremuto(QKeyEvent* e)
+{
+	//incolla
+	if (e->matches(QKeySequence::Paste)) {
+		return;
+	}
+	//cambio stile
+	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
+		this->localStyleChange();
+
+	//può essere solo insert o delete
+	switch (e->key())
+	{
+	case Qt::Key_Backspace:
+	case Qt::Key_Delete:
+		this->localDelete();
+		break;
+	default:
+		localInsert();
+	}
+	int i = 0;
+	qDebug()<< e;
 }
 
 

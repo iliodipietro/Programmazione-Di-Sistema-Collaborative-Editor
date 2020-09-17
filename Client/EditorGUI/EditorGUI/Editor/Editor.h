@@ -138,6 +138,7 @@ protected:
 public slots:
 	void keyPressEvent(int e);
 	void keyRelaseEvent(QKeyEvent* e);
+	void tastoPremuto(QKeyEvent* e);
 
 
 

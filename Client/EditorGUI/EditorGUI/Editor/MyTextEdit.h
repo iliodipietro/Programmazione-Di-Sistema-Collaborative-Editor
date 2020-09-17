@@ -28,7 +28,7 @@ protected:
 signals:
     void textSizeChanged();
     void clickOnTextEdit();
-   // void propaga(int key);
+    void propaga(QKeyEvent* e);
 
 };
 
