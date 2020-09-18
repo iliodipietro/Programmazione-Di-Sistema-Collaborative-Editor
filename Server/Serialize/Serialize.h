@@ -46,7 +46,7 @@ public:
     static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
     static QString newFileUnserialize(QJsonObject obj);// ilio
 
-    static QJsonObject renameFileSerialize(int fileId, QString newName); // ilio
+    static QJsonObject renameFileSerialize(int fileId, QString newName, int type);// ilio
     static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
 
     static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio

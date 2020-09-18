@@ -24,9 +24,11 @@ private:
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
-
+    void keyPressEvent(QKeyEvent *e);
 signals:
     void textSizeChanged();
     void clickOnTextEdit();
+    void propaga(QKeyEvent* e);
+
 };
 

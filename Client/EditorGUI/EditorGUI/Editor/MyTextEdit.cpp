@@ -1,6 +1,6 @@
 #include "MyTextEdit.h"
 #include <QPainter>
-
+#include <QKeyEvent>
 MyTextEdit::MyTextEdit(QWidget* parent) : QTextEdit(parent)
 {
 }
@@ -52,4 +52,11 @@ void MyTextEdit::setCursorPosition(int id, int position) {
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
     QTextEdit::mousePressEvent(event);
     emit clickOnTextEdit();
+}
+
+void MyTextEdit::keyPressEvent(QKeyEvent* e)
+{
+    QTextEdit::keyPressEvent(e);
+    emit propaga(e);
+    
 }

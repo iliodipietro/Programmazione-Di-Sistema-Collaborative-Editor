@@ -303,14 +303,14 @@ void MyServer::onDisconnect(){
     client->deleteLater();
 }
 
-void MyServer::handleMessage(int fileID, Message m)
-{
-    int senderId = m.getSenderId();
-
-    this->fileId_CRDT.at(fileID)->process(m);
-
-    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
-}
+//void MyServer::handleMessage(int fileID, Message m)
+//{
+//    int senderId = m.getSenderId();
+//
+//    this->fileId_CRDT.at(fileID)->process(m);
+//
+//    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
+//}
 
 //std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
 //{
@@ -331,12 +331,12 @@ void MyServer::handleMessage(int fileID, Message m)
 //    return std::vector<Message>();
 //}
 
-void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
-{
-    for (auto m : messages) {
-        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
-    }
-}
+//void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
+//{
+//    for (auto m : messages) {
+//        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
+//    }
+//}
 
 //bool MyServer::addFile(int fileID, std::string path)
 //{

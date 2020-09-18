@@ -10,6 +10,7 @@ class File
 {
 public:
     File();
+    ~File();
     File(int fileId, QString path);
     void messageHandler(ClientManager* sender, Message m, QByteArray bytes);
     void addUser(ClientManager* user);

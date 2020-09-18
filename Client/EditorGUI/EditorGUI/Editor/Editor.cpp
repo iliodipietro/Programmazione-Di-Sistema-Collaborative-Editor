@@ -42,10 +42,12 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
-	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
+	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
+	this->setFocusPolicy(Qt::StrongFocus);
+	//connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
+	//connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
+	//Q_ASSERT(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
 
-	//connect(m_textEdit, SIGNAL(QWidget::keyEvent), this, SLOT(keyPressEvent));
-	//connect(m_textEdit, SIGNAL(QWidget::keyReleaseEvent), this, SLOT(keyRelaseEvent));
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
 
@@ -553,6 +555,7 @@ void Editor::on_textEdit_textChanged() {
 	QTextCursor TC = m_textEdit->textCursor();
 
 
+
 	//DEBUG
 	int curr = TC.position();
 	int last = this->lastCursor;
@@ -905,7 +908,7 @@ void Editor::localStyleChange()
 
 //FINE-------------------------------------------------------------------------------------------------------------
 
-void Editor::keyPressEvent(QKeyEvent* e) {
+void Editor::keyPressEvent(int e) {
 	//NON SO FARLO FUNZIONARE
 	//switch (e->key())
 	//{
@@ -926,12 +929,39 @@ void Editor::keyPressEvent(QKeyEvent* e) {
 	//}
 	//au
 //	ui.label->setText(e->text());
-	int i = 0;
+	if (e == Qt::Key_A) {
+		int i = 0;
+	}
+
 }
 
 void Editor::keyRelaseEvent(QKeyEvent* e)
 {
 	int i = 0;
+}
+
+void Editor::tastoPremuto(QKeyEvent* e)
+{
+	//incolla
+	if (e->matches(QKeySequence::Paste)) {
+		return;
+	}
+	//cambio stile
+	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
+		this->localStyleChange();
+
+	//può essere solo insert o delete
+	switch (e->key())
+	{
+	case Qt::Key_Backspace:
+	case Qt::Key_Delete:
+		this->localDelete();
+		break;
+	default:
+		localInsert();
+	}
+	int i = 0;
+	qDebug()<< e;
 }
 
 

@@ -210,6 +210,24 @@ QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
 	return obj;
 }
 
+QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type) {
+	/*
+	Questa funzione serializza l'Id del file, l'utente che vuole rinominarlo e il nuovo nome, in caso di una RENAME( cio e' discriminato dal valore di type)
+	INPUT:
+	- fileId: stringa che contiene l'id del file da rinominare
+	-newName: nuovo nome da dare al file
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è RENAME
+	RETURN:
+	- una Qstring che contiene il tutto serializzano come QJson
+	*/
+	QJsonObject obj;
+	obj.insert("fileId", fileId);
+	obj.insert("newname", newName);
+	obj.insert("type", type);
+	return obj;
+
+}
+
 QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 {
 	/*

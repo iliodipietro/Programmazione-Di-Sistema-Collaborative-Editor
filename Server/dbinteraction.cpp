@@ -758,6 +758,7 @@ void DBInteraction::closeFile(int fileId, ClientManager* client){
                     return;
                 }
             }
+            
             instance->files.remove(fileId);
         }
     }
