@@ -417,7 +417,7 @@ void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIE
 {
 	if (!QFile::exists(QString(this->path))) {
 		// se non esiste lo creo
-		std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
+        std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
 		return;
 	}
 	

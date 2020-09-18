@@ -307,6 +307,12 @@ void DBInteraction::registration(QString username, QString password, QString nic
             return;
         }
 
+        QString user_directory_path(QDir::currentPath() + "/" + username + "/");
+        if(!QDir(user_directory_path).exists()){          //if(!QFile::exists(images_directory_path)){
+            //creo la cartella ImmaginiProfilo
+            QDir().mkdir(user_directory_path);
+        }
+
         qDebug()<<"userid: "<< userid<<"\n";
 
         QSqlQuery query3;
@@ -363,7 +369,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
             }
             if(cnt == 1){
 
-
+            incomingClient->setUsername(username);
 
                 if(checkPassword(password, incomingClient)){
                     //success
@@ -386,7 +392,6 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                         return;
                     }
 
-                    incomingClient->setUsername(username);
                     incomingClient->setId(userid);
                     instance->activeusers.push_back(incomingClient);
                     QColor userColor = instance->generateRandomColor(userid);
@@ -490,17 +495,23 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                         fileId = query2.value(0).toInt() +1;
                     }
                     qDebug()<< "fileId: "<< fileId << "\n";
-                    path.append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
+                    path.append("/").append(username).append("/").append(filename).append(".txt"); //  esempio --> C:/Users/Ilio/Desktop/Progetto_Malnati_git/ilio/prova.txt
                     qDebug()<< "Path: " << path << "\n";
 
                     QSqlQuery query3;
                     query3.prepare("INSERT INTO files(FileName, Id, userName, Path) VALUES ((:filename), (:fileId), (:username), (:path))");
                     query3.bindValue(":filename", filename);
-                    query3.bindValue(":fileId", fileId);
+                    query3.bindValue(":fileId", 0);
                     query3.bindValue(":username", username);
                     query3.bindValue(":path", path);
 
                     if(query3.exec()){
+                        QFile file(path);
+                        if(file.open(QIODevice::WriteOnly)){
+                            QTextStream stream(&file);
+                            stream << "";
+                            file.close();
+                        }
                         File *newfile = new File(fileId, path);
                         response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
                         //sendSuccess(client);

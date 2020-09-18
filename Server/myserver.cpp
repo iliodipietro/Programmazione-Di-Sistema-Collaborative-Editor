@@ -10,7 +10,7 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
     // solo per fare prove
-    db->funzionedaeliminare();
+    //db->funzionedaeliminare();
 
     QString path(QDir::currentPath() + "/log.txt");
      m_logFile = new QFile(path);

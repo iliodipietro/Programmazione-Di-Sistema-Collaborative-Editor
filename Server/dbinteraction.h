@@ -61,10 +61,10 @@ public:
     bool isUserLogged(ClientManager* client);
 
 
-    void funzionedaeliminare() {
+    /*void funzionedaeliminare() {
         File* primo_file = new File(-1, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
         instance->files.insert(-1, primo_file);
-    }
+    }*/
 
     inline QColor getUserColor(int userId){return m_colorPerUser.value(userId);}
 
