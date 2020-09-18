@@ -21,6 +21,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 
 FileBrowser::~FileBrowser()
 {
+	//qDebug()<<"closing file browser";
 }
 
 void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
@@ -174,7 +175,7 @@ void FileBrowser::editorClosed(QString file) {
 	m_textEditors.erase(file);
 	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(filename_id.value(file),CLOSE));
 	this->m_socketHandler->writeData(data);
-	filename_id.remove(file);
+
 }
 
 void FileBrowser::mousePressEvent(QMouseEvent* event) {

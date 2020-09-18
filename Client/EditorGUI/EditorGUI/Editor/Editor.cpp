@@ -44,9 +44,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 	this->setFocusPolicy(Qt::StrongFocus);
-	//connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
-	//connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
-	//Q_ASSERT(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
+
+	Q_ASSERT(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
 
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
@@ -559,20 +558,24 @@ void Editor::on_textEdit_textChanged() {
 	//DEBUG
 	int curr = TC.position();
 	int last = this->lastCursor;
-	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
+	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0) {// se non è insert o delete--> change in the format
 		this->localStyleChange();
+		////aggiorno
+		this->lastText = m_textEdit->toPlainText();
+		this->lastCursor = TC.position();
+	
+	}
 
-	else if (TC.position() <= lastCursor) {
-		//è una delete		
-		localDelete();
-	}
-	else {
-		//è una insert
-		localInsert();
-	}
-	//aggiorno
-	this->lastText = m_textEdit->toPlainText();
-	this->lastCursor = TC.position();
+	//old version noe we use KeyEvent
+	//else if (TC.position() <= lastCursor) {
+	//	//è una delete		
+	//	localDelete();
+	//}
+	//else {
+	//	//è una insert
+	//	localInsert();
+	//}
+
 }
 
 
@@ -580,10 +583,8 @@ void Editor::localInsert() {
 	QTextCursor TC = m_textEdit->textCursor();
 	int li = TC.anchor();
 
-	//if (this->lastStart != 0 && this->lastEnd != 0) {
 
-	//	this->localDelete();
-	//}
+
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
 	for (int i = lastCursor; i < TC.position(); i++) {
 		if (i < 0)
@@ -942,13 +943,33 @@ void Editor::keyRelaseEvent(QKeyEvent* e)
 
 void Editor::tastoPremuto(QKeyEvent* e)
 {
+	int end, start;
+	start = end = 0;
 	//incolla
 	if (e->matches(QKeySequence::Paste)) {
-		return;
+		if (this->lastStart != 0 && this->lastEnd != 0) {
+			//
+			this->localDelete();
+			this->lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			this->m_textEdit->refresh(e);
+			this->localInsert();
+
+
+			this->lastText = m_textEdit->toPlainText();
+			this->lastCursor = this->m_textEdit->textCursor().position();
+			return;
+		}
+		else {
+			this->m_textEdit->refresh(e);
+		}
+		
 	}
-	//cambio stile
-	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
-		this->localStyleChange();
+
+	start = this->lastStart;
+	end = this->lastEnd;
+	this->m_textEdit->refresh(e);
+
+
 
 	//può essere solo insert o delete
 	switch (e->key())
@@ -957,11 +978,26 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	case Qt::Key_Delete:
 		this->localDelete();
 		break;
+	case Qt::Key_Alt:
+		break;
 	default:
+		if (e->text() == "")//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico
+			break;
+		
+		if (start != 0 && end != 0) {
+			this->lastStart = start;
+			this->lastEnd = end;
+
+			this->localDelete();
+			this->lastCursor = start < end ? start : end;
+			this->lastStart = this->lastEnd = 0;
+		}
 		localInsert();
 	}
-	int i = 0;
-	qDebug()<< e;
+
+	//qDebug()<< e;
+	this->lastText = m_textEdit->toPlainText();
+	this->lastCursor = this->m_textEdit->textCursor().position();
 }
 
 

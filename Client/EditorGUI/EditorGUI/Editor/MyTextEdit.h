@@ -16,6 +16,7 @@ public:
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
     void setCursorPosition(int id, int position);
+    void refresh(QKeyEvent*e);
 
 private:
 
