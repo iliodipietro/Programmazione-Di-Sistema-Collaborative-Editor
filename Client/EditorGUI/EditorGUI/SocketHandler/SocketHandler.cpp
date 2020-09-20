@@ -1,29 +1,32 @@
 #include "SocketHandler.h"
 #include <QtCore\qjsondocument.h>
 #include <QDebug>
+#include <QDir>
 
-#define SERVER_IP "127.0.0.1"
-#define PORT 44322
+//#define SERVER_IP "127.0.0.1"
+//#define PORT 44322
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
-	m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
+m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
 {
 	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+	m_tcpSocket->setReadBufferSize(2097152);
 	connect(m_tcpSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
 	connect(m_tcpSocket.get(), SIGNAL(disconnected()), this, SLOT(disconnected()));
 	connect(m_tcpSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
 	connect(m_tcpSocket.get(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
 	//connect(this, SIGNAL(dataReceived(int)), this, SLOT(getMessage(int)));
+	readConfigFile();
 	connectToServer();
 }
 
 bool SocketHandler::connectToServer() {
-	m_tcpSocket->connectToHost(QHostAddress(SERVER_IP), PORT);
-	if (!m_tcpSocket->waitForDisconnected(1000))
+	m_tcpSocket->connectToHost(QHostAddress(m_serverIp), m_serverPort);
+	/*if (!m_tcpSocket->waitForDisconnected(1000))
 	{
 		qDebug() << "Error: " << m_tcpSocket->errorString();
 		return false;
-	}
+	}*/
 	return true;
 }
 
@@ -98,7 +101,7 @@ bool SocketHandler::writeData(QByteArray& data) {
 	{
 		m_tcpSocket->write(intToArray(data.size()).append(data));
 		return m_tcpSocket->waitForBytesWritten();
-			}
+	}
 	else {
 		return false;
 	}
@@ -121,4 +124,18 @@ qint64 SocketHandler::arrayToInt(QByteArray source)
 
 QAbstractSocket::SocketState SocketHandler::getSocketState() {
 	return m_tcpSocket->state();
+}
+
+void SocketHandler::readConfigFile() {
+	QString path = QDir::currentPath().append("/config.txt");
+	QFile file(path);
+	QString line;
+	if (file.open(QIODevice::ReadOnly)) {
+		QTextStream stream(&file);
+		line = stream.readLine();
+		m_serverIp = line.section(":", 1, 1);
+		line = stream.readLine();
+		m_serverPort = line.section(":", 1, 1).toInt();
+		file.close();
+	}
 }

@@ -57,6 +57,8 @@ public:
 
 	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
 
+	static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
+	static QString openSharedFileUnserialize(QJsonObject obj); // ilio
 
 	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static QPair<int, Message> messageUnserialize(QJsonObject obj);

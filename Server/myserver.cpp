@@ -246,7 +246,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->renameFile(rename.first, rename.second, client);
 
         break;
-    case (SHARE):
+    case (OPENSHARE):
         qDebug("SHARE request\n");
         URI = Serialize::openSharedFileUnserialize(ObjData);
 
@@ -293,7 +293,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 //quando un client si disconnette viene rimosso dalla lista di quelli connessi
 void MyServer::onDisconnect(){
     ClientManager* client = static_cast<ClientManager*>(sender());
-    db->logout(client);
+    //db->logout(client);
     for(auto it = m_connectedClients.begin(); it != m_connectedClients.end(); it++){
         if((*it) == client){
             m_connectedClients.erase(it);

@@ -18,10 +18,9 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	QString path, QString username, int fileId, int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
-	m_profileImage(profileImage), m_userColor(userColor)
+	m_profileImage(profileImage), m_userColor(userColor), m_textEdit(new MyTextEdit(this))
 {
 	ui.setupUi(this);
-	m_textEdit = new MyTextEdit(this);
 	ui.gridLayout->addWidget(m_textEdit);
 	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
 	this->parent = parent;

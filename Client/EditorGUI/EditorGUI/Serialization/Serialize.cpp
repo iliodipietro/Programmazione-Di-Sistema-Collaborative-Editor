@@ -228,6 +228,26 @@ QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type
 
 }
 
+QJsonObject Serialize::openSharedFileSerialize(QString URI, int type) {
+	/*
+	Questa funzione serializza l'URI del file e l'utente che l'ha ricevuto e lo sta provando ad aprire, in caso di una SHARE( cio e' discriminato dal valore di type)
+	INPUT:
+	- URI: stringa che contiene l'URI del file da condividere
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è SHARE
+	RETURN:
+	- una Qstring che contiene il tutto serializzano come QJson
+	*/
+	QJsonObject obj;
+	obj.insert("type", QJsonValue(type));
+	obj.insert("URI", URI);
+	return obj;
+}
+
+QString Serialize::openSharedFileUnserialize(QJsonObject obj) {
+
+	return obj.value("URI").toString();
+}
+
 QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 {
 	/*

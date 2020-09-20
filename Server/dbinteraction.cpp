@@ -445,7 +445,7 @@ void DBInteraction::logout(ClientManager* client){
             f->removeUser(client);
         }
     }
-    sendSuccess(client); // ??
+    //sendSuccess(client); // ??
     instance->activeusers.removeOne(client);
 
 }
@@ -501,7 +501,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                     QSqlQuery query3;
                     query3.prepare("INSERT INTO files(FileName, Id, userName, Path) VALUES ((:filename), (:fileId), (:username), (:path))");
                     query3.bindValue(":filename", filename);
-                    query3.bindValue(":fileId", 0);
+                    query3.bindValue(":fileId", fileId + 1);
                     query3.bindValue(":username", username);
                     query3.bindValue(":path", path);
 
@@ -509,7 +509,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                         QFile file(path);
                         if(file.open(QIODevice::WriteOnly)){
                             QTextStream stream(&file);
-                            stream << "";
+                            stream << path;
                             file.close();
                         }
                         File *newfile = new File(fileId, path);
@@ -567,7 +567,7 @@ void DBInteraction::sendFileList(ClientManager* client){
         QByteArray response;
         QMap<int, QString> files;
 
-        query.prepare("SELECT FileName, Id FROM files WHERE UserName = (:username)");
+        query.prepare("SELECT FileName, Id, Path FROM files WHERE UserName = (:username)");
         query.bindValue(":username", username);
 
         if(query.exec()){
@@ -839,15 +839,15 @@ void DBInteraction::openSharedFile(QString URI, ClientManager* client){
     //chiamo la open
     if(instance->db.open()){
         QSqlQuery query;
-        query.prepare("SELECT Id, fileName FROM files WHERE path = (:path)"); // dovrebbe essere univoca la risposta: i path sono costruiti in modo tale da non poterne avere 2 uguali, quindi la query mi restituisce 1 valore solo
-        query.bindValue("path", URI);
+        query.prepare("SELECT Id, FileName FROM files WHERE Path = (:path)"); // dovrebbe essere univoca la risposta: i path sono costruiti in modo tale da non poterne avere 2 uguali, quindi la query mi restituisce 1 valore solo
+        query.bindValue(":path", URI);
 
         if(query.exec()){
             int fileId;
             QString filename;
             if(query.next()){
                 fileId = query.value("Id").toInt();
-                filename = query.value("fileName").toString();
+                filename = query.value("FileName").toString();
             }
             else {
                 qDebug()<<"this file does not exist!\n";
@@ -866,7 +866,13 @@ void DBInteraction::openSharedFile(QString URI, ClientManager* client){
             query2.bindValue(":username", username);
             query2.bindValue(":path", URI);
             if(query2.exec()){
-                instance->openFile(fileId, client, URI);
+                //sendSuccess(client);
+                QMap<int, QString> id_file;
+                id_file.insert(fileId, filename);
+                QByteArray message = Serialize::fromObjectToArray(Serialize::FileListSerialize(id_file, SEND_FILES));
+                client->writeData(message);
+                //instance->openFile(fileId, client, URI); è meglio aspettare una richiesta specifica dal client per aprire il file
+                //perchè se il client fosse lento si perderebbe i messaggi
 
             }
             else {
@@ -985,4 +991,3 @@ bool DBInteraction::colorPresent(QColor color){
     }
     return false;
 }
-

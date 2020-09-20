@@ -33,8 +33,10 @@ private:
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
 	QSharedPointer<QPixmap> m_profileImage;
-	QMap<QString, int> filename_id;
+	QMap<int, QString> filename_id;
 	QColor m_userColor;
+	QTimer* m_timer;
+	bool m_openAfterUri;
 
 	void closeEvent(QCloseEvent* event);
 	void removeBlank();
@@ -44,15 +46,17 @@ private slots:
 	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
 	void on_logoutButton_clicked();
 	void on_modifyProfile_clicked();
-	void on_newFile_Clicked();
-	void on_deleteFile_Clicked();
+	void on_newFile_clicked();
+	void on_deleteFile_clicked();
 	void editorClosed(int);
-	void on_renameFile_Clicked();
+	void on_renameFile_clicked();
+	void on_addSharedFileButton_clicked();
 	void childWindowClosed();
 	void addFiles(QJsonObject message);
 	void addFile(QJsonObject message);
 	void handleNewMessage(QJsonObject message);
 	void processEditorMessage(QJsonObject message);
+	void showErrorMessage();
 
 signals:
 	void showParent();
