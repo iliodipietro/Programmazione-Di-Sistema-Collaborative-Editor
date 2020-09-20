@@ -15,7 +15,10 @@ public:
     //void insertText(int id, QString& text);
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
-    void setCursorPosition(int id, int position);
+    //void setCursorPosition(int id, int position);
+    void moveForwardCursorsPosition(int mainCursorPosition, int offsetPosition);
+    void moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition);
+    inline int getCursorPos(int id) { return m_cursorsToPrint.at(id)->getCursorPosition(); }
 
 private:
 

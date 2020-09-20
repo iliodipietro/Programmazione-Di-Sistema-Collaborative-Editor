@@ -31,8 +31,9 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	//this->loadFile(this->filePath);
 	setCurrentFile(path);
 	QTextCursor TC = m_textEdit->textCursor();
-	TC.setPosition(0);
-	m_textEdit->setTextCursor(TC);
+	//TC.setPosition(0);
+	//m_textEdit->setTextCursor(TC);
+	qDebug() << "posizione iniziale=" << TC.position();
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
@@ -54,7 +55,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	//qui vanno fatte tutte le connect che sono in main window a debora??
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 	//connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
-	
+
 
 	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
 
@@ -522,7 +523,7 @@ void Editor::filePrintPdf() {
 
 void Editor::on_textEdit_textChanged() {
 
-
+	qDebug() << "all'inserimento del testo= " << m_textEdit->getCursorPos(m_cursorId) << endl;
 
 	//QTextCursor TC = m_textEdit->textCursor();
 	//QString temp = m_textEdit->toPlainText();
@@ -564,6 +565,7 @@ void Editor::on_textEdit_textChanged() {
 	else if (TC.position() <= lastCursor) {
 		//è una delete		
 		localDelete();
+
 	}
 	else {
 		//è una insert
@@ -572,6 +574,7 @@ void Editor::on_textEdit_textChanged() {
 	//aggiorno
 	this->lastText = m_textEdit->toPlainText();
 	this->lastCursor = TC.position();
+	m_textEdit->setTextCursor(TC);
 }
 
 
@@ -622,6 +625,15 @@ void Editor::localInsert() {
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
 		//std::cout << "prova" << std::endl;
 	}
+
+	qDebug() << "dopo la local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
+
+	int offset = TC.position() - lastCursor;
+	int pos = TC.position();
+	m_textEdit->moveForwardCursorsPosition(pos, offset);
+
+	qDebug() << "dopo aggiornamento local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
+
 }
 
 void Editor::localDelete() {
@@ -634,16 +646,16 @@ void Editor::localDelete() {
 		end = this->lastEnd;
 	}
 	else {
-		
+
 		if (m_textEdit->toPlainText().size() == 0) {
-				//vuol dire che ho eliminato tutto
-				start = 0;
-				end = this->lastText.size();
-			}
-			else {
-				start = TC.position();
-				end = lastCursor;
-			}
+			//vuol dire che ho eliminato tutto
+			start = 0;
+			end = this->lastText.size();
+		}
+		else {
+			start = TC.position();
+			end = lastCursor;
+		}
 
 	}
 
@@ -653,6 +665,8 @@ void Editor::localDelete() {
 		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
+
+	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start + 1);
 
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
@@ -711,28 +725,32 @@ void Editor::remoteAction(Message m)
 	//}
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
-	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
+	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
 	m_textEdit->handleMessage(0, m, index);
-	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
-	TC.setPosition(pos);
-	m_textEdit->setTextCursor(TC);
+	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 
 	switch (m.getAction()) {
 	case INSERT:
 		maybeincrement(index);
+
+		pos > index ? pos++ : pos = pos;
+
 		break;
 	case DELETE_S:
 		maybedecrement(index);
+
+		pos <= index ? pos-- : pos = pos;
+
 		break;
 	default:
 		break;
 	}
 
-	this->lastText = m_textEdit->toPlainText();
-	//Augusto: bisogna aggiungere anche la condizione se si riceve un'immagine dal server ed una per i messaggi 
-	//dei cursori degli altri client
+	TC.setPosition(pos, QTextCursor::MoveAnchor);
+	m_textEdit->setTextCursor(TC);
 
+	this->lastText = m_textEdit->toPlainText();
 	this->remoteEvent = false;
 }
 
@@ -890,8 +908,8 @@ void Editor::localStyleChange()
 
 
 		Symbol s = this->_CRDT->getSymbol(pos);
-		
-		if (s.getAlignment()!=alignment || s.getColor()!= color || s.getFont() != font) {
+
+		if (s.getAlignment() != alignment || s.getColor() != color || s.getFont() != font) {
 
 			//scrivo sul socket solo se c'e stato un vero cambio --> meno banda e carico per il server
 			Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
@@ -960,7 +978,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		localInsert();
 	}
 	int i = 0;
-	qDebug()<< e;
+	qDebug() << e;
 }
 
 
@@ -1054,7 +1072,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 
-    Message m(TC.position(), CURSOR, _CRDT->getId());
+	Message m(TC.position(), CURSOR, _CRDT->getId());
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, CURSOR)));
 	/*QTextCharFormat format = TC.charFormat();
 	int pos = TC.position();
@@ -1092,11 +1110,11 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 }
 
 void Editor::messageReceived(Message m) {
-	QTextCursor TC = m_textEdit->textCursor();
-	int pos = TC.position();
+	/*QTextCursor TC = m_textEdit->textCursor();
+	int pos = TC.position();*/
 	remoteAction(m);
-	TC.setPosition(pos);
-	m_textEdit->setTextCursor(TC);
+	/*TC.setPosition(pos);
+	m_textEdit->setTextCursor(TC);*/
 }
 
 /*void Editor::writeText() {
@@ -1111,6 +1129,7 @@ void Editor::messageReceived(Message m) {
 
 void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un nuove utente accede al file
 	int id = userInfo[0].toInt();
+	m_cursorId = id;
 	QString username = userInfo[1];
 	QColor userColor(userInfo[2]);
 
@@ -1134,6 +1153,7 @@ void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un
 	QFont lwiFont = lwi->font();
 	lwiFont.setPointSize(lwiFont.pointSize() + 3);
 	lwi->setFont(lwiFont);
+	qDebug() << "all'inserimento= " << m_textEdit->getCursorPos(m_cursorId) << endl;
 	//m_textEdit->insertText(0, QString("ciao"));
 }
 
@@ -1144,6 +1164,8 @@ void Editor::removeEditingUser(int id) {
 
 	QList<QListWidgetItem*> lwi = m_editingUsersList->findItems(username, Qt::MatchExactly);
 	m_editingUsersList->removeItemWidget(lwi.at(0));
+	lwi.at(0)->setHidden(true);
+	
 }
 
 void Editor::showEditingUsers() {

@@ -9,11 +9,13 @@ class CustomCursor : public QObject
 	Q_OBJECT
 public:
 	CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject *parent = Q_NULLPTR);
+	~CustomCursor();
 
 	void messageHandler(Message &message, int position);
 	void setCursorPosition(int pos);
 	inline QColor getCursorColor() { return m_color; }
 	QRect getCursorPos();
+	int getCursorPosition();
 	void setActiveCursor();
 	//void insertText(QString &text);
 	void updateLabelPosition();

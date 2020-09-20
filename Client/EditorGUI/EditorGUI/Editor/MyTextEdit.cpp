@@ -12,15 +12,15 @@ void MyTextEdit::paintEvent(QPaintEvent* event)
     auto it = m_cursorsToPrint.begin();
     for (it; it != m_cursorsToPrint.end(); it++) {
         painter.setRenderHint(QPainter::Antialiasing, true);
-        QRect rect = (it->second)->getCursorPos();
-        rect.setX(rect.x() + 5);
+        QRect rect = it->second->getCursorPos();
+        rect.setX(rect.x() - 2);
         painter.fillRect(rect, (it->second)->getCursorColor());
     }
 }
 
 void MyTextEdit::addCursor(int id, QColor color, QString username, int position) {
     CustomCursor* cursor = new CustomCursor(this, color, username, position, this);
-    m_cursorsToPrint.insert(std::pair<int, CustomCursor*>(0, cursor));
+    m_cursorsToPrint.insert(std::pair<int, CustomCursor*>(id, cursor));
     connect(this, &MyTextEdit::textSizeChanged, cursor, &CustomCursor::textSizeChanged);
 }
 
@@ -44,10 +44,10 @@ void MyTextEdit::updateTextSize() {
     emit textSizeChanged();
 }
 
-void MyTextEdit::setCursorPosition(int id, int position) {
+/*void MyTextEdit::setCursorPosition(int id, int position) {
     CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
     cursor->setCursorPosition(position);
-}
+}*/
 
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
     QTextEdit::mousePressEvent(event);
@@ -59,4 +59,25 @@ void MyTextEdit::keyPressEvent(QKeyEvent* e)
     QTextEdit::keyPressEvent(e);
     emit propaga(e);
     
+}
+
+void MyTextEdit::moveForwardCursorsPosition(int mainCursorPosition, int offsetPosition) {
+    for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
+        int cursorPosition = it->second->getCursorPosition();
+        if (cursorPosition > mainCursorPosition) {
+            it->second->setCursorPosition(cursorPosition + offsetPosition);
+        }
+    }
+}
+
+void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition) {
+    for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
+        int cursorPosition = it->second->getCursorPosition();
+        if (cursorPosition - offsetPosition >= mainCursorPosition) {
+            it->second->setCursorPosition(cursorPosition - offsetPosition);
+        }
+        else {
+            it->second->setCursorPosition(mainCursorPosition);
+        }
+    }
 }

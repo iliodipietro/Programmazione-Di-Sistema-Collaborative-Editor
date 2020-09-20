@@ -629,8 +629,10 @@ QPair<int, QStringList> Serialize::addEditingUserUnserialize(QJsonObject obj) {
 			-list[2] -> userColor
 	*/
 
+	int id = obj.value("userId").toInt();
+
 	QStringList sl;
-	sl.append(obj.value("userId").toString());
+	sl.append(QString::number(id));
 	sl.append(obj.value("username").toString());
 	sl.append(obj.value("userColor").toString());
 
