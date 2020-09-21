@@ -30,11 +30,6 @@ void MyTextEdit::removeCursor(int id) {
     m_cursorsToPrint.erase(id);
 }
 
-/*void MyTextEdit::insertText(int id, QString& text) {
-    CustomCursor *cursor = m_cursorsToPrint.find(id)->second;
-    cursor->insertText(text);
-}*/
-
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
     CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
     cursor->messageHandler(m, position);
@@ -44,11 +39,6 @@ void MyTextEdit::updateTextSize() {
     emit textSizeChanged();
 }
 
-/*void MyTextEdit::setCursorPosition(int id, int position) {
-    CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
-    cursor->setCursorPosition(position);
-}*/
-
 void MyTextEdit::refresh(QKeyEvent* e)
 {
     QTextEdit::keyPressEvent(e);
@@ -56,7 +46,7 @@ void MyTextEdit::refresh(QKeyEvent* e)
 
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
     QTextEdit::mousePressEvent(event);
-    emit clickOnTextEdit();
+    emit clickOnTextEdit(event);
 }
 
 void MyTextEdit::keyPressEvent(QKeyEvent* e)

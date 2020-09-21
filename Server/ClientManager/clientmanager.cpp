@@ -58,13 +58,6 @@ void ClientManager::setId(int id)
     this->m_id = id;
 }
 
-QString ClientManager::getUsername(){
-    return this->m_username;
-}
-int ClientManager::getId(){
-    return this->m_id;
-}
-
 //la disconnessione viene segnalata al server
 void ClientManager::onDisconnect(){
     emit disconnected();

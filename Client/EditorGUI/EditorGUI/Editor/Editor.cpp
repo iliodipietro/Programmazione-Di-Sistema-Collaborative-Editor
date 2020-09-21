@@ -41,7 +41,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
-	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
+	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 	this->setFocusPolicy(Qt::StrongFocus);
 
@@ -1221,13 +1221,6 @@ void Editor::showEditingUsers() {
 }
 
 void Editor::mousePressEvent(QMouseEvent* e) {
-	if (m_showingEditingUsers) {
-		m_editingUsersList->hide();
-		m_showingEditingUsers = false;
-	}
-}
-
-void Editor::clickOnTextEdit() {
 	if (m_showingEditingUsers) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;

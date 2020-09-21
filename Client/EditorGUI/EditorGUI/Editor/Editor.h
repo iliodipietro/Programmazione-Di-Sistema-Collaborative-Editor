@@ -141,15 +141,11 @@ public slots:
 	void keyRelaseEvent(QKeyEvent* e);
 	void tastoPremuto(QKeyEvent* e);
 
-
-
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
-	//void writeText();
 	void showEditingUsers();
-	void clickOnTextEdit();
 
 //---------------------------------------------------------------------------------------------------
 signals:
