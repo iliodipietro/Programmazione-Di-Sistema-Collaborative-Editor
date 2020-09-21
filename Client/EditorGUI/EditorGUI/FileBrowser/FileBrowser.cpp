@@ -286,7 +286,7 @@ void FileBrowser::processEditorMessage(QJsonObject message)
 
 	auto it = m_textEditors.find(m.first);
 	if (it != m_textEditors.end()) {
-		it->second->messageReceived(m.second);
+		it->second->remoteAction(m.second);
 	}
 }
 

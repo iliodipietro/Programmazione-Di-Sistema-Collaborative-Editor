@@ -42,7 +42,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
-	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
@@ -55,7 +54,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 	//trigger stylechange
 	Q_ASSERT(connect(this, &Editor::styleChange, this, &Editor::localStyleChange));
-	//connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
 
 
 	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
@@ -64,8 +62,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
-	//writeText();
-	//addEditingUser(0, "prova", Qt::blue);
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -346,9 +342,6 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
-
-
-
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
@@ -356,7 +349,7 @@ void Editor::createActions() {
 
 	m_editingUsersList = new QListWidget(this);
 
-	m_editingUsersList->move(QPoint(ui.toolBar->pos().x() + window()->geometry().width() - 160, ui.toolBar->pos().y() + ui.toolBar->geometry().height() + 43));
+	m_editingUsersList->move(QPoint(ui.toolBar->pos().x() + window()->geometry().width() - 160, ui.toolBar->pos().y() + ui.toolBar->geometry().height() + 50));
 	m_editingUsersList->setMinimumWidth(150);
 	m_editingUsersList->setMinimumHeight(100);
 	m_editingUsersList->setIconSize(QSize(ICONSIZE, ICONSIZE));
@@ -1006,6 +999,14 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		break;
 	case Qt::Key_Alt:
 		break;
+	case Qt::Key_Up:
+	case Qt::Key_Down:
+	case Qt::Key_Left:
+	case Qt::Key_Right: {
+		Message m(TC.position(), CURSOR_S, _CRDT->getId());
+		m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+		break;
+	}
 	default:
 		if (e->text() == "")//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico
 			break;
@@ -1120,7 +1121,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 
-	Message m(TC.position(), CURSOR_S, _CRDT->getId());
+	/*Message m(TC.position(), CURSOR_S, _CRDT->getId());
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 	/*QTextCharFormat format = TC.charFormat();
 	int pos = TC.position();
@@ -1158,24 +1159,6 @@ Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {
 		return Qt::AlignCenter;
 	else return Qt::AlignJustify;
 }
-
-void Editor::messageReceived(Message m) {
-	/*QTextCursor TC = m_textEdit->textCursor();
-	int pos = TC.position();*/
-	remoteAction(m);
-	/*TC.setPosition(pos);
-	m_textEdit->setTextCursor(TC);*/
-}
-
-/*void Editor::writeText() {
-	QTextCursor TC = m_textEdit->textCursor();
-	int pos = TC.position();
-	addEditingUser(0, "prova", Qt::blue);
-	m_textEdit->setCursorPosition(0, 10);
-	//m_textEdit->insertText(0, QString("ciao"));
-	TC.setPosition(pos);
-	m_textEdit->setTextCursor(TC);
-}*/
 
 void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un nuove utente accede al file
 	int id = userInfo[0].toInt();
@@ -1224,5 +1207,15 @@ void Editor::mousePressEvent(QMouseEvent* e) {
 	if (m_showingEditingUsers) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;
+	}
+
+	QPoint clickPoint = e->pos();
+
+	if (QApplication::widgetAt(clickPoint) == m_textEdit) {
+		QTextCursor TC = m_textEdit->textCursor();
+		if (TC.position() != this->lastCursor) {
+			Message m(TC.position(), CURSOR_S, _CRDT->getId());
+			m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+		}
 	}
 }

@@ -26,7 +26,7 @@ public:
 		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
-	void messageReceived(Message);
+	void remoteAction(Message m);
 	int getFileId();
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
@@ -129,8 +129,6 @@ private:
 	void updateViewAfterStyleChange(Message m, __int64 index);
 
 	//FINE----------------------------------------------------------------------
-
-	void remoteAction(Message m);
 
 protected:
 
