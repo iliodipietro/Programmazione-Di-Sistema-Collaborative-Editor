@@ -19,7 +19,7 @@
 
 
 //altre define
-#define TIMEOUT 2000000// dopo quanto tempo il crdt deve essere salvato su file
+#define TIMEOUT 2000// dopo quanto tempo il crdt deve essere salvato su file
 //#define TIMEOUT 10000 // 10 secondi
 
 class Message;

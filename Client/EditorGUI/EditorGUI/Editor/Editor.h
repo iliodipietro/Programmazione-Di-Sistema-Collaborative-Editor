@@ -153,4 +153,5 @@ private slots:
 //---------------------------------------------------------------------------------------------------
 signals:
 	void editorClosed(QString);
+	void styleChange();
 };

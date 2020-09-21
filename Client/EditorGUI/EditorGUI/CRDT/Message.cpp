@@ -13,6 +13,11 @@ Message::Message(__int64 position, int action, int sender):cursor_position(posit
 	this->symbol = Symbol();
 }
 
+Message::Message(std::vector<std::vector<int>> idList,int action, int sender):action(action),sender(sender)
+{
+	this->idList = idList;
+}
+
 
 Message::~Message()
 {
@@ -32,6 +37,13 @@ Symbol Message::getSymbol() const
  {
 	 return this->sender;
  }
+
+ std::vector<std::vector<int>> Message::getListIds()
+ {
+	 return this->idList;
+ }
+
+
 
  __int64 Message::getCursorPosition()
  {

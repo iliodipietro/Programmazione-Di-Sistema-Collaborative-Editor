@@ -377,6 +377,106 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 	return QPair<int, Message>(fileId, m);
 }
 
+QJsonObject Serialize::chunkMessageSerialize(Message message, int fileId, int type)
+{
+	QJsonObject obj;
+
+	obj.insert("type", QJsonValue(type));
+	int action = message.getAction();//insert, delete ecc.
+
+	int senderId = message.getSenderId();//id del client o di chi manda
+
+	obj.insert("action", QJsonValue(action));
+	obj.insert("sender", QJsonValue(senderId));
+	obj.insert("fileId", QJsonValue(fileId));
+
+	/*-------------------------------------------------------------------------------------------------------------------------------
+	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
+	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
+	----------------------------------------------------------------------------------------------------------------------------------*/
+	if (action == DELETE_CHUNK) {
+
+		int len = message.getListIds().size();
+
+		for (int i = 0; i < len; i++) {
+
+			QString fileid = "s_id" + QString(i);
+			QString filename = "c_id" + QString(i);
+			obj.insert(fileid, message.getListIds()[i][0]);
+			obj.insert(filename, message.getListIds()[i][1]);
+		}
+		obj.insert("dim",len);
+	}
+	else if(action == CHANGE_CHUNK) {
+
+		int len = message.getListIds().size();
+
+		for (int i = 0; i < len; i++) {
+
+			QString fileid = "s_id" + QString(i);
+			QString filename = "c_id" + QString(i);
+			obj.insert(fileid, message.getListIds()[i][0]);
+			obj.insert(filename, message.getListIds()[i][1]);
+		}
+		obj.insert("dim", len);
+
+	}
+	Symbol s = message.getSymbol();
+
+	char c = s.getChar();
+
+	obj.insert("character", QJsonValue(c));
+
+	//include di vector e array sono gia in symbol includso in message
+	std::array<int, 2> id = s.getId();
+
+	QJsonArray  Qid = { id[0],id[1] };//id globale
+
+	obj.insert("globalCharacterId", QJsonValue(Qid));
+
+	std::vector<int> v = s.getPos();
+
+	QJsonArray Qvett;
+
+	for (int i : v) {
+
+		Qvett.append(QJsonValue(i));
+	}
+
+	obj.insert("position", QJsonValue(Qvett));
+
+
+	//font e colore
+	QFont font = s.getFont();
+	QString serialFont = font.toString();
+	obj.insert("font", QJsonValue(serialFont));
+
+	QString color = s.getColor().name();//hex value
+	Qt::AlignmentFlag aligment = s.getAlignment();
+
+	//int red = color.red();
+	//int green = color.green();
+	//int blue = color.blue();
+
+	//obj.insert("red",QJsonValue(red));
+	//obj.insert("green", QJsonValue(green));
+	//obj.insert("blue", QJsonValue(blue));
+	obj.insert("color", color);
+	obj.insert("alignment", aligment);
+
+
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//return strJson.append("\r\n");
+
+	return obj;
+}
+
+//QPair<int, Message> Serialize::chunnkMessageUnserialize(QJsonObject obj)
+//{
+//	return QPair<int, Message>();
+//}
+
 QJsonObject Serialize::textMessageSerialize(QString str, int type)//non mi ricordo a che serviva--> forse per messaggi testuali dal server
 {
 

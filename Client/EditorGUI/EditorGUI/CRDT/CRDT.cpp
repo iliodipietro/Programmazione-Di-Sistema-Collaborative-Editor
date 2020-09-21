@@ -17,6 +17,10 @@ CRDT::CRDT(int id) :_siteId(id), _counter(0)
 {
 }
 
+CRDT::CRDT(int id, int site_counter):_siteId(id),_counter(site_counter)
+{
+}
+
 
 CRDT::~CRDT()
 {

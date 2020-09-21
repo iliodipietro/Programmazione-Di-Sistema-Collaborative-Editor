@@ -13,6 +13,8 @@
 #define DELETE_S 1
 #define CHANGE 2
 #define CURSOR 3
+#define DELETE_CHUNK 4
+#define CHANGE_CHUNK 5
 
 
 
@@ -44,6 +46,7 @@ private:
 
 public:
 	CRDT(int id);
+	CRDT(int id, int site_counter);
 	~CRDT();
 
 	Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);

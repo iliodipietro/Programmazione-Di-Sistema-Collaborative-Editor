@@ -61,7 +61,8 @@ public:
 	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
-
+	static QJsonObject chunkMessageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	static QPair<int, Message> chunnkMessageUnserialize(QJsonObject obj);
 
 	static QJsonObject textMessageSerialize(QString str, int type);
 	static QString textMessageUnserialize(QJsonObject obj);

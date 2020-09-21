@@ -224,6 +224,7 @@ void Editor::createActions() {
 	this->italicAct->setPriority(QAction::LowPriority);
 	this->italicAct->setShortcut(Qt::CTRL + Qt::Key_I);
 	connect(this->italicAct, &QAction::triggered, this, &Editor::makeItalic);
+
 	ui.menuModifica->addAction(this->italicAct);
 	ui.toolBar->addAction(this->italicAct);
 
@@ -344,6 +345,12 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
+	/*
+	
+	trigger action per change style
+	*/
+	connect(this,SIGNAL(styleChange), this, SLOT(localStyleChange));
+	//-------------------------------------------------------------------------------------------------------//
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
@@ -362,18 +369,21 @@ void Editor::makeItalic() {
 	QTextCharFormat fmt;
 	fmt.setFontItalic(this->italicAct->isChecked());
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::makeBold() {
 	QTextCharFormat fmt;
 	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::makeUnderlined() {
 	QTextCharFormat fmt;
 	fmt.setFontUnderline(this->underLineAct->isChecked());
 	mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::textStyle(int styleIndex)
@@ -443,12 +453,14 @@ void Editor::textStyle(int styleIndex)
 	}
 
 	cursor.endEditBlock();
+	emit styleChange();
 }
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat& format) {
 	QTextCursor cursor = m_textEdit->textCursor();
 	cursor.mergeCharFormat(format);
 	m_textEdit->mergeCurrentCharFormat(format);
+	emit styleChange();
 }
 
 void Editor::textSize(const QString& p) {
@@ -461,12 +473,14 @@ void Editor::textSize(const QString& p) {
 	QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
 	m_textEdit->setTextCursor(TC);
+	emit styleChange();
 }
 
 void Editor::textFamily(const QString& f) {
 	QTextCharFormat fmt;
 	fmt.setFontFamily(f);
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::filePrint() {
@@ -543,28 +557,28 @@ void Editor::on_textEdit_textChanged() {
 
 	//il messaggio va mandato al serializzatore
 
-	if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
-		return;
+	//if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
+	//	return;
 
-	if (this->styleBounce) {
-		this->styleBounce = false;
-		return;
-	}
+	//if (this->styleBounce) {
+	//	this->styleBounce = false;
+	//	return;
+	//}
 
-	QTextCursor TC = m_textEdit->textCursor();
+	//QTextCursor TC = m_textEdit->textCursor();
 
 
 
-	//DEBUG
-	int curr = TC.position();
-	int last = this->lastCursor;
-	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0) {// se non è insert o delete--> change in the format
-		this->localStyleChange();
-		////aggiorno
-		this->lastText = m_textEdit->toPlainText();
-		this->lastCursor = TC.position();
-	
-	}
+	////DEBUG
+	//int curr = TC.position();
+	//int last = this->lastCursor;
+	//if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0) {// se non è insert o delete--> change in the format
+	//	this->localStyleChange();
+	//	////aggiorno
+	//	this->lastText = m_textEdit->toPlainText();
+	//	this->lastCursor = TC.position();
+	//
+	//}
 
 	//old version noe we use KeyEvent
 	//else if (TC.position() <= lastCursor) {
@@ -649,12 +663,14 @@ void Editor::localDelete() {
 
 	}
 
-
+	std::vector<std::vector<int>> idList;
 	for (int i = end; i > start; i--) {
 		Message m = this->_CRDT->localErase(i - 1);
-		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
-		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		idList.push_back(m.getSymbol().getPos());
+		//QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
+		//m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
+
 
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
@@ -903,6 +919,8 @@ void Editor::localStyleChange()
 
 	}
 	this->styleBounce = true;
+	this->lastText = m_textEdit->toPlainText();
+	this->lastCursor = TC.position();
 	//this->lastStart = 0;
 	//this->lastEnd = 0;
 }
