@@ -67,7 +67,6 @@ private:
 	QMap<int, QString> m_editingUsers;
 	bool m_showingEditingUsers;
 	QColor m_userColor;
-	int m_cursorId;
 
 	//MATTIA---------------------------------------------------------------------------------
 	CRDT* _CRDT;
@@ -155,4 +154,5 @@ private slots:
 //---------------------------------------------------------------------------------------------------
 signals:
 	void editorClosed(int);
+	void styleChange();
 };

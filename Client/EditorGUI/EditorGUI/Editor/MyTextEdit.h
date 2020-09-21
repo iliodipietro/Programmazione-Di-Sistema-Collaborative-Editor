@@ -19,6 +19,7 @@ public:
     void moveForwardCursorsPosition(int mainCursorPosition, int offsetPosition);
     void moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition);
     inline int getCursorPos(int id) { return m_cursorsToPrint.at(id)->getCursorPosition(); }
+    void refresh(QKeyEvent* e);
 
 private:
 

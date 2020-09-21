@@ -49,6 +49,11 @@ void MyTextEdit::updateTextSize() {
     cursor->setCursorPosition(position);
 }*/
 
+void MyTextEdit::refresh(QKeyEvent* e)
+{
+    QTextEdit::keyPressEvent(e);
+}
+
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
     QTextEdit::mousePressEvent(event);
     emit clickOnTextEdit();
@@ -56,7 +61,7 @@ void MyTextEdit::mousePressEvent(QMouseEvent* event) {
 
 void MyTextEdit::keyPressEvent(QKeyEvent* e)
 {
-    QTextEdit::keyPressEvent(e);
+    //QTextEdit::keyPressEvent(e);
     emit propaga(e);
     
 }

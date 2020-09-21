@@ -44,9 +44,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::clickOnTextEdit);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(messageReceived(QJsonObject)));
 	this->setFocusPolicy(Qt::StrongFocus);
-	//connect(m_textEdit, SIGNAL(keyPressEvent), this, SLOT(keyPressEvent));
-	//connect(m_textEdit, SIGNAL(keyReleaseEvent), this, SLOT(keyRelaseEvent));
-	//Q_ASSERT(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
+
+	(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
 
 	this->alignmentChanged(this->m_textEdit->alignment());
 	this->colorChanged(this->m_textEdit->textColor());
@@ -54,6 +53,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	//MATTIA--------------------------------------------------------------------------------------
 	//qui vanno fatte tutte le connect che sono in main window a debora??
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
+	//trigger stylechange
+	Q_ASSERT(connect(this, &Editor::styleChange, this, &Editor::localStyleChange));
 	//connect(m_timer, SIGNAL(timeout()), this, SLOT(writeText()));
 
 
@@ -345,6 +346,9 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
+
+
+
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
@@ -363,18 +367,21 @@ void Editor::makeItalic() {
 	QTextCharFormat fmt;
 	fmt.setFontItalic(this->italicAct->isChecked());
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::makeBold() {
 	QTextCharFormat fmt;
 	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::makeUnderlined() {
 	QTextCharFormat fmt;
 	fmt.setFontUnderline(this->underLineAct->isChecked());
 	mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::textStyle(int styleIndex)
@@ -444,12 +451,14 @@ void Editor::textStyle(int styleIndex)
 	}
 
 	cursor.endEditBlock();
+	emit styleChange();
 }
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat& format) {
 	QTextCursor cursor = m_textEdit->textCursor();
 	cursor.mergeCharFormat(format);
 	m_textEdit->mergeCurrentCharFormat(format);
+	//emit styleChange();
 }
 
 void Editor::textSize(const QString& p) {
@@ -462,12 +471,14 @@ void Editor::textSize(const QString& p) {
 	QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
 	m_textEdit->setTextCursor(TC);
+	emit styleChange();
 }
 
 void Editor::textFamily(const QString& f) {
 	QTextCharFormat fmt;
 	fmt.setFontFamily(f);
 	this->mergeFormatOnWordOrSelection(fmt);
+	emit styleChange();
 }
 
 void Editor::filePrint() {
@@ -544,37 +555,39 @@ void Editor::on_textEdit_textChanged() {
 
 	//il messaggio va mandato al serializzatore
 
-	if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
-		return;
+	//if (this->remoteEvent)//old verion --->sostituito da connect e disconnect dell' textchange
+	//	return;
 
-	if (this->styleBounce) {
-		this->styleBounce = false;
-		return;
-	}
+	//if (this->styleBounce) {
+	//	this->styleBounce = false;
+	//	return;
+	//}
 
-	QTextCursor TC = m_textEdit->textCursor();
+	//QTextCursor TC = m_textEdit->textCursor();
 
 
 
-	//DEBUG
-	int curr = TC.position();
-	int last = this->lastCursor;
-	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
-		this->localStyleChange();
+	////DEBUG
+	//int curr = TC.position();
+	//int last = this->lastCursor;
+	//if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0) {// se non è insert o delete--> change in the format
+	//	//this->localStyleChange();
+	//	////aggiorno
+	//	this->lastText = m_textEdit->toPlainText();
+	//	this->lastCursor = TC.position();
+	//
+	//}
 
-	else if (TC.position() <= lastCursor) {
-		//è una delete		
-		localDelete();
+	//old version noe we use KeyEvent
+	//else if (TC.position() <= lastCursor) {
+	//	//è una delete		
+	//	localDelete();
+	//}
+	//else {
+	//	//è una insert
+	//	localInsert();
+	//}
 
-	}
-	else {
-		//è una insert
-		localInsert();
-	}
-	//aggiorno
-	this->lastText = m_textEdit->toPlainText();
-	this->lastCursor = TC.position();
-	m_textEdit->setTextCursor(TC);
 }
 
 
@@ -582,10 +595,8 @@ void Editor::localInsert() {
 	QTextCursor TC = m_textEdit->textCursor();
 	int li = TC.anchor();
 
-	//if (this->lastStart != 0 && this->lastEnd != 0) {
 
-	//	this->localDelete();
-	//}
+
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
 	for (int i = lastCursor; i < TC.position(); i++) {
 		if (i < 0)
@@ -626,14 +637,14 @@ void Editor::localInsert() {
 		//std::cout << "prova" << std::endl;
 	}
 
-	qDebug() << "dopo la local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
+	/*qDebug() << "dopo la local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
 
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
 	m_textEdit->moveForwardCursorsPosition(pos, offset);
 
 	qDebug() << "dopo aggiornamento local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
-
+	*/
 }
 
 void Editor::localDelete() {
@@ -921,9 +932,11 @@ void Editor::localStyleChange()
 		}
 
 	}
-	this->styleBounce = true;
+	//this->styleBounce = true;
 	//this->lastStart = 0;
 	//this->lastEnd = 0;
+	this->lastText = m_textEdit->toPlainText();
+	this->lastCursor = TC.position();
 }
 
 //FINE-------------------------------------------------------------------------------------------------------------
@@ -962,13 +975,33 @@ void Editor::keyRelaseEvent(QKeyEvent* e)
 
 void Editor::tastoPremuto(QKeyEvent* e)
 {
+	int end, start;
+	start = end = 0;
 	//incolla
 	if (e->matches(QKeySequence::Paste)) {
-		return;
+		if (this->lastStart != 0 && this->lastEnd != 0) {
+			//
+			this->localDelete();
+			this->lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			this->m_textEdit->refresh(e);
+			this->localInsert();
+
+
+			this->lastText = m_textEdit->toPlainText();
+			this->lastCursor = this->m_textEdit->textCursor().position();
+			return;
+		}
+		else {
+			this->m_textEdit->refresh(e);
+		}
+		
 	}
-	//cambio stile
-	if (this->lastText.compare(this->m_textEdit->toPlainText()) == 0)// se non è insert o delete--> change in the format
-		this->localStyleChange();
+
+	start = this->lastStart;
+	end = this->lastEnd;
+	this->m_textEdit->refresh(e);
+
+
 
 	//può essere solo insert o delete
 	switch (e->key())
@@ -977,11 +1010,26 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	case Qt::Key_Delete:
 		this->localDelete();
 		break;
+	case Qt::Key_Alt:
+		break;
 	default:
+		if (e->text() == "")//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico
+			break;
+		
+		if (start != 0 && end != 0) {
+			this->lastStart = start;
+			this->lastEnd = end;
+
+			this->localDelete();
+			this->lastCursor = start < end ? start : end;
+			this->lastStart = this->lastEnd = 0;
+		}
 		localInsert();
 	}
-	int i = 0;
-	qDebug() << e;
+
+	//qDebug()<< e;
+	this->lastText = m_textEdit->toPlainText();
+	this->lastCursor = this->m_textEdit->textCursor().position();
 }
 
 
@@ -1012,6 +1060,8 @@ void Editor::textAlign(QAction* a) {
 		this->m_textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
 	else if (a == actionAlignJustify)
 		this->m_textEdit->setAlignment(Qt::AlignJustify);
+
+	emit styleChange();
 }
 
 void Editor::alignmentChanged(Qt::Alignment a) {
@@ -1089,6 +1139,7 @@ void Editor::colorChanged(const QColor& c) {
 	QPixmap pix(16, 16);
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
+	
 }
 
 void Editor::textColor()
@@ -1100,6 +1151,7 @@ void Editor::textColor()
 	fmt.setForeground(col);
 	mergeFormatOnWordOrSelection(fmt);
 	colorChanged(col);
+	emit styleChange();
 }
 
 Qt::AlignmentFlag Editor::getAlignementFlag(Qt::Alignment al) {

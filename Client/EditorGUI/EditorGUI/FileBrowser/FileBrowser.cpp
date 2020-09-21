@@ -21,6 +21,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 
 FileBrowser::~FileBrowser()
 {
+	//qDebug()<<"closing file browser";
 }
 
 void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
