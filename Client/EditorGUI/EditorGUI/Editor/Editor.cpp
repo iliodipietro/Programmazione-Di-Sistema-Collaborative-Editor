@@ -534,8 +534,6 @@ void Editor::filePrintPdf() {
 
 void Editor::on_textEdit_textChanged() {
 
-	qDebug() << "all'inserimento del testo= " << m_textEdit->getCursorPos(m_cursorId) << endl;
-
 	//QTextCursor TC = m_textEdit->textCursor();
 	//QString temp = m_textEdit->toPlainText();
 	//int pos = TC.position();
@@ -637,14 +635,9 @@ void Editor::localInsert() {
 		//std::cout << "prova" << std::endl;
 	}
 
-	/*qDebug() << "dopo la local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
-
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
-	m_textEdit->moveForwardCursorsPosition(pos, offset);
-
-	qDebug() << "dopo aggiornamento local insert= " << m_textEdit->getCursorPos(m_cursorId) << endl;
-	*/
+	m_textEdit->moveForwardCursorsPosition(pos, offset);	
 }
 
 void Editor::localDelete() {
@@ -975,6 +968,7 @@ void Editor::keyRelaseEvent(QKeyEvent* e)
 
 void Editor::tastoPremuto(QKeyEvent* e)
 {
+	QTextCursor TC = m_textEdit->textCursor();
 	int end, start;
 	start = end = 0;
 	//incolla
@@ -994,7 +988,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		else {
 			this->m_textEdit->refresh(e);
 		}
-		
+
 	}
 
 	start = this->lastStart;
@@ -1015,7 +1009,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	default:
 		if (e->text() == "")//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico
 			break;
-		
+
 		if (start != 0 && end != 0) {
 			this->lastStart = start;
 			this->lastEnd = end;
@@ -1028,6 +1022,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	}
 
 	//qDebug()<< e;
+	m_textEdit->setTextCursor(TC);
 	this->lastText = m_textEdit->toPlainText();
 	this->lastCursor = this->m_textEdit->textCursor().position();
 }
@@ -1139,7 +1134,7 @@ void Editor::colorChanged(const QColor& c) {
 	QPixmap pix(16, 16);
 	pix.fill(c);
 	this->actionTextColor->setIcon(pix);
-	
+
 }
 
 void Editor::textColor()
@@ -1184,7 +1179,6 @@ void Editor::messageReceived(Message m) {
 
 void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un nuove utente accede al file
 	int id = userInfo[0].toInt();
-	m_cursorId = id;
 	QString username = userInfo[1];
 	QColor userColor(userInfo[2]);
 
@@ -1208,8 +1202,6 @@ void Editor::addEditingUser(QStringList userInfo) { //da usare ogni volta che un
 	QFont lwiFont = lwi->font();
 	lwiFont.setPointSize(lwiFont.pointSize() + 3);
 	lwi->setFont(lwiFont);
-	qDebug() << "all'inserimento= " << m_textEdit->getCursorPos(m_cursorId) << endl;
-	//m_textEdit->insertText(0, QString("ciao"));
 }
 
 void Editor::removeEditingUser(int id) {
@@ -1220,7 +1212,7 @@ void Editor::removeEditingUser(int id) {
 	QList<QListWidgetItem*> lwi = m_editingUsersList->findItems(username, Qt::MatchExactly);
 	m_editingUsersList->removeItemWidget(lwi.at(0));
 	lwi.at(0)->setHidden(true);
-	
+
 }
 
 void Editor::showEditingUsers() {
