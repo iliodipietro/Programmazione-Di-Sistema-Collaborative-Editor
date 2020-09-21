@@ -40,7 +40,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 		updateViewAfterStyleChange(m, index);
 		m_lastPosition = m_editor->cursorRect();
 		break;
-	case CURSOR:
+	case CURSOR_S:
 		setCursorPosition(m.getCursorPosition());
 		break;
 	default:
@@ -79,7 +79,8 @@ void CustomCursor::setActiveCursor() {
 }*/
 
 void CustomCursor::updateLabelPosition() {
-	QPoint cursorPos = m_editor->cursorRect().topLeft();
+	m_lastPosition = m_editor->cursorRect();
+	QPoint cursorPos = m_lastPosition.topLeft();
 	cursorPos.setY(cursorPos.y() - 2);
 	cursorPos.setX(cursorPos.x() + 9);
 	m_usernameLabel->move(cursorPos);

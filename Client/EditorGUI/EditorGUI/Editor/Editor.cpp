@@ -666,7 +666,7 @@ void Editor::localDelete() {
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
 
-	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start + 1);
+	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
 
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
@@ -726,9 +726,9 @@ void Editor::remoteAction(Message m)
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
-	m_textEdit->handleMessage(0, m, index);
-	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	m_textEdit->handleMessage(m.getSenderId(), m, index);
 
 	switch (m.getAction()) {
 	case INSERT:
@@ -749,6 +749,9 @@ void Editor::remoteAction(Message m)
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
+
+	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 
 	this->lastText = m_textEdit->toPlainText();
 	this->remoteEvent = false;
@@ -1072,8 +1075,8 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 
-	Message m(TC.position(), CURSOR, _CRDT->getId());
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, CURSOR)));
+	Message m(TC.position(), CURSOR_S, _CRDT->getId());
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 	/*QTextCharFormat format = TC.charFormat();
 	int pos = TC.position();
 	char c = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();

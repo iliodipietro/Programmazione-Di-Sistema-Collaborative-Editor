@@ -73,11 +73,11 @@ void MyTextEdit::moveForwardCursorsPosition(int mainCursorPosition, int offsetPo
 void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition) {
     for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
         int cursorPosition = it->second->getCursorPosition();
-        if (cursorPosition - offsetPosition >= mainCursorPosition) {
+        if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition >= 0) {
             it->second->setCursorPosition(cursorPosition - offsetPosition);
         }
-        else {
-            it->second->setCursorPosition(mainCursorPosition);
+        else if(cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < 0) {
+            it->second->setCursorPosition(0);
         }
     }
 }

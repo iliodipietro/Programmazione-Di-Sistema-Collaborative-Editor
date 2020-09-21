@@ -353,7 +353,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
 	controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
 	----------------------------------------------------------------------------------------------------------------------------------*/
-	if (action == CURSOR) {
+	if (action == CURSOR_S) {
 		__int64 cursorPosition = obj.value("cursor_position").toInt();
 		Message m(cursorPosition, action, sender);
 		return QPair<int, Message>(fileId, m);

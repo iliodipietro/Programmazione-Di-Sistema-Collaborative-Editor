@@ -12,7 +12,7 @@
 #define INSERT 0
 #define DELETE_S 1
 #define CHANGE 2
-#define CURSOR 3
+#define CURSOR_S 3
 
 
 
