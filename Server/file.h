@@ -20,6 +20,7 @@ public:
     void sendNewFile(ClientManager* socket);
     bool isModifiedName();
     QString getNewName();
+    QString getPath();
     void modifyName(QString newName);
 
 private:

@@ -59,6 +59,10 @@ QString File::getNewName(){
     return this->newName;
 }
 
+QString File::getPath(){
+    return this->path;
+}
+
 void File::modifyName(QString newName){
     this->modifiedName = true;
     this->newName = newName;

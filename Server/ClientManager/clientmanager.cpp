@@ -60,6 +60,16 @@ void ClientManager::setId(int id)
 QString ClientManager::getUsername(){
     return this->m_username;
 }
+
+QString ClientManager::getNickname(){
+    return this->m_nickname;
+
+}
+
+void ClientManager::setNickname(QString nickname){
+    this->m_nickname = nickname;
+
+}
 int ClientManager::getId(){
     return this->m_id;
 }

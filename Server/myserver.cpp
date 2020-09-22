@@ -6,10 +6,17 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
 {
     //supporto al file system da implementare
     db->startDBConnection();
+    QString images_directory_path(QDir::currentPath() + "\\files\\");
+    if(!QDir(images_directory_path).exists()){
+        //creo la cartella files
+        QDir().mkdir(images_directory_path);
+    }
     connect(_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
     //listen(QHostAddress("192.168.0.6"), 44322);
     listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
     //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
+
+
 
     // solo per fare prove
     db->funzionedaeliminare();
@@ -141,6 +148,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
     int fileId;
     QString username, filename, newName, URI;
     QPair<int, QString> rename;
+    QPair<int, int> close;
     //QPair<int, Message> fileid_message;
 
     int type = Serialize::actionType(ObjData);
@@ -178,7 +186,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
-        db->forwardMessage(client,ObjData,socketData);
+        db->forwardMessage(client, ObjData, socketData);
 
         //fileid_message = Serialize::messageUnserialize(ObjData);
 
@@ -203,16 +211,16 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
     case (OPEN):
         qDebug("OPEN request\n");
-        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+        fileId = Serialize::openDeleteFileUnserialize(ObjData);
 
         db->openFile(fileId, client);
 
         break;
     case (CLOSE):
         qDebug("CLOSE request\n");
-        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+        close = Serialize::closeFileUnserialize(ObjData);
 
-        db->closeFile(fileId, client);
+        db->closeFile(close.first, close.second, client);
 
         break;
     case (CURSOR):
@@ -225,7 +233,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
     case (DELETE):
         qDebug("DELETE request\n");
-        fileId = Serialize::openCloseDeleteFileUnserialize(ObjData);
+        fileId = Serialize::openDeleteFileUnserialize(ObjData);
 
         db->deleteFile(fileId, client);
 
@@ -237,8 +245,15 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->renameFile(rename.first, rename.second, client);
 
         break;
-    case (SHARE):
-        qDebug("SHARE request\n");
+    case (SENDURI):
+        qDebug("SENDURI request\n");
+        fileId = Serialize::openDeleteFileUnserialize(ObjData); //uso questa funzione perche ritorna l'id del file
+
+        db->getURIToShare(fileId, client);
+
+        break;
+    case (OPENSHARE):
+        qDebug("OPENSHARE request\n");
         URI = Serialize::openSharedFileUnserialize(ObjData);
 
         db->openSharedFile(URI, client);
@@ -259,16 +274,11 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         list.clear();
 
         break;
-    case (CHANGE_USERNAME):
-        qDebug("CHANGE_USERNAME request\n");
+    case (CHANGE_PROFILE):
+        qDebug("CHANGE_PROFILE request\n");
+        list = Serialize::changeProfileUnserialize(ObjData);
 
-        break;
-    case (CHANGE_NICK):
-        qDebug("CHANGE_NICK request\n");
-
-        break;
-    case (CHANGE_PROPIC):
-        qDebug("CHANGE_PROPIC request\n");
+        db->changeProfile(list.at(0), list.at(1), list.at(2), client);
 
         break;
 
