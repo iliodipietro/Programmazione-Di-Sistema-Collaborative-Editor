@@ -227,7 +227,8 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 	else {
 		if ((unsigned)index == _symbols.size()) {
 			//inserisco in coda
-			pos.push_back(index);
+			int new_index = _symbols.back().getPos().at(0) + 1;
+			pos.push_back(new_index);
 			Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 			_symbols.push_back(s);
 			//mando il messaggio
