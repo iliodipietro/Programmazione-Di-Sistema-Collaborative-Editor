@@ -1,7 +1,9 @@
 #include "MyTextEdit.h"
 #include <QPainter>
 #include <QKeyEvent>
-MyTextEdit::MyTextEdit(QWidget* parent) : QTextEdit(parent)
+#include <QDebug>
+
+MyTextEdit::MyTextEdit(QWidget* parent) : QTextEdit(parent), m_mousePress(false)
 {
 }
 
@@ -48,7 +50,20 @@ void MyTextEdit::refresh(QKeyEvent* e)
 
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
 	QTextEdit::mousePressEvent(event);
+	m_mousePress = true;
 	emit clickOnTextEdit(event);
+	emit updateCursorPosition(false);
+}
+
+void MyTextEdit::mouseReleaseEvent(QMouseEvent* event) {
+	QTextEdit::mousePressEvent(event);
+	m_mousePress = false;
+}
+
+void MyTextEdit::mouseMoveEvent(QMouseEvent* event) {
+	QTextEdit::mousePressEvent(event);
+	if(m_mousePress)
+		emit updateCursorPosition(true);
 }
 
 void MyTextEdit::keyPressEvent(QKeyEvent* e)
@@ -57,12 +72,20 @@ void MyTextEdit::keyPressEvent(QKeyEvent* e)
 		QTextEdit::keyPressEvent(e);
 		return;
 	}
+
+	if (e->matches(QKeySequence::SelectNextChar) || e->matches(QKeySequence::SelectPreviousChar)) {
+		QTextEdit::keyPressEvent(e);
+		emit updateCursorPosition(true);
+		return;
+	}
+
 	switch (e->key()) {
 	case Qt::Key_Up:
 	case Qt::Key_Down:
 	case Qt::Key_Left:
 	case Qt::Key_Right: {
 		QTextEdit::keyPressEvent(e);
+		emit updateCursorPosition(false);
 		break;
 	}
 	default:

@@ -50,9 +50,11 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSe
 	switch (mode) {
 	case AfterDelete:
 		m_position = pos - 1;
+		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
 		m_position = pos + 1;
+		m_TextCursor->setPosition(pos);
 		break;
 	case ChangePosition:
 		if (isSelection) {
@@ -68,12 +70,13 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSe
 			m_TextCursor->setPosition(m_endSelection, QTextCursor::KeepAnchor);
 		}
 		else {
+			m_startSelection = m_endSelection = -1;
 			m_TextCursor->setPosition(pos);
 		}
 		m_position = pos;
-		m_editor->setTextCursor(*m_TextCursor);
 		break;
 	}
+	m_editor->setTextCursor(*m_TextCursor);
 }
 
 QRect CustomCursor::getCursorPos() {
@@ -149,7 +152,6 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index)
 {
 	//QTextCursor TC = m_editor->textCursor();
 	setCursorPosition(index, ChangePosition);
-	m_position = index;
 	m_TextCursor->deleteChar();
 
 	QChar chr(m.getSymbol().getChar());

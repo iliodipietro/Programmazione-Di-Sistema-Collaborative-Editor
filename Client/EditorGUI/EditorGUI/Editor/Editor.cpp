@@ -40,9 +40,10 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 
 	connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
 	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
-	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
-	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
+	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePress);
+	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
@@ -1194,18 +1195,10 @@ void Editor::mousePress(QMouseEvent* event) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;
 	}
-
-	QWidget* hit = QApplication::widgetAt(event->screenPos().toPoint());
-
-	if (hit == m_textEdit) {
-		QTextCursor TC = m_textEdit->textCursor();
-		Message m(TC.position(), CURSOR_S, _CRDT->getId());
-		m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
-	}
 }
 
-void Editor::on_textEdit_selectionChanged() {
+void Editor::updateCursorPosition(bool isSelection) {
 	QTextCursor TC = m_textEdit->textCursor();
-	Message m(TC.position(), CURSOR_S, _CRDT->getId(), true);
+	Message m(TC.position(), CURSOR_S, _CRDT->getId(), isSelection);
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 }

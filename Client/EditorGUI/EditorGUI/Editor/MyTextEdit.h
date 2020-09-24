@@ -22,16 +22,19 @@ public:
 private:
 
     std::map<int, CustomCursor*> m_cursorsToPrint;
+    bool m_mousePress;
 
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent *e);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mouseReleaseEvent(QMouseEvent* event);
 
 signals:
     void textSizeChanged();
     void clickOnTextEdit(QMouseEvent*);
     void propaga(QKeyEvent* e);
-
+    void updateCursorPosition(bool);
 };
 
