@@ -50,5 +50,6 @@ void MyTextEdit::setCursorPosition(int id, int position) {
 }
 
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
+    QTextEdit::mousePressEvent(event);
     emit clickOnTextEdit();
 }

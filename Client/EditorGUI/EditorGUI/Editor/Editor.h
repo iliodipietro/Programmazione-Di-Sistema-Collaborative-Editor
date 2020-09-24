@@ -103,6 +103,10 @@ private:
 	void alignmentChanged(Qt::Alignment a);
 	void colorChanged(const QColor& c);
 
+	//Lorenzo-----------------------------------------------
+	void styleChanged(QFont font);
+	//Fine
+
 	//Mattia-----------------------------------------------------------------------------------------------------------
 
 	void localInsert();//Editor Local insert

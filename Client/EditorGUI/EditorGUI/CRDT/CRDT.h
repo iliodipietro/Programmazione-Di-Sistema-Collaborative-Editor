@@ -48,7 +48,7 @@ public:
 
 	Message localInsert(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
 	Message localErase(int index);
-	Message localChange(int index, char value, QFont font, QColor color, Qt::AlignmentFlag alignment);
+	Message localChange(int index, char value, QFont font, const QColor color, Qt::AlignmentFlag alignment);
 
 	__int64 process(const Message& m);
 	std::string to_string();//usare Qstring??

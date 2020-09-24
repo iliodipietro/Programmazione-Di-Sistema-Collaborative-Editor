@@ -9,7 +9,7 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
     connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
     connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
-
+    //this->addFile(0, "C:/Users/Mattia Proietto/Desktop/prova_save_Copia.txt");
 }
 
 bool MyServer:: listen(QHostAddress &addr, quint16 port){
