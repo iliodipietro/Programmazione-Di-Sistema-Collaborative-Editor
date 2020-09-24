@@ -3,9 +3,9 @@
 #include <QWindow>
 #include <QDebug>
 
-CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject* parent): m_editor(editor),
-	m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
-	m_textDoc(editor->document())
+CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject* parent) : m_editor(editor),
+m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
+m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1)
 {
 	m_usernameLabel->setAutoFillBackground(true);
 	m_usernameLabel->setAlignment(Qt::AlignCenter);
@@ -38,7 +38,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 		updateViewAfterStyleChange(m, index);
 		break;
 	case CURSOR_S:
-		setCursorPosition(m.getCursorPosition());
+		setCursorPosition(m.getCursorPosition(), ChangePosition, m.getIsSelection());
 		break;
 	default:
 		break;
@@ -46,9 +46,34 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	updateLabelPosition();
 }
 
-void CustomCursor::setCursorPosition(int pos) {
-	m_TextCursor->setPosition(pos);
-	m_editor->setTextCursor(*m_TextCursor);
+void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSelection) {
+	switch (mode) {
+	case AfterDelete:
+		m_position = pos - 1;
+		break;
+	case AfterInsert:
+		m_position = pos + 1;
+		break;
+	case ChangePosition:
+		if (isSelection) {
+			if (m_startSelection == -1) {
+				m_startSelection = m_position;
+				m_endSelection = pos;
+				return;
+			}
+			else {
+				m_endSelection = pos;
+			}
+			m_TextCursor->setPosition(m_startSelection, QTextCursor::MoveAnchor);
+			m_TextCursor->setPosition(m_endSelection, QTextCursor::KeepAnchor);
+		}
+		else {
+			m_TextCursor->setPosition(pos);
+		}
+		m_position = pos;
+		m_editor->setTextCursor(*m_TextCursor);
+		break;
+	}
 }
 
 QRect CustomCursor::getCursorPos() {
@@ -70,7 +95,7 @@ void CustomCursor::updateLabelPosition() {
 
 void CustomCursor::updateViewAfterInsert(Message m, __int64 index)
 {
-	
+
 	//retrieving remote state
 	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
@@ -93,8 +118,7 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index)
 	//m_textEdit->setFont(r_font);
 	//m_textEdit->setTextColor(r_color);
 
-	setCursorPosition(index);
-	m_position = index + 1;
+	setCursorPosition(index, AfterInsert);
 	m_TextCursor->insertText(chr, format);
 
 	QTextBlockFormat blockFormat = m_TextCursor->blockFormat();
@@ -107,7 +131,7 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index)
 	//TC.setPosition(this->lastCursor);
 	//m_textEdit->setFont(font);
 	//m_textEdit->setTextColor(color);
-	
+
 }
 
 void CustomCursor::updateViewAfterDelete(Message m, __int64 index)
@@ -116,8 +140,7 @@ void CustomCursor::updateViewAfterDelete(Message m, __int64 index)
 		return;//non devo fare niente in questo caso ho provato ad eliminare ma non ho trovato il carattere-->MADARE ERROR, ECCEZIONE??????
 
 	//QTextCursor TC = m_editor->textCursor();
-	setCursorPosition(index);
-	m_position = index - 1;
+	setCursorPosition(index, AfterDelete);
 	m_TextCursor->deleteChar();
 	//TC.deletePreviousChar();//oppure è questo se il primo non funziona
 }
@@ -125,7 +148,7 @@ void CustomCursor::updateViewAfterDelete(Message m, __int64 index)
 void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index)
 {
 	//QTextCursor TC = m_editor->textCursor();
-	setCursorPosition(index);
+	setCursorPosition(index, ChangePosition);
 	m_position = index;
 	m_TextCursor->deleteChar();
 

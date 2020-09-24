@@ -140,6 +140,7 @@ public slots:
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
+	void on_textEdit_selectionChanged();
 	void textColor();
 	void showEditingUsers();
 	void mousePress(QMouseEvent* event);

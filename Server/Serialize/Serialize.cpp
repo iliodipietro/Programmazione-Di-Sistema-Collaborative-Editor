@@ -301,6 +301,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (message.getCursorPosition() > 0) {
         obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
+        obj.insert("isSelection", QJsonValue(message.getIsSelection()));
         return obj;
     }
 
@@ -381,7 +382,8 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR_S) {
         __int64 cursorPosition = obj.value("cursor_position").toInt();
-        Message m(cursorPosition, action, sender);
+        bool isSelection = obj.value("isSelection").toBool();
+        Message m(cursorPosition, action, sender, isSelection);
         QPair<int, Message> ret(fileid, m);
 
 

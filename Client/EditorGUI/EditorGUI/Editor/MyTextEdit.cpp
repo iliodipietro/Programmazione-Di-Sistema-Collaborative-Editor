@@ -14,7 +14,7 @@ void MyTextEdit::paintEvent(QPaintEvent* event)
 		painter.setRenderHint(QPainter::Antialiasing, true);
 		QRect rect = it->second->getCursorPos();
 		rect.setX(rect.x() - 1);
-		painter.fillRect(rect, (it->second)->getCursorColor());
+		painter.fillRect(rect, QBrush((it->second)->getCursorColor()));
 	}
 }
 
@@ -75,7 +75,7 @@ void MyTextEdit::moveForwardCursorsPosition(int mainCursorPosition, int offsetPo
 	for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
 		int cursorPosition = it->second->getCursorPosition();
 		if (cursorPosition > mainCursorPosition) {
-			it->second->setCursorPosition(cursorPosition + offsetPosition);
+			it->second->setCursorPosition(cursorPosition + offsetPosition, CustomCursor::ChangePosition);
 		}
 	}
 }
@@ -84,10 +84,10 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 	for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
 		int cursorPosition = it->second->getCursorPosition();
 		if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition >= 0) {
-			it->second->setCursorPosition(cursorPosition - offsetPosition);
+			it->second->setCursorPosition(cursorPosition - offsetPosition, CustomCursor::ChangePosition);
 		}
 		else if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < 0) {
-			it->second->setCursorPosition(0);
+			it->second->setCursorPosition(0, CustomCursor::ChangePosition);
 		}
 	}
 }

@@ -8,7 +8,7 @@ Message::Message(Symbol s, int action,int sender):symbol(s),action(action),sende
 
 
 
-Message::Message(__int64 position, int action, int sender):cursor_position(position), action(action), sender(sender)
+Message::Message(__int64 position, int action, int sender, bool isSelection):cursor_position(position), action(action), sender(sender), isSelection(isSelection)
 {
 	this->symbol = Symbol();
 }
@@ -38,4 +38,6 @@ Symbol Message::getSymbol() const
 	 return this->cursor_position;
  }
 
-
+ bool Message::getIsSelection() {
+     return this->isSelection;
+ }

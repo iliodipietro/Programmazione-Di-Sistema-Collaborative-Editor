@@ -1203,3 +1203,9 @@ void Editor::mousePress(QMouseEvent* event) {
 		m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 	}
 }
+
+void Editor::on_textEdit_selectionChanged() {
+	QTextCursor TC = m_textEdit->textCursor();
+	Message m(TC.position(), CURSOR_S, _CRDT->getId(), true);
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+}
