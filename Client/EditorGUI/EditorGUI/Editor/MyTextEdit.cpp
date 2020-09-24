@@ -42,6 +42,7 @@ void MyTextEdit::updateTextSize() {
 void MyTextEdit::refresh(QKeyEvent* e)
 {
     QTextEdit::keyPressEvent(e);
+    //QTextEdit::repaint();
 }
 
 void MyTextEdit::mousePressEvent(QMouseEvent* event) {
@@ -52,7 +53,17 @@ void MyTextEdit::mousePressEvent(QMouseEvent* event) {
 void MyTextEdit::keyPressEvent(QKeyEvent* e)
 {
     //QTextEdit::keyPressEvent(e);
-    emit propaga(e);
+    switch (e->key()) {
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+        QTextEdit::keyPressEvent(e);
+        break;
+    default:
+        emit propaga(e);
+        break;
+    }
     
 }
 

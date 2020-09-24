@@ -585,6 +585,7 @@ void Editor::on_textEdit_textChanged() {
 void Editor::localInsert() {
 	QTextCursor TC = m_textEdit->textCursor();
 	int li = TC.anchor();
+	int la = TC.anchor();
 
 
 
@@ -637,7 +638,7 @@ void Editor::localDelete() {
 	QTextCursor TC = m_textEdit->textCursor();
 
 	int start, end;
-	if (this->lastStart != 0 && this->lastEnd != 0) {
+	if (this->lastStart != this->lastEnd ) {
 
 		start = this->lastStart;
 		end = this->lastEnd;
@@ -966,20 +967,20 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	start = end = 0;
 	//incolla
 	if (e->matches(QKeySequence::Paste)) {
-		if (this->lastStart != 0 && this->lastEnd != 0) {
+		if (this->lastStart != this->lastEnd ) {
 			//
 			this->localDelete();
-			this->lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			
 			this->m_textEdit->refresh(e);
+			
+			this->lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+
 			this->localInsert();
 
 
 			this->lastText = m_textEdit->toPlainText();
 			this->lastCursor = this->m_textEdit->textCursor().position();
 			return;
-		}
-		else {
-			this->m_textEdit->refresh(e);
 		}
 
 	}
@@ -1026,6 +1027,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	m_textEdit->setTextCursor(TC);
 	this->lastText = m_textEdit->toPlainText();
 	this->lastCursor = this->m_textEdit->textCursor().position();
+	this->_CRDT->printPositions();
 }
 
 

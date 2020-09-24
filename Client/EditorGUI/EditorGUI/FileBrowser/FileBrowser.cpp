@@ -248,6 +248,8 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 	case NEWFILE:
 		addFile(message);
 		break;
+	case OPEN:
+
 	case NEWEDITINGUSER: {
 		QPair<int, QStringList> fileUserInfo = Serialize::addEditingUserUnserialize(message);
 		auto it = m_textEditors.find(fileUserInfo.first);
