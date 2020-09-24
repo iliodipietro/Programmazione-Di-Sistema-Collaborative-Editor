@@ -488,4 +488,9 @@ void CRDT::saveOnFile(std::string filename)
 
 }
 
+bool CRDT::isEmpty()
+{
+	return this->_symbols.size() == 0;
+}
+
 

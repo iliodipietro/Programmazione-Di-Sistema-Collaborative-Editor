@@ -182,7 +182,7 @@ void Editor::createActions() {
 
 	const QIcon copyIcon = QIcon::fromTheme("edit-copy", QIcon("./Icons/011-copy.png"));
 	this->copyAct = new QAction(copyIcon, tr("&Copy..."), this);
-	this->copyAct->setShortcuts(QKeySequence::Cut);
+	this->copyAct->setShortcuts(QKeySequence::Copy);
 	this->copyAct->setStatusTip(tr("Copy text"));
 	ui.menuModifica->addAction(this->copyAct);
 	ui.toolBar->addAction(this->copyAct);
@@ -803,6 +803,20 @@ void Editor::updateLastPosition()
 
 }
 
+bool Editor::isAKeySequence(QKeyEvent* e)
+{
+
+	if (e->matches(QKeySequence::Copy)) {
+		return true;
+	}
+	if (e->matches(QKeySequence::Cut)) {
+		return true;
+	}
+	//add more if needed
+
+	return false;
+}
+
 void Editor::updateViewAfterInsert(Message m, __int64 index)
 {
 	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
@@ -967,13 +981,15 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	start = end = 0;
 	//incolla
 	if (e->matches(QKeySequence::Paste)) {
-		if (this->lastStart != this->lastEnd ) {
+		if (this->lastStart != this->lastEnd && !this->_CRDT->isEmpty()) {
 			//
 			this->localDelete();
+
+			int lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
 			
 			this->m_textEdit->refresh(e);
 			
-			this->lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			this->lastCursor = lastCursor;
 
 			this->localInsert();
 
@@ -984,6 +1000,9 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		}
 
 	}
+
+
+
 
 	start = this->lastStart;
 	end = this->lastEnd;
@@ -1009,10 +1028,10 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		break;
 	}
 	default:
-		if (e->text() == "")//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico
+		if ((e->text() == "")||(isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
 			break;
 
-		if (start != 0 && end != 0) {
+		if (start != end && !this->_CRDT->isEmpty() ) {
 			this->lastStart = start;
 			this->lastEnd = end;
 

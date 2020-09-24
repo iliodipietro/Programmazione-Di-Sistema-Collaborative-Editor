@@ -87,5 +87,19 @@ public slots:
 		}
 		std::cout << std::endl;
 	}
+
+	void printText() {
+
+		QString str;
+
+		for (Symbol s : _symbols) {
+
+			char c = s.getChar();
+			str.append(c);
+
+		}
+
+		qDebug() << str << '\n';
+	}
 };
 
