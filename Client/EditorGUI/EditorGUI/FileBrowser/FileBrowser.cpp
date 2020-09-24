@@ -12,10 +12,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	this->username = username;
 	this->clientID = clientID;
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
-	//connect(ui.newFile, SIGNAL(clicked()), this, SLOT(on_newFile_Clicked()));
-	//connect(ui.deleteFile, SIGNAL(clicked()), this, SLOT(on_deleteFile_Clicked()));
 	connect(m_timer, &QTimer::timeout, this, &FileBrowser::showErrorMessage);
-	//ui.fileList->addItem("test file");
 
 }
 
@@ -189,6 +186,7 @@ void FileBrowser::editorClosed(int fileId) {
 	this->m_socketHandler->writeData(data);
 	filename_id.remove(fileId);
 	m_textEditors.erase(fileId);
+	this->raise();
 }
 
 void FileBrowser::mousePressEvent(QMouseEvent* event) {
@@ -208,7 +206,6 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 		QListWidgetItem *item = new QListWidgetItem(map.value(id), ui.fileList);
 		item->setData(Qt::UserRole, id);
 		this->filename_id.insert(id, map.value(id));
-		//ui.fileList->addItem(map.value(id));
 	}
 	removeBlank();
 
@@ -227,7 +224,6 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 void FileBrowser::addFile(QJsonObject file) {
 	QPair<int, QString> pair = Serialize::newFileUnserialize(file);
 	this->filename_id.insert(pair.first, pair.second);
-	//ui.fileList->addItem(pair.second);
 	QListWidgetItem* item = new QListWidgetItem(pair.second, ui.fileList);
 	item->setData(Qt::UserRole, pair.first);
 	removeBlank();

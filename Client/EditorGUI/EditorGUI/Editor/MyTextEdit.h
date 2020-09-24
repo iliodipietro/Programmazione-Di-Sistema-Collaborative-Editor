@@ -30,7 +30,7 @@ protected:
 
 signals:
     void textSizeChanged();
-    void clickOnTextEdit(QMouseEvent* e);
+    void clickOnTextEdit(QMouseEvent*);
     void propaga(QKeyEvent* e);
 
 };

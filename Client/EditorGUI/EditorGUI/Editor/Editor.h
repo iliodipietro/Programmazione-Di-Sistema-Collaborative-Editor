@@ -132,8 +132,6 @@ private:
 
 protected:
 
-	void mousePressEvent(QMouseEvent* e);
-
 public slots:
 	void keyPressEvent(int e);
 	void keyRelaseEvent(QKeyEvent* e);
@@ -144,6 +142,7 @@ private slots:
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
 	void showEditingUsers();
+	void mousePress(QMouseEvent* event);
 
 //---------------------------------------------------------------------------------------------------
 signals:
