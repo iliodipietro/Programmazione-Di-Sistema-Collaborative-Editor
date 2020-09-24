@@ -53,6 +53,10 @@ void MyTextEdit::mousePressEvent(QMouseEvent* event) {
 
 void MyTextEdit::keyPressEvent(QKeyEvent* e)
 {
+	if (e->matches(QKeySequence::Copy)) {
+		QTextEdit::keyPressEvent(e);
+		return;
+	}
 	switch (e->key()) {
 	case Qt::Key_Up:
 	case Qt::Key_Down:

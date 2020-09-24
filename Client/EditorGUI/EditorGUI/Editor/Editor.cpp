@@ -966,8 +966,6 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	QTextCursor TC = m_textEdit->textCursor();
 	int end, start;
 	start = end = 0;
-	/*copia*/
-	if (e->matches(QKeySequence::Copy)) return;
 	//incolla
 	if (e->matches(QKeySequence::Paste)) {
 		if (this->lastStart != this->lastEnd ) {
@@ -1117,9 +1115,6 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	int size = m_textEdit->font().pointSize();
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
-
-	Message m(TC.position(), CURSOR_S, _CRDT->getId());
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 }
 
 void Editor::colorChanged(const QColor& c) {
@@ -1198,5 +1193,13 @@ void Editor::mousePress(QMouseEvent* event) {
 	if (m_showingEditingUsers) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;
+	}
+
+	QWidget* hit = QApplication::widgetAt(event->screenPos().toPoint());
+
+	if (hit == m_textEdit) {
+		QTextCursor TC = m_textEdit->textCursor();
+		Message m(TC.position(), CURSOR_S, _CRDT->getId());
+		m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 	}
 }
