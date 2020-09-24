@@ -12,10 +12,12 @@ public:
 
     void addCursor(int id, QColor color, QString username, int position);
     void removeCursor(int id);
-    void insertText(int id, QString& text);
     void handleMessage(int id, Message& m, int position);
     void updateTextSize();
-    void setCursorPosition(int id, int position);
+    void moveForwardCursorsPosition(int mainCursorPosition, int offsetPosition);
+    void moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition);
+    inline int getCursorPos(int id) { return m_cursorsToPrint.at(id)->getCursorPosition(); }
+    void refresh(QKeyEvent* e);
 
 private:
 
@@ -24,9 +26,12 @@ private:
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
+    void keyPressEvent(QKeyEvent *e);
 
 signals:
     void textSizeChanged();
-    void clickOnTextEdit();
+    void clickOnTextEdit(QMouseEvent* e);
+    void propaga(QKeyEvent* e);
+
 };
 

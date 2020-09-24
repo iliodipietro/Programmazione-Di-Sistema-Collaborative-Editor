@@ -52,9 +52,17 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 			});
 
 		if (it != _symbols.end()) {
+			
+			if (it == _symbols.begin()) {
+				index = 0;
+			}
+			else {
+
+				index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+			   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+			   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+			}
 			_symbols.insert(it, symbol);
-			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-													//all'inizio della Qstring che rappresenta il testo
 
 		}
 	}
@@ -219,7 +227,8 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 	else {
 		if ((unsigned)index == _symbols.size()) {
 			//inserisco in coda
-			pos.push_back(index);
+			int new_index = _symbols.back().getPos().at(0) + 1;
+			pos.push_back(new_index);
 			Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 			_symbols.push_back(s);
 			//mando il messaggio
@@ -477,6 +486,11 @@ void CRDT::saveOnFile(std::string filename)
 		std::cout << "Errore apertura file";
 	}
 
+}
+
+bool CRDT::isEmpty()
+{
+	return this->_symbols.size() == 0;
 }
 
 

@@ -19,13 +19,15 @@ public:
 
 private:
 	bool newWindow = false;
+	int clientID;
 	Ui::LoginClass ui;
 	FileBrowser* m_fileBrowserWindow;
 	NewAccount* m_newAccountWindow;
 	QSharedPointer<SocketHandler> m_socketHandler;
+	//timer da usare per mostrare un messaggio di errore nel caso in cui la risposta dal server non sia arrivata entro un determinato tempo
 	QSharedPointer<QTimer> m_timer;
 
-	void openFileBrowser();
+	void openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor);
 	void closeEvent(QCloseEvent* event);
 	void resetWindows();
 

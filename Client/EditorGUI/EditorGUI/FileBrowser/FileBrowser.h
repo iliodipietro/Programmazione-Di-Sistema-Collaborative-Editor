@@ -19,27 +19,44 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QString username = "", QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString username = "", int clientID = 0,
+		QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 private:
 	QSharedPointer<SocketHandler> m_socketHandler;
-	std::map<QString, Editor*> m_textEditors;
+	std::map<int, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
-
+	int clientID;
 	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
+	QSharedPointer<QPixmap> m_profileImage;
+	QMap<int, QString> filename_id;
+	QColor m_userColor;
+	QTimer* m_timer;
+	bool m_openAfterUri;
+
 	void closeEvent(QCloseEvent* event);
+	void removeBlank();
+	void requestFiles();
 
 private slots:
-	void on_treeView_doubleClicked(const QModelIndex& index);
+	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
 	void on_logoutButton_clicked();
 	void on_modifyProfile_clicked();
-	void on_newFile_Clicked();
-	void editorClosed(QString);
+	void on_newFile_clicked();
+	void on_deleteFile_clicked();
+	void editorClosed(int);
+	void on_renameFile_clicked();
+	void on_addSharedFileButton_clicked();
 	void childWindowClosed();
+	void addFiles(QJsonObject message);
+	void addFile(QJsonObject message);
+	void handleNewMessage(QJsonObject message);
+	void processEditorMessage(QJsonObject message);
+	void showErrorMessage();
 
 signals:
 	void showParent();

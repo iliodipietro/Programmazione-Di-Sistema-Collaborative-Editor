@@ -14,7 +14,6 @@ class SocketHandler : public QObject
 public:
     SocketHandler(QObject *parent = Q_NULLPTR);
 
-    bool connectToServer();
     bool writeData(SocketMessage& data);
     bool writeData(QByteArray& data);
     QString writeDataAndWaitForResponse(QString data);
@@ -24,9 +23,13 @@ public:
 private:
     QSharedPointer<QByteArray> m_previousPacket;
     QSharedPointer<QTcpSocket> m_tcpSocket;
+    QString m_serverIp;
+    int m_serverPort;
 
+    void readConfigFile();
+    bool connectToServer();
     void closeEvent(QCloseEvent* event);
-    QByteArray intToArray(qint32 source);
+    QByteArray intToArray(qint64 source);
     qint64 arrayToInt(QByteArray source);
 
 signals:

@@ -22,9 +22,14 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QString path = "", QString username = "", QWidget* parent = Q_NULLPTR);
+	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
+		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
 	void loadFile(const QString& fileName);
+	void remoteAction(Message m);
+	int getFileId();
+	void addEditingUser(QStringList userInfo);
+	void removeEditingUser(int id);
 
 private:
 	Ui::Editor ui;
@@ -53,12 +58,15 @@ private:
 	QComboBox* comboSize;
 	QListWidget* m_editingUsersList;
 	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<QPixmap> m_profileImage;
 	QTimer* m_timer;
 	QLabel* m_usernameLabel;
 	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
-	std::vector<QString> m_editingUsers;
+	int m_fileId;
+	QMap<int, QString> m_editingUsers;
 	bool m_showingEditingUsers;
+	QColor m_userColor;
 
 	//MATTIA---------------------------------------------------------------------------------
 	CRDT* _CRDT;
@@ -78,7 +86,8 @@ private:
 	int lastStart;
 	int lastEnd;
 
-	QString username;
+	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
+	bool styleBounce = false;
 
 	//FINE-------------------------------------------------------------------------------------------------------
 
@@ -113,9 +122,10 @@ private:
 	void localDelete();//Editor local delete
 	void localStyleChange();//Editor local style change
 	void updateLastPosition();
+	bool isAKeySequence(QKeyEvent*e);
 	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
 
-	void remoteAction(Message m);
+
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
 	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
@@ -125,23 +135,23 @@ private:
 
 	//FINE----------------------------------------------------------------------
 
-	void addEditingUser(int id, QString username, QColor userColor);
-	void removeEditingUser(int id, QString username);
-
 protected:
-	void keyPressEvent(QKeyEvent *e);
+
 	void mousePressEvent(QMouseEvent* e);
+
+public slots:
+	void keyPressEvent(int e);
+	void keyRelaseEvent(QKeyEvent* e);
+	void tastoPremuto(QKeyEvent* e);
 
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
-	void messageReceived(QJsonObject);
-	void writeText();
 	void showEditingUsers();
-	void clickOnTextEdit();
 
 //---------------------------------------------------------------------------------------------------
 signals:
-	void editorClosed(QString);
+	void editorClosed(int);
+	void styleChange();
 };
