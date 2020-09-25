@@ -118,6 +118,7 @@ private:
 	void localDelete();//Editor local delete
 	void localStyleChange();//Editor local style change
 	void updateLastPosition();
+	bool isAKeySequence(QKeyEvent*e);
 	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
 
 

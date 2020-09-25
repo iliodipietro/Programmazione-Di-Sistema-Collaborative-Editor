@@ -28,6 +28,8 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 	  salvo il credt su file altrimenti il timer viene fatto ripartire e si ricomincia dalla condizione precedente.
 	*/
 		this->handler->getTimer()->start(TIMEOUT);
+
+		this->handler->printText();
 	}
 
 	QList<int> keys = this->users.keys();

@@ -59,6 +59,7 @@ public:
 	std::vector<Message> getMessageArray();//SERVER ONLY-->questo vettore va mandato con un for ai socket con all'interno un serializzatore mando i messaggi uno alla volta
 	std::vector<Message> readFromFile(std::string fileName);
 	void saveOnFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
+	bool isEmpty();
 
 
 
