@@ -61,13 +61,10 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSe
 			if (m_startSelection == -1) {
 				m_startSelection = m_position;
 				m_endSelection = pos;
-				return;
 			}
 			else {
 				m_endSelection = pos;
 			}
-			m_TextCursor->setPosition(m_startSelection, QTextCursor::MoveAnchor);
-			m_TextCursor->setPosition(m_endSelection, QTextCursor::KeepAnchor);
 		}
 		else {
 			m_startSelection = m_endSelection = -1;
