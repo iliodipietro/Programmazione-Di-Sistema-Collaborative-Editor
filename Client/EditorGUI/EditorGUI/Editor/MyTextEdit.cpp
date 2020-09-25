@@ -3,7 +3,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
-MyTextEdit::MyTextEdit(QWidget* parent) : QTextEdit(parent), m_mousePress(false)
+MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false)
 {
 }
 
@@ -21,7 +21,7 @@ void MyTextEdit::paintEvent(QPaintEvent* event)
 }
 
 void MyTextEdit::addCursor(int id, QColor color, QString username, int position) {
-	CustomCursor* cursor = new CustomCursor(this, color, username, position, this);
+	CustomCursor* cursor = new CustomCursor(this, color, username, position, m_crdt, this);
 	m_cursorsToPrint.insert(std::pair<int, CustomCursor*>(id, cursor));
 	connect(this, &MyTextEdit::textSizeChanged, cursor, &CustomCursor::textSizeChanged);
 }

@@ -11,7 +11,7 @@ public:
 
 	enum CursorMovementMode { AfterDelete, AfterInsert, ChangePosition };
 
-	CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject* parent = Q_NULLPTR);
+	CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
 	~CustomCursor();
 
 	void messageHandler(Message& message, int position);
@@ -32,6 +32,7 @@ private:
 	QString m_username;
 	QColor m_color;
 	QRect m_lastPosition;
+	CRDT* m_crdt;
 	int m_position;
 	int m_startSelection;
 	int m_endSelection;

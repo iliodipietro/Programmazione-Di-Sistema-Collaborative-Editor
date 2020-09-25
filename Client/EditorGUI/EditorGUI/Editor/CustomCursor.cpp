@@ -3,10 +3,11 @@
 #include <QWindow>
 #include <QDebug>
 
-CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject* parent) : m_editor(editor),
+CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
-m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1)
+m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(crdt)
 {
+	QTextCursor TCPrevious = m_editor->textCursor();
 	m_usernameLabel->setAutoFillBackground(true);
 	m_usernameLabel->setAlignment(Qt::AlignCenter);
 	QPalette palette = m_usernameLabel->palette();
@@ -14,6 +15,7 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1)
 	palette.setColor(m_usernameLabel->foregroundRole(), Qt::white);
 	//m_usernameLabel->setPalette(palette);
 	m_TextCursor->setPosition(position);
+	m_editor->setTextCursor(*m_TextCursor);
 	m_lastPosition = m_editor->cursorRect();
 	QPoint cursorPos = m_lastPosition.topLeft();
 	cursorPos.setY(cursorPos.y() - 2);
@@ -24,6 +26,7 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1)
 	m_usernameLabel->setStyleSheet("QLabel{border-radius: 3px; background:" + m_color.name() + "; color: white;}");
 	m_usernameLabel->setContentsMargins(QMargins(4, 1, 4, 2));
 	m_usernameLabel->show();
+	m_editor->setTextCursor(TCPrevious);
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
@@ -38,7 +41,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 		updateViewAfterStyleChange(m, index);
 		break;
 	case CURSOR_S:
-		setCursorPosition(m.getCursorPosition(), ChangePosition, m.getIsSelection());
+		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
 		break;
 	default:
 		break;
@@ -68,10 +71,12 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSe
 		}
 		else {
 			m_startSelection = m_endSelection = -1;
-			m_TextCursor->setPosition(pos);
 		}
 		m_position = pos;
-		break;
+		m_TextCursor->setPosition(pos);
+		m_editor->setTextCursor(*m_TextCursor);
+		updateLabelPosition();
+		return;
 	}
 	m_editor->setTextCursor(*m_TextCursor);
 }

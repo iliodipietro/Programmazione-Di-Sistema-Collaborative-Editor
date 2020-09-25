@@ -18,15 +18,15 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	QString path, QString username, int fileId, int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
-	m_profileImage(profileImage), m_userColor(userColor), m_textEdit(new MyTextEdit(this))
+	m_profileImage(profileImage), m_userColor(userColor), ID(clientID), filePath(path), parent(parent)
 {
 	ui.setupUi(this);
+	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
+
+	m_textEdit = new MyTextEdit(this->_CRDT, this);
 	ui.gridLayout->addWidget(m_textEdit);
 	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
 	m_textEdit->setMouseTracking(true);
-	this->parent = parent;
-	this->filePath = path;
-	this->ID = clientID;
 	//m_textEdit->setText(path);
 	createActions();
 	//this->loadFile(this->filePath);
@@ -34,7 +34,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	QTextCursor TC = m_textEdit->textCursor();
 	//TC.setPosition(0);
 	//m_textEdit->setTextCursor(TC);
-	qDebug() << "posizione iniziale=" << TC.position();
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
@@ -56,9 +55,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 	//trigger stylechange
 	Q_ASSERT(connect(this, &Editor::styleChange, this, &Editor::localStyleChange));
-
-
-	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
 
 	this->remoteEvent = false;
 	lastCursor = 0;
@@ -640,7 +636,7 @@ void Editor::localDelete() {
 	QTextCursor TC = m_textEdit->textCursor();
 
 	int start, end;
-	if (this->lastStart != this->lastEnd ) {
+	if (this->lastStart != this->lastEnd) {
 
 		start = this->lastStart;
 		end = this->lastEnd;
@@ -988,9 +984,9 @@ void Editor::tastoPremuto(QKeyEvent* e)
 			this->localDelete();
 
 			int lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
-			
+
 			this->m_textEdit->refresh(e);
-			
+
 			this->lastCursor = lastCursor;
 
 			this->localInsert();
@@ -1017,15 +1013,16 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	{
 	case Qt::Key_Backspace:
 	case Qt::Key_Delete:
-		this->localDelete();
+	case Qt::Key_Cancel:
+ 		this->localDelete();
 		break;
 	case Qt::Key_Alt:
 		break;
 	default:
-		if ((e->text() == "")||(isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
+		if ((e->text() == "") || (isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
 			break;
 
-		if (start != end && !this->_CRDT->isEmpty() ) {
+		if (start != end && !this->_CRDT->isEmpty()) {
 			this->lastStart = start;
 			this->lastEnd = end;
 
@@ -1218,6 +1215,6 @@ void Editor::mousePress(QMouseEvent* event) {
 
 void Editor::updateCursorPosition(bool isSelection) {
 	QTextCursor TC = m_textEdit->textCursor();
-	Message m(TC.position(), CURSOR_S, _CRDT->getId(), isSelection);
+	Message m(this->_CRDT->getSymbol(TC.position()).getPos(), CURSOR_S, _CRDT->getId(), isSelection);
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 }

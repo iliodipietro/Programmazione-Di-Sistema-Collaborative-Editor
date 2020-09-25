@@ -7,7 +7,7 @@ File::File():handler(nullptr),id(0),path("")
 
 File::~File()
 {
-	//this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
+    this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
 	delete this->handler;
 	this->handler = nullptr;
 }
@@ -31,6 +31,14 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 
 		this->handler->printText();
 	}
+    else{
+        if(m_usersCursorPosition.find(sender) != m_usersCursorPosition.end()){
+            m_usersCursorPosition[sender] = m.getCursorPosition();
+        }
+        else{
+            m_usersCursorPosition.insert(sender, m.getCursorPosition());
+        }
+    }
 
 	QList<int> keys = this->users.keys();
 
@@ -52,9 +60,15 @@ void File::sendNewFile(ClientManager* socket)
 		std::vector<Message> msgs = this->handler->getMessageArray();
 
 		for (auto m : msgs) {
-			QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, INSERT_SYMBOL));
+            QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, MESSAGE));
 			socket->writeData(bytes);
 		}
+
+        for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
+            Message cursorPosition(it.value(), CURSOR_S, it.key()->getId());
+            QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
+            socket->writeData(bytes);
+        }
 	}
 }
 

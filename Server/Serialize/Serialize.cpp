@@ -286,7 +286,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     */
     QJsonObject obj;
 
-    obj.insert("fileid", fileId);
+    obj.insert("fileId", fileId);
     obj.insert("type", QJsonValue(type));
     int action = message.getAction();//insert, delete ecc.
 
@@ -299,10 +299,17 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     Nuovo elemento--> messagio che contine la posizione del cursore, se ciÃ² accade il simbolo all'interno sarÃ  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
-    if (message.getCursorPosition() > 0) {
-        obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
-        obj.insert("isSelection", QJsonValue(message.getIsSelection()));
-        return obj;
+    if (message.getCursorPosition().size() > 0) {
+            QJsonArray cursorPos;
+
+            for (int i : message.getCursorPosition()) {
+
+                cursorPos.append(QJsonValue(i));
+            }
+
+            obj.insert("cursor_position", QJsonValue(cursorPos));
+            obj.insert("isSelection", QJsonValue(message.getIsSelection()));
+            return obj;
     }
 
     Symbol s = message.getSymbol();
@@ -381,14 +388,18 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR_S) {
-        __int64 cursorPosition = obj.value("cursor_position").toInt();
-        bool isSelection = obj.value("isSelection").toBool();
-        Message m(cursorPosition, action, sender, isSelection);
-        QPair<int, Message> ret(fileid, m);
+            std::vector<int> cursorPosition;
 
+            QJsonArray vettCursorPos = obj.value("cursor_position").toArray();
 
-        //ret.second.operator=(m);
-        return  ret;
+            for (QJsonValue qj : vettCursorPos) {
+
+                cursorPosition.push_back(qj.toInt());
+            }
+
+            bool isSelection = obj.value("isSelection").toBool();
+            Message m(cursorPosition, action, sender, isSelection);
+            return QPair<int, Message>(fileid, m);
     }
 
     char c = obj.value("character").toInt();

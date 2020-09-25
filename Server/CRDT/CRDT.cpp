@@ -307,7 +307,7 @@ std::vector<Message> CRDT::getMessageArray()
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
-		Message m(s, INSERT_SYMBOL, 0);//il server ha id 0
+        Message m(s, INSERT_SYMBOL, -1);//il server ha id -1
 		msgs.push_back(m);
 	}
 
