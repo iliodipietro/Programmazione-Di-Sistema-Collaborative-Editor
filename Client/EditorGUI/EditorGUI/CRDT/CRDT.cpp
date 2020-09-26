@@ -292,7 +292,15 @@ int CRDT::getId()
 
 Symbol CRDT::getSymbol(int index)
 {
-	return this->_symbols.at(index);
+	if (index < this->_symbols.size())
+		return this->_symbols.at(index);
+	//caso in cui viene mandata la posizione del cursore agli altri client senza alcun carattere inserito,
+	//oppure viene mandata agli altri client la posizione del cursore quando si trova dopo l'ultimo carattere inserito
+	else {
+		std::vector<int> pos;
+		pos.push_back(INT_MAX);
+		return Symbol(pos);
+	}
 }
 
 
@@ -302,7 +310,7 @@ std::vector<Message> CRDT::getMessageArray()
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
-		Message m(s, INSERT, 0);//il server ha id 0
+		Message m(s, INSERT, -1);//il server ha id -1
 		msgs.push_back(m);
 	}
 
@@ -533,7 +541,7 @@ __int64 CRDT::getCursorPosition(std::vector<int> crdtPos) {
 		}
 	}
 
-	if ((unsigned)index < _symbols.size())
+	if ((unsigned)index <= _symbols.size())
 		return index;
 	else
 		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 

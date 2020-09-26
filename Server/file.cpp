@@ -21,6 +21,7 @@ File::File(int fileId, QString path): id(fileId),path(path){
 
 void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 {
+    std::vector<Symbol>::iterator pos;
     if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
 
@@ -30,14 +31,21 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 		this->handler->getTimer()->start(TIMEOUT);
 
 		this->handler->printText();
-	}
+
+        pos = this->handler->getCursorPosition(m.getSymbol().getPos());
+
+        if(m.getAction() == INSERT_SYMBOL) pos++;
+        //if(m.getAction() == DELETE_SYMBOL) pos--;
+    }
     else{
-        if(m_usersCursorPosition.find(sender) != m_usersCursorPosition.end()){
-            m_usersCursorPosition[sender] = m.getCursorPosition();
-        }
-        else{
-            m_usersCursorPosition.insert(sender, m.getCursorPosition());
-        }
+        pos = this->handler->getCursorPosition(m.getCursorPosition());
+    }
+
+    if(m_usersCursorPosition.find(sender) != m_usersCursorPosition.end()){
+        m_usersCursorPosition[sender] = pos;
+    }
+    else{
+        m_usersCursorPosition.insert(sender, pos);
     }
 
 	QList<int> keys = this->users.keys();
@@ -65,7 +73,8 @@ void File::sendNewFile(ClientManager* socket)
 		}
 
         for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
-            Message cursorPosition(it.value(), CURSOR_S, it.key()->getId());
+            std::vector<int> pos = this->handler->fromIteratorToPosition(it.value());
+            Message cursorPosition(pos, CURSOR_S, it.key()->getId());
             QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
             socket->writeData(bytes);
         }
@@ -90,7 +99,7 @@ void File::addUser(ClientManager* user)
 	//quando aggiungo un nuovo utente gli mando l'intero testo
 	if (!this->users.contains(user->getId())) {
 
-		this->users.insert(user->getId(), user);
+        this->users.insert(user->getId(), user);
 		//this->users.append(user);
         for(auto it = users.begin(); it != users.end(); it++){
             if((*it)->getId() != user->getId()){
@@ -100,7 +109,7 @@ void File::addUser(ClientManager* user)
                 user->writeData(message);
             }
         }
-		this->sendNewFile(user);
+        this->sendNewFile(user);
 
 	}
 
@@ -110,6 +119,7 @@ void File::removeUser(ClientManager* user)
 {
 	//rimuovo un utente che non lavora piu sul file
 	this->users.remove(user->getId());
+    m_usersCursorPosition.remove(user);
     for(auto it = users.begin(); it != users.end(); it++){
         if((*it)->getId() != user->getId()){
             QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(user->getId(), this->id, REMOVEEDITINGUSER));

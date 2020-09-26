@@ -68,6 +68,9 @@ public:
 
 	QTimer* getTimer();
 
+    std::vector<Symbol>::iterator getCursorPosition(std::vector<int> crdtPos);
+    std::vector<int> fromIteratorToPosition(std::vector<Symbol>::iterator it);
+
 public slots:
 	void saveOnFile();//versione base salva solo i caratteri e non il formato--> da testare
 

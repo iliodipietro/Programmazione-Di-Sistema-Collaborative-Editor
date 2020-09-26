@@ -2,7 +2,7 @@
 
 
 
-Message::Message(Symbol s, int action, int sender) :symbol(s), action(action), sender(sender), cursor_position(-1)
+Message::Message(Symbol s, int action, int sender) :symbol(s), action(action), sender(sender), cursor_position(std::vector<int>())
 {
 }
 

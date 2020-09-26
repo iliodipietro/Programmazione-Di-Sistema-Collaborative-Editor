@@ -41,7 +41,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
 	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
-	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePress);
+	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
 	this->setFocusPolicy(Qt::StrongFocus);
 
@@ -724,7 +724,10 @@ void Editor::remoteAction(Message m)
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
-	m_textEdit->handleMessage(m.getSenderId(), m, index);
+	if (m.getSenderId() == -1)
+		initialFileLoad(m, index);
+	else
+		m_textEdit->handleMessage(m.getSenderId(), m, index);
 
 	switch (m.getAction()) {
 	case INSERT:
@@ -751,6 +754,30 @@ void Editor::remoteAction(Message m)
 
 	this->lastText = m_textEdit->toPlainText();
 	this->remoteEvent = false;
+}
+
+void Editor::initialFileLoad(Message m, __int64 index) {
+	//retrieving remote state
+	QChar chr(m.getSymbol().getChar());
+	QFont r_font = m.getSymbol().getFont();
+	QColor r_color = m.getSymbol().getColor();
+	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
+
+	QTextCharFormat format;
+	format.setFont(r_font);
+	format.setForeground(r_color);
+
+	QTextCursor TC = m_textEdit->textCursor();
+	TC.setPosition(index);
+	m_textEdit->setTextCursor(TC);
+	TC.insertText(chr, format);
+	TC.setPosition(0);
+	m_textEdit->setTextCursor(TC);
+
+	QTextBlockFormat blockFormat = TC.blockFormat();
+	blockFormat.setAlignment(alignment);
+
+	TC.mergeBlockFormat(blockFormat);
 }
 
 int Editor::getFileId()
@@ -1206,7 +1233,7 @@ void Editor::showEditingUsers() {
 	m_editingUsersList->show();
 }
 
-void Editor::mousePress(QMouseEvent* event) {
+void Editor::mousePressEvent(QMouseEvent* event) {
 	if (m_showingEditingUsers) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;

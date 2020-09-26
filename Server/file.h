@@ -33,7 +33,7 @@ private:
     QString path;
     //QVector<ClientManager*> users;
     QMap <int, ClientManager*> users;
-    QMap <ClientManager*, std::vector<int>> m_usersCursorPosition;
+    QMap <ClientManager*, std::vector<Symbol>::iterator> m_usersCursorPosition;
 
 };
 

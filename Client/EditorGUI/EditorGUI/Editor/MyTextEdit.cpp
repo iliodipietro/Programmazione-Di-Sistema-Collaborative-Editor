@@ -62,7 +62,7 @@ void MyTextEdit::mouseReleaseEvent(QMouseEvent* event) {
 
 void MyTextEdit::mouseMoveEvent(QMouseEvent* event) {
 	QTextEdit::mousePressEvent(event);
-	if(m_mousePress)
+	if (m_mousePress)
 		emit updateCursorPosition(true);
 }
 
@@ -106,11 +106,11 @@ void MyTextEdit::moveForwardCursorsPosition(int mainCursorPosition, int offsetPo
 void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetPosition) {
 	for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
 		int cursorPosition = it->second->getCursorPosition();
-		if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition >= 0) {
+		if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition >= mainCursorPosition) {
 			it->second->setCursorPosition(cursorPosition - offsetPosition, CustomCursor::ChangePosition);
 		}
-		else if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < 0) {
-			it->second->setCursorPosition(0, CustomCursor::ChangePosition);
+		else if(cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < mainCursorPosition){
+			it->second->setCursorPosition(mainCursorPosition, CustomCursor::ChangePosition);
 		}
 	}
 }
