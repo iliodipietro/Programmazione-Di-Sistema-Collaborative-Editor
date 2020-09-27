@@ -137,8 +137,26 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj){
     return fileList;
 }
 
+QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type){
+    QJsonObject obj;
 
-QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
+    obj.insert("fileid", fileId);
+    obj.insert("sitecounter", siteCounter);
+    obj.insert("type", type);
+
+    return obj;
+}
+
+QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj){
+    QPair<int, int> res;
+    res.first = obj.value("fileid").toInt();
+    res.second = obj.value("sitecounter").toInt();
+    return res;
+
+}
+
+
+QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
 {
     /*
     Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
@@ -156,7 +174,7 @@ QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
     return obj;
 }
 
-int Serialize::openCloseDeleteFileUnserialize(QJsonObject obj)
+int Serialize::openDeleteFileUnserialize(QJsonObject obj)
 {
     /*
     Questa funzione de-serializza i nome del file
@@ -267,6 +285,47 @@ QStringList Serialize::changePasswordUnserialize(QJsonObject obj){
     list.append(obj.value("newpassword").toString());
 
     return list;
+}
+
+QJsonObject Serialize::changeProfileSerialize(QString newname, QString newNick, QString newImage){
+
+    QJsonObject obj;
+    obj.insert("newname", newname);
+    obj.insert("newnick", newNick);
+    obj.insert("newimage", newImage);
+    return obj;
+
+}
+
+QStringList Serialize::changeProfileUnserialize(QJsonObject obj){
+    QStringList list;
+
+    list.append(obj.value("newname").toString());
+    list.append(obj.value("newnick").toString());
+    list.append(obj.value("newimage").toString());
+
+    return list;
+
+}
+
+QJsonObject Serialize::URISerialize(QString URI, int type){
+    QJsonObject obj;
+
+    obj.insert("URI", URI);
+    obj.insert("type", type);
+
+    return obj;
+
+}
+
+QJsonObject Serialize::siteCounterSerialize(int siteCounter, int type){
+    QJsonObject obj;
+
+    obj.insert("siteCounter", siteCounter);
+    obj.insert("type", type);
+
+    return obj;
+
 }
 
 
