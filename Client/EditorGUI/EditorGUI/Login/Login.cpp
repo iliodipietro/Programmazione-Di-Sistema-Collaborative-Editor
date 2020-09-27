@@ -22,11 +22,11 @@ void Login::closeEvent(QCloseEvent* event)
 	qApp->quit();
 }
 
-void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage) {
+void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor) {
 	m_timer->stop();
 	QString username = ui.usernameTextLine->text();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, username, this->clientID);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor, username, this->clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
@@ -38,23 +38,34 @@ void Login::on_loginButton_clicked()
 {
 	QString username = ui.usernameTextLine->text();
 	QString password = ui.passwordTextLine->text();
-	//QString loginInfo = "";
-	//loginInfo.append(username).append(",").append(password);
-	//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-	QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
-	bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
-	if (result) {
-		m_timer->setSingleShot(true);
-		m_timer->setInterval(3000);
-		m_timer->start();
-		//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+	if (username != "" && password != "") {
+		//QString loginInfo = "";
+		//loginInfo.append(username).append(",").append(password);
+		//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
+		QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
+		bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
+		if (result) {
+			m_timer->setSingleShot(true);
+			m_timer->setInterval(3000);
+			m_timer->start();
+			//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+		}
+		else {
+			qDebug() << m_socketHandler->getSocketState();
+		}
 	}
 	else {
-		qDebug() << m_socketHandler->getSocketState();
+		QMessageBox errorDialog(this);
+		errorDialog.setInformativeText("L'username e la password non possono essere vuoti");
+		errorDialog.exec();
 	}
 }
 
+//dialog per mostrare un errore di connessione se la risposta dal server non arriva in tempo
 void Login::showErrorMessage() {
+	QMessageBox errorDialog(this);
+	errorDialog.setInformativeText("errore di connessione");
+	errorDialog.exec();
 	qDebug() << "messaggio di errore per il login";
 }
 
@@ -62,21 +73,22 @@ void Login::loginResult(QJsonObject response) {
 	m_timer->stop();
 	QStringList serverMessage = Serialize::responseUnserialize(response);
 	bool result = serverMessage[0] == "true" ? true : false;
-	this-> clientID = serverMessage[2].toInt();
 
 	if (result) {
+		this->clientID = serverMessage[2].toInt();
 		QString profileImageBase64 = serverMessage[1];
 		QSharedPointer<QPixmap> profileImage = QSharedPointer<QPixmap>(new QPixmap());
 		profileImage->loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		QColor userColor(serverMessage[3]);
 		//dato che ho successo elimino username e password dalla gui
 		ui.usernameTextLine->setText("");
 		ui.passwordTextLine->setText("");
-		openFileBrowser(profileImage);
+		openFileBrowser(profileImage, userColor);
 	}
 	else {
+		//dialog per mostrare il messaggio di errore ricevuto dal server
 		QMessageBox resultDialog(this);
-		QString res_text = response.value("message").toString();
-		resultDialog.setInformativeText(res_text); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.setInformativeText(serverMessage[1]);
 		resultDialog.exec();
 	}
 }
@@ -91,6 +103,7 @@ void Login::on_newAccount_clicked() {
 	this->hide();
 }
 
+//funzione per ri-aprire la finestra di login dopo che il filebrowser è stato chiuso
 void Login::childWindowClosed() {
 	this->show();
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);

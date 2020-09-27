@@ -53,9 +53,15 @@ public:
 	static QJsonObject newFileSerialize(QString filename, int type);// ilio
 	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
 
+	static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
 
-	static QJsonObject messageSerialize(Message message, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
-	static Message messageUnserialize(QJsonObject obj);
+	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
+
+	static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
+	static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+
+	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
+	static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
 
 
@@ -70,11 +76,19 @@ public:
 
 	static QJsonObject ObjectFromString(QString& in);
 
-	static QJsonObject cursorPostionSerialize(int position, int user, int type);
+	static QJsonObject cursorPostionSerialize(int position, int user, int fileId, int type);
 	static std::vector<int> cursorPostionUnserialize(QJsonObject obj);
 
 	static QJsonObject cursorSerialize(CustomCursor cursor, int type);
 	static CustomCursor cursorUnserialize(QJsonObject obj);
+
+	static QJsonObject addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type); //augusto
+	static QPair<int, QStringList> addEditingUserUnserialize(QJsonObject obj);//augusto
+
+	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);//augusto
+	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);//augusto
+
+	static QJsonObject logoutUserSerialize(int type);//augusto
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);

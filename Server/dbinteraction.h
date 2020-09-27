@@ -63,20 +63,24 @@ public:
     bool isUserLogged(ClientManager* client);
 
 
-    void funzionedaeliminare() {
+    /*void funzionedaeliminare() {
         File* primo_file = new File(-1, "C:/Users/Mattia Proietto/Desktop/PROVAEBASTA.txt");
         instance->files.insert(-1, primo_file);
-    }
+    }*/
+
+    inline QColor getUserColor(int userId){return m_colorPerUser.value(userId);}
+
 private:
     static DBInteraction* instance;
     QSqlDatabase db;
 
     QVector<ClientManager*> activeusers;
     QMap<int, File*> files; // mappa fileId - File contenente tutti i file attivi al momentento
+    QMap<int, QColor> m_colorPerUser; //lista dei colori usati
 
     QByteArray intToArray(qint64 source);
-
-
+    QColor generateRandomColor(int);
+    bool colorPresent(QColor);
 };
 
 #endif // DBINTERACTION_H

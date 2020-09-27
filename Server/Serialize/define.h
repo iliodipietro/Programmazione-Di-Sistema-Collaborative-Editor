@@ -22,3 +22,6 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define SEND_FILES 17
 #define CHANGE_PASSWORD 18
 #define CHANGE_PROFILE 19
+#define NEWEDITINGUSER 22
+#define REMOVEEDITINGUSER 23
+

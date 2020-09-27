@@ -10,6 +10,18 @@
     <height>717</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>40</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>FileBrowser</string>
   </property>
@@ -20,39 +32,29 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="1">
-     <widget class="QPushButton" name="deleteFile">
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="uriLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
         <height>40</height>
        </size>
       </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }</string>
-      </property>
       <property name="text">
-       <string>Elimina</string>
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>Insert Shared URI</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="3" rowspan="8">
-     <widget class="QListWidget" name="fileList"/>
-    </item>
-    <item row="3" column="1">
+    <item row="5" column="1">
      <widget class="QPushButton" name="renameFile">
       <property name="minimumSize">
        <size>
@@ -81,15 +83,8 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLabel" name="profileImage">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QPushButton" name="modifyProfile">
+    <item row="6" column="1">
+     <widget class="QPushButton" name="deleteFile">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -113,11 +108,72 @@ QPushButton:hover { background-color: #0080FF; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
       </property>
       <property name="text">
-       <string> Modifica Profilo </string>
+       <string>Elimina</string>
       </property>
      </widget>
     </item>
+    <item row="2" column="3" rowspan="10">
+     <widget class="QListWidget" name="fileList"/>
+    </item>
     <item row="1" column="1">
+     <widget class="QPushButton" name="addSharedFileButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
+      </property>
+      <property name="text">
+       <string>Aggiungi ai tuoi file</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="newFile">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
+      </property>
+      <property name="text">
+       <string>Nuovo File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
      <widget class="QPushButton" name="logoutButton">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -152,8 +208,8 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="newFile">
+    <item row="7" column="1">
+     <widget class="QPushButton" name="modifyProfile">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -177,7 +233,14 @@ QPushButton:hover { background-color: #0080FF; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
       </property>
       <property name="text">
-       <string>Nuovo File</string>
+       <string> Modifica Profilo </string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="profileImage">
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </item>

@@ -16,9 +16,13 @@ public:
     void setColor(QColor color);
     void setId(int id);
     bool writeData(QByteArray& data);
+
+
     QString getUsername();
     QString getNickname();
     int getId();
+    inline  QColor getColor() { return m_color; }
+
     QTcpSocket* getSocket();
     ~ClientManager();
 

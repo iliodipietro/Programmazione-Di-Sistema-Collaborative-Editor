@@ -10,6 +10,8 @@
 #include <QJsonObject>
 #include <QDir>
 #include <vector>
+#include <QDir>
+#include <QDataStream>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "dbinteraction.h"
@@ -48,18 +50,20 @@ private:
     //AUGUSTO##############################
     std::vector<ClientManager*> m_connectedClients;
     int m_lastId;
+    QFile* m_logFile; //file di log usato per debug
+    QTextStream* m_logFileStream;
     //#####################################
     DBInteraction *db = nullptr;
 
 
-    std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
+    //std::map<int, CRDT*> fileId_CRDT;//mi serve un crdt per ogni file
 
-    void handleMessage(int fileID, Message m);
-    std::vector<Message> readFileFromDisk(std::string path, int fileID);
-    void sendNewFile(std::vector<Message> messages ,int fileId);
+    //void handleMessage(int fileID, Message m);
+    //std::vector<Message> readFileFromDisk(std::string path, int fileID);
+    //void sendNewFile(std::vector<Message> messages ,int fileId);
 
-    bool addFile(int fileID, std::string path);//false se file già presente o errore
-    void removeFile(int fileID);// se lo trova elimina altrimenti non fa nulla
+    //bool addFile(int fileID, std::string path);//false se file già presente o errore
+    //void removeFile(int fileID);// se lo trova elimina altrimenti non fa nulla
 };
 
 #endif // MYSERVER_H

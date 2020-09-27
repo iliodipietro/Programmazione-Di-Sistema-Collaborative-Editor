@@ -1,4 +1,5 @@
 #include "Serialize.h"
+#include "CRDT/CRDT.h"
 #include <QBuffer>
 #include <QJsonDocument>
 #include <QDebug>
@@ -211,7 +212,7 @@ QString Serialize::newFileUnserialize(QJsonObject obj){
     return filename;
 }
 
-QJsonObject Serialize::renameFileSerialize(int fileId, QString newName){
+QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type){
     /*
     Questa funzione serializza l'Id del file, l'utente che vuole rinominarlo e il nuovo nome, in caso di una RENAME( cio e' discriminato dal valore di type)
     INPUT:
@@ -224,6 +225,7 @@ QJsonObject Serialize::renameFileSerialize(int fileId, QString newName){
     QJsonObject obj;
     obj.insert("fileId", fileId);
     obj.insert("newname",newName);
+    obj.insert("type", type);
     return obj;
 
 }
@@ -343,7 +345,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     */
     QJsonObject obj;
 
-    obj.insert("fileid", fileId);
+    obj.insert("fileId", fileId);
     obj.insert("type", QJsonValue(type));
     int action = message.getAction();//insert, delete ecc.
 
@@ -356,9 +358,17 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     Nuovo elemento--> messagio che contine la posizione del cursore, se ci√≤ accade il simbolo all'interno sar√  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
-    if (message.getCursorPosition() > 0) {
-        obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
-        return obj;
+    if (message.getCursorPosition().size() > 0) {
+            QJsonArray cursorPos;
+
+            for (int i : message.getCursorPosition()) {
+
+                cursorPos.append(QJsonValue(i));
+            }
+
+            obj.insert("cursor_position", QJsonValue(cursorPos));
+            obj.insert("isSelection", QJsonValue(message.getIsSelection()));
+            return obj;
     }
 
     Symbol s = message.getSymbol();
@@ -423,7 +433,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     vedi Message.h/cpp per specifiche
     */
 
-    int fileid = obj.value("fileid").toInt();
+    int fileid = obj.value("fileId").toInt();
 
     int action = obj.value("action").toInt();
     int sender = obj.value("sender").toInt();
@@ -436,14 +446,19 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     Nuovo elemento--> messagio che contine la posizione del cursore, se ci√≤ accade il simbolo all'interno sar√  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
-    if (action == CURSOR) {
-        __int64 cursorPosition = obj.value("cursor_position").toInt();
-        Message m(cursorPosition, action, sender);
-        QPair<int, Message> ret(fileid, m);
+    if (action == CURSOR_S) {
+            std::vector<int> cursorPosition;
 
+            QJsonArray vettCursorPos = obj.value("cursor_position").toArray();
 
-        //ret.second.operator=(m);
-        return  ret;
+            for (QJsonValue qj : vettCursorPos) {
+
+                cursorPosition.push_back(qj.toInt());
+            }
+
+            bool isSelection = obj.value("isSelection").toBool();
+            Message m(cursorPosition, action, sender, isSelection);
+            return QPair<int, Message>(fileid, m);
     }
 
     char c = obj.value("character").toInt();
@@ -555,7 +570,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 
 
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type, int userID, QColor userColor)
 {
     /*
   res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
@@ -578,6 +593,9 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int type, in
 
     obj.insert("userID", QJsonValue(userID));
 
+    QString color = userColor.name();
+    obj.insert("color", color);
+
     return obj;
 }
 
@@ -592,12 +610,14 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
     list[0]: valore booleano che mi dice OK/ERROR
     list[1]: stringa eventuale mandata dal server per messaggi piu complessi
     list[2]: userID
+    list[3]: userColor
     */
     QStringList list;
     bool res = obj.value("res").toBool();
     list.append(res ? "true" : "false");
     list.append(obj.value("message").toString());
     list.append(obj.value("userID").toString());
+    list.append(obj.value("color").toString());
 
     return list;
 }
@@ -672,6 +692,77 @@ std::vector<int> Serialize::cursorPostionUnserialize(QJsonObject obj)
 
     return vett;
 
+}
+
+QJsonObject Serialize::addEditingUserSerialize(int userId, QString username, QColor userColor, int fileId, int type){
+    /*Funzione usata per inviare a tutti i client lo userId e lo username del client che si ha appena aperto un file
+      Viene anche usata per mandare al client che ha appena aperto il file le informazioni riguardanti tutti i client gi‡ connessi al file
+    */
+
+    QJsonObject obj;
+    obj.insert("userId", userId);
+    obj.insert("username", username);
+    QString color = userColor.name();
+    obj.insert("userColor", color);
+    obj.insert("fileId", fileId);
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
+}
+
+QPair<int, QStringList> Serialize::addEditingUserUnserialize(QJsonObject obj) {
+    /*Funzione usata per de-serializzare le informazioni riguardanti al client che ha aperto il file
+      OUTPUT:
+      un QPair<int,QStringList> contenente:
+        - l'id del file a cui Ë relativo il messaggio
+        una lista di lunghezza 3 contenentee:
+            -list[0] -> userId
+            -list[1] -> username
+            -list[2] -> userColor
+    */
+
+    QStringList sl;
+    sl.append(obj.value("userId").toString());
+    sl.append(obj.value("username").toString());
+    sl.append(obj.value("userColor").toString());
+
+    return QPair<int, QStringList>(obj.value("fileId").toInt(), sl);
+}
+
+QJsonObject Serialize::removeEditingUserSerialize(int userId, int fileId, int type){
+    /*Funzione usata per inviare a tutti i client lo userId del client che ha chiuso il file
+    */
+
+    QJsonObject obj;
+    obj.insert("userId", userId);
+    obj.insert("fileId", fileId);
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
+}
+
+QPair<int, int> Serialize::removeEditingUserUnserialize(QJsonObject obj){
+    /*Funzione usata per de-serializzare lo userid del client che ha chiuso il file
+        OUTPUT:
+        una coppia di interi contenente:
+        -key -> lo userId
+        -value -> il fileId
+    */
+
+    int userId = obj.value("userId").toInt();
+    int fileId = obj.value("fileId").toInt();
+    QPair<int, int> userFile(fileId, userId);
+
+    return userFile;
+}
+
+QJsonObject Serialize::logoutUserSerialize(int type)
+{
+    //Funzione usata per creare un messaggio che contiene al suo interno solo la richiesta di logout dell'utente
+    QJsonObject obj;
+    obj.insert("type", QJsonValue(type));
+
+    return obj;
 }
 
 QByteArray Serialize::fromObjectToArray(QJsonObject obj)

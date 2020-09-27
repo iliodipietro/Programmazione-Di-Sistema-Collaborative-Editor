@@ -307,7 +307,7 @@ std::vector<Message> CRDT::getMessageArray()
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
-		Message m(s, INSERT_SYMBOL, 0);//il server ha id 0
+        Message m(s, INSERT_SYMBOL, -1);//il server ha id -1
 		msgs.push_back(m);
 	}
 
@@ -417,7 +417,7 @@ void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIE
 {
 	if (!QFile::exists(QString(this->path))) {
 		// se non esiste lo creo
-		std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
+        std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
 		return;
 	}
 	
@@ -579,4 +579,58 @@ void CRDT::saveOnFile()
 	//this->timer->start(TIMEOUT);
 }
 
+std::vector<Symbol>::iterator CRDT::getCursorPosition(std::vector<int> crdtPos) {
+    std::vector<Symbol>::iterator positionInVector = this->_symbols.begin();
 
+
+    if (this->_symbols.empty()) {
+        //inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
+        //quando carico dal server
+        return positionInVector;
+    }
+    else if (crdtPos > this->_symbols.back().getPos()) {
+        return this->_symbols.end();
+    }
+    else {
+
+        //trovo l'iteratore che punta alla posizione in cui inserire basandomi sulle pos frazionarie
+        positionInVector = std::find_if(this->_symbols.begin(), this->_symbols.end(), [crdtPos](Symbol s) {
+
+            if (s.getPos() >= crdtPos)
+                return true;
+            /*else if (s.getPos() == crdtPos) {
+
+                if (symbol.getId()[0] < s.getId()[0])//vince chi ha il site id minore
+                    return true;
+                else
+                    return false;
+            }*/
+
+            return false;
+            });
+
+        if (positionInVector != _symbols.end()) {
+            return positionInVector;
+            //index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione
+           //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato
+           //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+
+
+        }
+    }
+
+    /*if ((unsigned)index < _symbols.size())
+        return index;
+    else
+        return (index - 1);//non so se va messo o basta ritornare sempre index fare prove*/
+}
+
+std::vector<int> CRDT::fromIteratorToPosition(std::vector<Symbol>::iterator it){
+    if(it != this->_symbols.end())
+        return it->getPos();
+    else {
+        std::vector<int> maxPos;
+        maxPos.push_back(INT_MAX);
+        return maxPos;
+    }
+}

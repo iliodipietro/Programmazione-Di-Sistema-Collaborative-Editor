@@ -10,6 +10,7 @@ class File
 {
 public:
     File();
+    ~File();
     File(int fileId, QString path);
     void messageHandler(ClientManager* sender, Message m, QByteArray bytes);
     void addUser(ClientManager* user);
@@ -22,6 +23,7 @@ public:
     QString getNewName();
     QString getPath();
     void modifyName(QString newName);
+    void updateCursorPosition(ClientManager* sender, QByteArray message);
 
 private:
     CRDT *handler = nullptr;
@@ -32,7 +34,7 @@ private:
     QString path;
     //QVector<ClientManager*> users;
     QMap <int, ClientManager*> users;
-
+    QMap <ClientManager*, std::vector<Symbol>::iterator> m_usersCursorPosition;
 
 };
 

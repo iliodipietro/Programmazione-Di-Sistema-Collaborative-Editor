@@ -2,12 +2,12 @@
 
 
 
-Message::Message(Symbol s, int action, int sender) :symbol(s), action(action), sender(sender), cursor_position(-1)
+Message::Message(Symbol s, int action, int sender) :symbol(s), action(action), sender(sender), cursor_position(std::vector<int>())
 {
 }
 
 
-Message::Message(__int64 position, int action, int sender) : cursor_position(position), action(action), sender(sender)
+Message::Message(std::vector<int> position, int action, int sender, bool isSelection):cursor_position(position), action(action), sender(sender), isSelection(isSelection)
 {
 	this->symbol = Symbol();
 }
@@ -32,8 +32,11 @@ Symbol Message::getSymbol() const
 	 return this->sender;
  }
 
- __int64 Message::getCursorPosition()
+ std::vector<int> Message::getCursorPosition()
  {
 	 return this->cursor_position;
  }
 
+ bool Message::getIsSelection() {
+     return this->isSelection;
+ }

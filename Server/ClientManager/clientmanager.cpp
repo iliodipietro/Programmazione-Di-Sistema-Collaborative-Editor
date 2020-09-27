@@ -5,6 +5,7 @@ ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(pare
 m_clientSocket(socket), m_socketBuffer(new QByteArray())
 {
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    m_clientSocket->setReadBufferSize(10485760);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
     connect(m_clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnect()));
     connect(m_clientSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
@@ -12,14 +13,14 @@ m_clientSocket(socket), m_socketBuffer(new QByteArray())
 }
 
 void ClientManager::readyRead(){
-    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo è necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
+    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo Ã¨ necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
     //In questa soluzione abbiamo scelto di inviare per prima cosa la dimensione "dim" del dato da leggere, per poi leggere tutti i restandi "dim" byte che rappresentano il dato completo
     QByteArray dataToHandle;
     qint64 dim = 0;
     while(m_clientSocket->bytesAvailable() || m_socketBuffer->size() != 0){
         m_socketBuffer->append(m_clientSocket->readAll());
         while((dim == 0 && m_socketBuffer->size() >= 8) || (dim > 0 && m_socketBuffer->size() >= dim)){
-            if(dim == 0 && m_socketBuffer->size() >= 8){ // è stata ricevuta la dimensione del m_socketBuffer (primo parametro)
+            if(dim == 0 && m_socketBuffer->size() >= 8){ // Ã¨ stata ricevuta la dimensione del m_socketBuffer (primo parametro)
                 //dim = m_socketBuffer->mid(0,8).toULongLong(); //prendo i primi 8 byte che rappresentano la dimensione
                 dim = arrayToInt(m_socketBuffer->mid(0,8));
                 m_socketBuffer->remove(0,8); //rimuovo dal m_socketBuffer i primi 8 byte, cosi da poter leggere i veri e propri dati
@@ -57,6 +58,7 @@ void ClientManager::setId(int id)
     this->m_id = id;
 }
 
+
 QString ClientManager::getUsername(){
     return this->m_username;
 }
@@ -78,11 +80,11 @@ int ClientManager::getId(){
 void ClientManager::onDisconnect(){
     emit disconnected();
 }
-//L'username del client viene aggiunto solo una volta che il login è stato effettuato con successo
+//L'username del client viene aggiunto solo una volta che il login Ã¨ stato effettuato con successo
 void ClientManager::setUsername(QString username){
     m_username = username;
 }
-//Il colore del client viene aggiunto solo una volta che il login è stato effettuato con successo
+//Il colore del client viene aggiunto solo una volta che il login Ã¨ stato effettuato con successo
 void ClientManager::setColor(QColor color){
     m_color = color;
 }

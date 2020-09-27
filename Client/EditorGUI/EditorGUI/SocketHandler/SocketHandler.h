@@ -23,7 +23,10 @@ public:
 private:
     QSharedPointer<QByteArray> m_previousPacket;
     QSharedPointer<QTcpSocket> m_tcpSocket;
+    QString m_serverIp;
+    int m_serverPort;
 
+    void readConfigFile();
     bool connectToServer();
     void closeEvent(QCloseEvent* event);
     QByteArray intToArray(qint64 source);
