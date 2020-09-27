@@ -210,7 +210,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
     if(instance->db.open()){ //bisogna aprire la connessione al db prima altrimenti non funziona
 
 
-        /*CONTROLLO UNICITà NICKNAME E USERNAME*/
+        /*CONTROLLO UNICIT�  NICKNAME E USERNAME*/
 
         query2.prepare("SELECT COUNT(*) FROM users WHERE Nickname = (:nickname)");
         query2.bindValue(":nickname", nickname);
@@ -622,15 +622,28 @@ void DBInteraction::sendFileList(ClientManager* client){
     }
 }
 
-void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
+void DBInteraction::openFile(int fileId, ClientManager* client){
 
     File *f = nullptr;
     QString message;
     QByteArray response;
     int siteCounter = 0;
+    bool is_in_RAM = false;
 
     if(!instance->isUserLogged(client)){
         return;
+    }
+    if(instance->files.contains(fileId)){
+        //il file è gia in RAM
+
+        if (instance->files.value(fileId)->getUsers().contains(client)) {
+          qDebug() << "file already opened!\n";
+          message = "file already opened!";
+          response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+          client->writeData(response);
+          return;
+        }
+        is_in_RAM = true;
     }
 
     //selezione del siteCounter
@@ -655,16 +668,9 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
 
     }
 
-    if(instance->files.contains(fileId)){
+    if(is_in_RAM){
         //il file è gia in RAM
-        if (instance->files.value(fileId)->getUsers().contains(client)) {
-          qDebug() << "file already opened!\n";
-          message = "file already opened!";
-          response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-          client->writeData(response);
-          //sendMessage(socket, response);
-          return;
-        }
+
         f = instance->getFile(fileId);
         f->addUser(client);
         response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
@@ -673,70 +679,58 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
        // sendSuccess(client);
     }
     else {
-        if(URI != nullptr){
-            //caso in cui provengo da openSharedFile e quindi ho già la URI(path) del file. Evito cosi un'ulteriore query al server
-            //l'utente è la prima volta che apre questo file, quindi avrà siteCounter = 0
-            f = new File(fileId, URI);
-            instance->files.insert(fileId, f);
-            f->addUser(client);
-            response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
-            client->writeData(response);
-           // sendSuccess(client);
+        //cercare il file nel DB
+        if(instance->db.open()){
+            QString path;
+            QSqlQuery query;
+            int userid = client->getId();
+            query.prepare("SELECT path FROM files WHERE userid = (:userid) AND fileId = (:fileid)");
+            query.bindValue(":userid", userid);
+            query.bindValue(":fileid", fileId);
 
-        }
-        else {
-            //cercare il file nel DB
-            if(instance->db.open()){
-                QString path;
-                QSqlQuery query;
-                int userid = client->getId();
-                query.prepare("SELECT path FROM files WHERE userid = (:userid) AND fileId = (:fileid)");
-                query.bindValue(":userid", userid);
-                query.bindValue(":fileid", fileId);
-
-                if(query.exec()){
-                    if(query.next()){
-                        path = QString(query.value("path").toString());
-                        f = new File(fileId, path);
-                        instance->files.insert(fileId, f);
-                        f->addUser(client);
-                        qDebug() << "user added!\n";
-                        //sendSuccess(client);
-                        response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
-                        client->writeData(response);
-                        instance->db.close();
+            if(query.exec()){
+                if(query.next()){
+                    path = QString(query.value("path").toString());
+                    f = new File(fileId, path);
+                    instance->files.insert(fileId, f);
+                    f->addUser(client);
+                    qDebug() << "user added!\n";
+                    //sendSuccess(client);
+                    response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
+                    client->writeData(response);
+                    instance->db.close();
 
 
-                    }
-                    else {
-                        qDebug()<<"this file does not exist!\n";
-                        message = "this file does not exist!";
-                        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-                        client->writeData(response);
-                        //sendMessage(socket, response);
-                        instance->db.close();
-                        return;
-
-                    }
                 }
                 else {
-                    qDebug() << "SELECT path failed: " << query.lastError() << "\n";
-                    sendError(client);
+                    qDebug()<<"this file does not exist!\n";
+                    message = "this file does not exist!";
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+                    client->writeData(response);
+                    //sendMessage(socket, response);
                     instance->db.close();
                     return;
+
                 }
             }
             else {
-                qDebug()<<"DB not opened!!\n";
+                qDebug() << "SELECT path failed: " << query.lastError() << "\n";
                 sendError(client);
+                instance->db.close();
                 return;
             }
         }
+        else {
+            qDebug()<<"DB not opened!!\n";
+            sendError(client);
+            return;
+        }
+
     }
 }
 
 void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client){
-    //per ogni utente che richiede la chiusura del file verrà fatta una removeUser
+    //per ogni utente che richiede la chiusura del file verr�  fatta una removeUser
     QByteArray response;
     QString message;
     File* f;
@@ -745,7 +739,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         return;
     }
 
-    if(!instance->files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è già chiuso oppure che non esiste
+    if(!instance->files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è gi�  chiuso oppure che non esiste
         qDebug()<<"this file does not exist or it is not opened!\n";
         message = "this file does not exist or it is not opened!";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
@@ -838,7 +832,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
 }
 
 void DBInteraction::deleteFile(int fileId, ClientManager* client){
-    //per ogni utente che richiede la cancellazione verrà cancellata nel DB la riga corrispondente
+    //per ogni utente che richiede la cancellazione verr�  cancellata nel DB la riga corrispondente
     QByteArray response;
     QString message;
     QSqlQuery query;
@@ -894,7 +888,7 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
 
     // nel caso in cui il file sia condiviso tra più utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
     f = instance->files.value(fileId);
-    f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarà l'ultima)
+    f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sar�  l'ultima)
 
     sendSuccess(client);
 }
@@ -917,7 +911,7 @@ void DBInteraction::getURIToShare(int fileid, ClientManager *client){
     }
 }
 
-void DBInteraction::openSharedFile(QString URI, ClientManager* client){
+void DBInteraction::SharedFileAcquisition(QString URI, ClientManager* client){
 
     QByteArray response;
     QString message;

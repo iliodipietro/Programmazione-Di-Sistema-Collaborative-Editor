@@ -262,12 +262,12 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         db->getURIToShare(fileId, client);
 
         break;
-    case (OPENSHARE):
-        qDebug("OPENSHARE request\n");
+    case (ACQUIRE_SHARED_FILE):
+        qDebug("ACQUIRE_SHARED_FILE request\n");
 
-        URI = Serialize::openSharedFileUnserialize(ObjData);
+        URI = Serialize::sharedFileAcquisitionUnserialize(ObjData);
 
-        db->openSharedFile(URI, client);
+        db->SharedFileAcquisition(URI, client);
 
         break;
     case (SEND_FILES):

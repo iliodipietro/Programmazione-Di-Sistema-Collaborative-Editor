@@ -241,7 +241,7 @@ QPair<int, QString> Serialize::renameFileUnserialize(QJsonObject obj){
 }
 
 
-QJsonObject Serialize::openSharedFileSerialize(QString URI, int type){
+QJsonObject Serialize::sharedFileAcquisitionSerialize(QString URI, int type){
     /*
     Questa funzione serializza l'URI del file e l'utente che l'ha ricevuto e lo sta provando ad aprire, in caso di una SHARE( cio e' discriminato dal valore di type)
     INPUT:
@@ -256,7 +256,7 @@ QJsonObject Serialize::openSharedFileSerialize(QString URI, int type){
     return obj;
 }
 
-QString Serialize::openSharedFileUnserialize(QJsonObject obj){
+QString Serialize::sharedFileAcquisitionUnserialize(QJsonObject obj){
 
     return obj.value("URI").toString();
 }

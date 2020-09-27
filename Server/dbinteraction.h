@@ -43,12 +43,12 @@ public:
 
     void createFile(QString filename, ClientManager* client);
     void sendFileList(ClientManager* client);
-    void openFile(int fileId, ClientManager* client, QString URI = nullptr);
+    void openFile(int fileId, ClientManager* client);
     void closeFile(int fileId, int siteCounter, ClientManager* client);
     void deleteFile(int fileId, ClientManager* client);
     void renameFile(int fileId, QString newname, ClientManager* client);
     void getURIToShare(int fileid, ClientManager* client);
-    void openSharedFile(QString URI, ClientManager* client);
+    void SharedFileAcquisition(QString URI, ClientManager* client);
 
     void changePassword(QString oldPassword, QString newPassword, ClientManager* client);
     void changeUsername(QString newUsername, ClientManager* client);
