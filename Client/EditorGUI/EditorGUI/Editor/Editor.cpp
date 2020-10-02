@@ -166,6 +166,8 @@ void Editor::createActions() {
 
 	ui.toolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
+	
+
 	const QIcon openIcon = QIcon::fromTheme("document-open", QIcon("./Icons/plus.png"));
 	this->openAct = new QAction(openIcon, tr("&Open..."), this);
 	this->openAct->setShortcuts(QKeySequence::Open);
@@ -206,6 +208,15 @@ void Editor::createActions() {
 
 	//menu->addSeparator();
 #endif
+
+
+	const QIcon shareIcon = QIcon::fromTheme("document-share", QIcon("./Icons/share.png")); //devo vedere dove trovare le icone eventualmente
+	this->shareAct = new QAction(shareIcon, tr("&Share..."), this);
+	this->shareAct->setShortcut(Qt::CTRL + Qt::Key_S);
+	ui.toolBar->addAction(this->shareAct);
+	ui.menuFile->addAction(this->shareAct);
+	connect(this->shareAct, &QAction::triggered, this, &Editor::shareLink);
+
 
 	const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon("./Icons/058-undo.png"));
 	this->actionUndo = ui.menuModifica->addAction(undoIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
@@ -378,6 +389,8 @@ void Editor::makeUnderlined() {
 	emit styleChange();
 }
 
+
+
 void Editor::textStyle(int styleIndex)
 {
 	QTextCursor cursor = m_textEdit->textCursor();
@@ -522,6 +535,11 @@ void Editor::filePrintPdf() {
 	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 	//! [0]
 #endif
+}
+
+
+void Editor::shareLink() {
+
 }
 
 //MATTIA-----------------------------------------------------------------------------------------------------------

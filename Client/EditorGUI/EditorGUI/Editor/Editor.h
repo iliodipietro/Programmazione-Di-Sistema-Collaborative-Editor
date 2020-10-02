@@ -36,6 +36,7 @@ private:
 	MyTextEdit* m_textEdit;
 	QWidget *parent;
 	QString filePath, curFile;
+	QAction* shareAct;
 	QAction* italicAct;
 	QAction* openAct;
 	QAction* cutAct;
@@ -114,6 +115,7 @@ private:
 
 	//Lorenzo-----------------------------------------------
 	void styleChanged(QFont font);
+	void shareLink();
 	//Fine
 
 	//Mattia-----------------------------------------------------------------------------------------------------------
