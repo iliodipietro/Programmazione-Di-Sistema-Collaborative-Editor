@@ -29,7 +29,7 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 	*/
 		this->handler->getTimer()->start(TIMEOUT);
 
-		this->handler->printText();
+		//this->handler->printText();
 	}
 
 	QList<int> keys = this->users.keys();
