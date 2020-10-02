@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QDir>
 #include <vector>
 #include <QDir>
 #include <QDataStream>

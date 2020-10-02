@@ -136,10 +136,11 @@ private:
 	void updateViewAfterStyleChange(Message m, __int64 index);
 
 	//FINE----------------------------------------------------------------------
+	
+	void initialFileLoad(Message m, __int64 index);
 
 protected:
-
-	void mousePressEvent(QMouseEvent* e);
+		void mousePressEvent(QMouseEvent* event);
 
 public slots:
 	void keyPressEvent(int e);
@@ -151,6 +152,7 @@ private slots:
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
 	void showEditingUsers();
+	void updateCursorPosition(bool isSelection);
 
 //---------------------------------------------------------------------------------------------------
 signals:

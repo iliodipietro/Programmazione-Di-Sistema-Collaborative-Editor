@@ -43,16 +43,18 @@ public:
 
     void createFile(QString filename, ClientManager* client);
     void sendFileList(ClientManager* client);
-    void openFile(int fileId, ClientManager* client, QString URI = nullptr);
-    void closeFile(int fileId, ClientManager* client);
+    void openFile(int fileId, ClientManager* client);
+    void closeFile(int fileId, int siteCounter, ClientManager* client);
     void deleteFile(int fileId, ClientManager* client);
     void renameFile(int fileId, QString newname, ClientManager* client);
-    void openSharedFile(QString URI, ClientManager* client);
+    void getURIToShare(int fileid, ClientManager* client);
+    void SharedFileAcquisition(QString URI, ClientManager* client);
 
     void changePassword(QString oldPassword, QString newPassword, ClientManager* client);
-    void changeUsername(QString oldUsername, QString newUsername, ClientManager* client);
-    void changeNickname(QString username, QString newNickname, ClientManager* client);
-    void changeProfilePic();
+    void changeUsername(QString newUsername, ClientManager* client);
+    void changeNickname(QString newNickname, ClientManager* client);
+    void changeProfilePic(QString profileImage, ClientManager* client);
+    void changeProfile(QString newUsername, QString newNick, QString newImagePath, ClientManager *client);
 
 
     void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);
@@ -72,8 +74,6 @@ private:
     static DBInteraction* instance;
     QSqlDatabase db;
 
-    //QMap<ClientManager*, int> users;
-    //QMap<QTcpSocket*, ClientManager*>users;
     QVector<ClientManager*> activeusers;
     QMap<int, File*> files; // mappa fileId - File contenente tutti i file attivi al momentento
     QMap<int, QColor> m_colorPerUser; //lista dei colori usati

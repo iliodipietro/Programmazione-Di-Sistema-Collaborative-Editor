@@ -7,15 +7,17 @@ private:
 	Symbol symbol;
 	int action;
 	int sender;
-	__int64 cursor_position;
+    std::vector<int> cursor_position;
+    bool isSelection;
 	
 public:
 	Message(Symbol s, int action,int sender);
-    Message(__int64 position, int action, int sender);
+    Message(std::vector<int> position, int action, int sender, bool isSelection = false);
 	~Message();
 	Symbol getSymbol() const;
 	int getAction() const;
 	int getSenderId();
-	__int64 getCursorPosition();
+    std::vector<int> getCursorPosition();
+    bool getIsSelection();
 };
 

@@ -40,8 +40,11 @@ public:
     static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
     //usate in myserver.cpp per open - close
-    static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
-    static int openCloseDeleteFileUnserialize(QJsonObject obj);// ilio
+    static QJsonObject openDeleteFileSerialize(int fileId, int type); // ilio
+    static int openDeleteFileUnserialize(QJsonObject obj);// ilio
+
+    static QJsonObject closeFileSerialize(int fileId, int siteCounter, int type);
+    static QPair<int, int> closeFileUnserialize(QJsonObject obj);
 
     static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
     static QString newFileUnserialize(QJsonObject obj);// ilio
@@ -49,12 +52,18 @@ public:
     static QJsonObject renameFileSerialize(int fileId, QString newName, int type);// ilio
     static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
-    static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+    static QJsonObject sharedFileAcquisitionSerialize(QString URI, int type); // ilio
+    static QString sharedFileAcquisitionUnserialize(QJsonObject obj); // ilio
 
     static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
     static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
+    static QJsonObject changeProfileSerialize(QString newname, QString newNick, QString newImage); // ilio
+    static QStringList changeProfileUnserialize(QJsonObject obj); //ilio
+
+    static QJsonObject URISerialize(QString URI, int type);// ilio
+
+    static QJsonObject siteCounterSerialize(int siteCounter, int type);
 
 
 

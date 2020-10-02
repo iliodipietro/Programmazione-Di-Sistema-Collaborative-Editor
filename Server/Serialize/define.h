@@ -18,11 +18,10 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define DELETE 13
 #define RENAME 14
 #define SENDURI 15
-#define OPENSHARE 16
+#define ACQUIRE_SHARED_FILE 16
 #define SEND_FILES 17
 #define CHANGE_PASSWORD 18
-#define CHANGE_USERNAME 19
-#define CHANGE_NICK 20
-#define CHANGE_PROPIC 21
+#define CHANGE_PROFILE 19
 #define NEWEDITINGUSER 22
 #define REMOVEEDITINGUSER 23
+

@@ -137,8 +137,26 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj){
     return fileList;
 }
 
+QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type){
+    QJsonObject obj;
 
-QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
+    obj.insert("fileid", fileId);
+    obj.insert("sitecounter", siteCounter);
+    obj.insert("type", type);
+
+    return obj;
+}
+
+QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj){
+    QPair<int, int> res;
+    res.first = obj.value("fileid").toInt();
+    res.second = obj.value("sitecounter").toInt();
+    return res;
+
+}
+
+
+QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
 {
     /*
     Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
@@ -156,7 +174,7 @@ QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
     return obj;
 }
 
-int Serialize::openCloseDeleteFileUnserialize(QJsonObject obj)
+int Serialize::openDeleteFileUnserialize(QJsonObject obj)
 {
     /*
     Questa funzione de-serializza i nome del file
@@ -223,7 +241,7 @@ QPair<int, QString> Serialize::renameFileUnserialize(QJsonObject obj){
 }
 
 
-QJsonObject Serialize::openSharedFileSerialize(QString URI, int type){
+QJsonObject Serialize::sharedFileAcquisitionSerialize(QString URI, int type){
     /*
     Questa funzione serializza l'URI del file e l'utente che l'ha ricevuto e lo sta provando ad aprire, in caso di una SHARE( cio e' discriminato dal valore di type)
     INPUT:
@@ -238,7 +256,7 @@ QJsonObject Serialize::openSharedFileSerialize(QString URI, int type){
     return obj;
 }
 
-QString Serialize::openSharedFileUnserialize(QJsonObject obj){
+QString Serialize::sharedFileAcquisitionUnserialize(QJsonObject obj){
 
     return obj.value("URI").toString();
 }
@@ -269,6 +287,47 @@ QStringList Serialize::changePasswordUnserialize(QJsonObject obj){
     return list;
 }
 
+QJsonObject Serialize::changeProfileSerialize(QString newname, QString newNick, QString newImage){
+
+    QJsonObject obj;
+    obj.insert("newname", newname);
+    obj.insert("newnick", newNick);
+    obj.insert("newimage", newImage);
+    return obj;
+
+}
+
+QStringList Serialize::changeProfileUnserialize(QJsonObject obj){
+    QStringList list;
+
+    list.append(obj.value("newname").toString());
+    list.append(obj.value("newnick").toString());
+    list.append(obj.value("newimage").toString());
+
+    return list;
+
+}
+
+QJsonObject Serialize::URISerialize(QString URI, int type){
+    QJsonObject obj;
+
+    obj.insert("URI", URI);
+    obj.insert("type", type);
+
+    return obj;
+
+}
+
+QJsonObject Serialize::siteCounterSerialize(int siteCounter, int type){
+    QJsonObject obj;
+
+    obj.insert("siteCounter", siteCounter);
+    obj.insert("type", type);
+
+    return obj;
+
+}
+
 
 
 
@@ -286,7 +345,7 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     */
     QJsonObject obj;
 
-    obj.insert("fileid", fileId);
+    obj.insert("fileId", fileId);
     obj.insert("type", QJsonValue(type));
     int action = message.getAction();//insert, delete ecc.
 
@@ -299,9 +358,17 @@ QJsonObject Serialize::messageSerialize(int fileId, Message message, int type)
     Nuovo elemento--> messagio che contine la posizione del cursore, se ciÃ² accade il simbolo all'interno sarÃ  vuoto e la posizione diversa da zero
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
-    if (message.getCursorPosition() > 0) {
-        obj.insert("cursor_position", QJsonValue(message.getCursorPosition()));
-        return obj;
+    if (message.getCursorPosition().size() > 0) {
+            QJsonArray cursorPos;
+
+            for (int i : message.getCursorPosition()) {
+
+                cursorPos.append(QJsonValue(i));
+            }
+
+            obj.insert("cursor_position", QJsonValue(cursorPos));
+            obj.insert("isSelection", QJsonValue(message.getIsSelection()));
+            return obj;
     }
 
     Symbol s = message.getSymbol();
@@ -380,13 +447,18 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
     controlliamo quindi prima questo caso particolare in modo da non eseguire il codice seguente piu lungo
     ----------------------------------------------------------------------------------------------------------------------------------*/
     if (action == CURSOR_S) {
-        __int64 cursorPosition = obj.value("cursor_position").toInt();
-        Message m(cursorPosition, action, sender);
-        QPair<int, Message> ret(fileid, m);
+            std::vector<int> cursorPosition;
 
+            QJsonArray vettCursorPos = obj.value("cursor_position").toArray();
 
-        //ret.second.operator=(m);
-        return  ret;
+            for (QJsonValue qj : vettCursorPos) {
+
+                cursorPosition.push_back(qj.toInt());
+            }
+
+            bool isSelection = obj.value("isSelection").toBool();
+            Message m(cursorPosition, action, sender, isSelection);
+            return QPair<int, Message>(fileid, m);
     }
 
     char c = obj.value("character").toInt();

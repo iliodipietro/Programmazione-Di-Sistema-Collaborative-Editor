@@ -19,14 +19,15 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	QString path, QString username, int fileId, int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_fileId(fileId),
 	m_timer(new QTimer(this)), m_username(username), m_showingEditingUsers(false),
-	m_profileImage(profileImage), m_userColor(userColor), m_textEdit(new MyTextEdit(this))
+	m_profileImage(profileImage), m_userColor(userColor), ID(clientID), filePath(path), parent(parent)
 {
 	ui.setupUi(this);
+	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
+
+	m_textEdit = new MyTextEdit(this->_CRDT, this);
 	ui.gridLayout->addWidget(m_textEdit);
 	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
-	this->parent = parent;
-	this->filePath = path;
-	this->ID = clientID;
+	m_textEdit->setMouseTracking(true);
 	//m_textEdit->setText(path);
 	createActions();
 	//this->loadFile(this->filePath);
@@ -34,15 +35,15 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	QTextCursor TC = m_textEdit->textCursor();
 	//TC.setPosition(0);
 	//m_textEdit->setTextCursor(TC);
-	qDebug() << "posizione iniziale=" << TC.position();
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
 	connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
 	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
-	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
-	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
+	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
+	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
+	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
@@ -55,9 +56,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 	//trigger stylechange
 	Q_ASSERT(connect(this, &Editor::styleChange, this, &Editor::localStyleChange));
-
-
-	this->_CRDT = new CRDT(this->ID);//METTERE L'ID DATO DAL SERVER!!!!!!!!!!!!!!!!!
 
 	this->remoteEvent = false;
 	lastCursor = 0;
@@ -650,14 +648,14 @@ void Editor::localInsert() {
 
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
-	m_textEdit->moveForwardCursorsPosition(pos, offset);	
+	m_textEdit->moveForwardCursorsPosition(pos, offset);
 }
 
 void Editor::localDelete() {
 	QTextCursor TC = m_textEdit->textCursor();
 
 	int start, end;
-	if (this->lastStart != this->lastEnd ) {
+	if (this->lastStart != this->lastEnd) {
 
 		start = this->lastStart;
 		end = this->lastEnd;
@@ -745,7 +743,10 @@ void Editor::remoteAction(Message m)
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
-	m_textEdit->handleMessage(m.getSenderId(), m, index);
+	if (m.getSenderId() == -1)
+		initialFileLoad(m, index);
+	else
+		m_textEdit->handleMessage(m.getSenderId(), m, index);
 
 	switch (m.getAction()) {
 	case INSERT:
@@ -757,7 +758,7 @@ void Editor::remoteAction(Message m)
 	case DELETE_S:
 		maybedecrement(index);
 
-		pos <= index ? pos-- : pos = pos;
+		pos > index ? pos-- : pos = pos;
 
 		break;
 	default:
@@ -772,6 +773,30 @@ void Editor::remoteAction(Message m)
 
 	this->lastText = m_textEdit->toPlainText();
 	this->remoteEvent = false;
+}
+
+void Editor::initialFileLoad(Message m, __int64 index) {
+	//retrieving remote state
+	QChar chr(m.getSymbol().getChar());
+	QFont r_font = m.getSymbol().getFont();
+	QColor r_color = m.getSymbol().getColor();
+	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
+
+	QTextCharFormat format;
+	format.setFont(r_font);
+	format.setForeground(r_color);
+
+	QTextCursor TC = m_textEdit->textCursor();
+	TC.setPosition(index);
+	m_textEdit->setTextCursor(TC);
+	TC.insertText(chr, format);
+	TC.setPosition(0);
+	m_textEdit->setTextCursor(TC);
+
+	QTextBlockFormat blockFormat = TC.blockFormat();
+	blockFormat.setAlignment(alignment);
+
+	TC.mergeBlockFormat(blockFormat);
 }
 
 int Editor::getFileId()
@@ -1005,9 +1030,9 @@ void Editor::tastoPremuto(QKeyEvent* e)
 			this->localDelete();
 
 			int lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
-			
+
 			this->m_textEdit->refresh(e);
-			
+
 			this->lastCursor = lastCursor;
 
 			this->localInsert();
@@ -1034,23 +1059,16 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	{
 	case Qt::Key_Backspace:
 	case Qt::Key_Delete:
-		this->localDelete();
+	case Qt::Key_Cancel:
+ 		this->localDelete();
 		break;
 	case Qt::Key_Alt:
 		break;
-	case Qt::Key_Up:
-	case Qt::Key_Down:
-	case Qt::Key_Left:
-	case Qt::Key_Right: {
-		Message m(TC.position(), CURSOR_S, _CRDT->getId());
-		m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
-		break;
-	}
 	default:
-		if ((e->text() == "")||(isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
+		if ((e->text() == "") || (isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
 			break;
 
-		if (start != end && !this->_CRDT->isEmpty() ) {
+		if (start != end && !this->_CRDT->isEmpty()) {
 			this->lastStart = start;
 			this->lastEnd = end;
 
@@ -1193,25 +1211,6 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	int size = m_textEdit->font().pointSize();
 	QString t = TC.selectedText();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
-	/*QTextCharFormat fmt = TC.charFormat();*/
-	/*fmt.setFontUnderline(this->underLineAct->isChecked());
-	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
-	fmt.setFontItalic(this->italicAct->isChecked());*/
-	/*fmt
-	this->mergeFormatOnWordOrSelection(fmt);*/
-	
-
-	
-	/*connect(m_textEdit, SIGNAL(cursorPositionChanged()), this, SLOT(on_textEdit_cursorPositionChanged()));*/
-
-	/*Message m(TC.position(), CURSOR_S, _CRDT->getId());
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
-	/*QTextCharFormat format = TC.charFormat();
-	int pos = TC.position();
-	char c = m_textEdit->toPlainText().at(TC.position()-1).toLatin1();
-	QColor color = format.foreground().color();
-	Message m2 = _CRDT->localChange(TC.position()-1, c, format.font(), color, this->getAlignementFlag(m_textEdit->alignment()));
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m2, m_fileId, MESSAGE)));*/
 }
 
 void Editor::colorChanged(const QColor& c) {
@@ -1288,19 +1287,15 @@ void Editor::showEditingUsers() {
 	m_editingUsersList->show();
 }
 
-void Editor::mousePressEvent(QMouseEvent* e) {
+void Editor::mousePressEvent(QMouseEvent* event) {
 	if (m_showingEditingUsers) {
 		m_editingUsersList->hide();
 		m_showingEditingUsers = false;
 	}
+}
 
-	QPoint clickPoint = e->pos();
-
-	if (QApplication::widgetAt(clickPoint) == m_textEdit) {
-		QTextCursor TC = m_textEdit->textCursor();
-		if (TC.position() != this->lastCursor) {
-			Message m(TC.position(), CURSOR_S, _CRDT->getId());
-			m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
-		}
-	}
+void Editor::updateCursorPosition(bool isSelection) {
+	QTextCursor TC = m_textEdit->textCursor();
+	Message m(this->_CRDT->getSymbol(TC.position()).getPos(), CURSOR_S, _CRDT->getId(), isSelection);
+	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 }
