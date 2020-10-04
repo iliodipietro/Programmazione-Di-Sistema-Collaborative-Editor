@@ -7,7 +7,7 @@ File::File():handler(nullptr),id(0),path("")
 
 File::~File()
 {
-	//this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
+	this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
 	delete this->handler;
 	this->handler = nullptr;
 }
@@ -52,7 +52,7 @@ void File::sendNewFile(ClientManager* socket)
 		std::vector<Message> msgs = this->handler->getMessageArray();
 
 		for (auto m : msgs) {
-			QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, INSERT_SYMBOL));
+			QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, MESSAGE));
 			socket->writeData(bytes);
 		}
 	}

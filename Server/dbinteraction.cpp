@@ -506,12 +506,12 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                     query3.bindValue(":path", path);
 
                     if(query3.exec()){
-                        QFile file(path);
-                        if(file.open(QIODevice::WriteOnly)){
-                            QTextStream stream(&file);
-                            stream << path;
-                            file.close();
-                        }
+                        //QFile file(path);
+                        //if(file.open(QIODevice::WriteOnly)){
+                        //    QTextStream stream(&file);
+                        //    stream << path;
+                        //    file.close();
+                        //}
                         File *newfile = new File(fileId, path);
                         response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
                         //sendSuccess(client);
@@ -758,8 +758,11 @@ void DBInteraction::closeFile(int fileId, ClientManager* client){
                     return;
                 }
             }
-            
+            File* todelte = instance->files.take(fileId);
             instance->files.remove(fileId);
+            delete todelte;
+            todelte = nullptr;
+
         }
     }
     return;
