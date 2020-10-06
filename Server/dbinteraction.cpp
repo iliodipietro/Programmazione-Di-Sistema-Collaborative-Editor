@@ -51,7 +51,7 @@ DBInteraction* DBInteraction::startDBConnection(){
                                   "FileId       INT      NOT NULL,"
                                   "UserId       INT      NOT NULL,"
                                   "Path     VARCHAR(255),"
-                                  "SiteCounter INT"
+                                  "SiteCounter INT,"
                                   "PRIMARY KEY(FileId, UserId) );");
                     if(query1.exec() && query2.exec()){
                         qDebug("tables created!!!\n");
@@ -147,12 +147,12 @@ bool DBInteraction::checkPassword(QString password,  ClientManager* client){
         QString salt;
         QString message;
         QByteArray response;
-        int userid = client->getId();
+        QString username = client->getUsername();
 
         qDebug()<<"checking password...\n";
 
-        query.prepare("SELECT Password, userid, Salt, profileImage FROM users WHERE userid = (:userid)");
-        query.bindValue(":userid", userid);
+        query.prepare("SELECT Password, UserId, Salt, ProfileImage FROM users WHERE Username = (:username)");
+        query.bindValue(":username", username);
         if (query.exec()) {
 
             if(query.next()){
@@ -210,7 +210,7 @@ void DBInteraction::registration(QString username, QString password, QString nic
     if(instance->db.open()){ //bisogna aprire la connessione al db prima altrimenti non funziona
 
 
-        /*CONTROLLO UNICITà NICKNAME E USERNAME*/
+        /*CONTROLLO UNICIT�  NICKNAME E USERNAME*/
 
         query2.prepare("SELECT COUNT(*) FROM users WHERE Nickname = (:nickname)");
         query2.bindValue(":nickname", nickname);
@@ -466,7 +466,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
 
     if(instance->db.open()){
 
-        query.prepare("SELECT COUNT(*) FROM files WHERE UserId = (:userid) AND FileName = (:filename)");
+        query.prepare("SELECT COUNT(*) FROM files WHERE UserId=(:userid) AND FileName=(:filename)");
         query.bindValue(":userid", userId);
         query.bindValue(":filename", filename);
         if(query.exec()){
@@ -486,7 +486,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
             else{
                 //il file non esiste, quindi posso crearlo
                 QSqlQuery query2;
-                query2.prepare("SELECT MAX(Id) FROM files"); //l'id del file è un intero crescente: uso MAX perchè l'id deve essere unico per file differenti ma uguale per file uguali, quindi se avessi:
+                query2.prepare("SELECT MAX(FileId) FROM files"); //l'id del file è un intero crescente: uso MAX perchè l'id deve essere unico per file differenti ma uguale per file uguali, quindi se avessi:
                                                              // 1 prova.txt Mattia
                                                              // 1 prova.txt Ilio   (Ilio e Mattia condividono il file prova.txt)
                                                              // 2 file.txt Ilio
@@ -497,28 +497,28 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                     }
                     qDebug()<< "fileId: "<< fileId << "\n";
 
-                    path.append(username).append("/").append(filename).append(".txt"); //  esempio --> currdir/files/ilio/prova.txt
-
                     qDebug()<< "Path: " << path << "\n";
 
-                    QString images_directory_path(path.append(username));
-                    if(!QDir(images_directory_path).exists()){
+                    QString files_directory_path(path.append(username));
+                    if(!QDir(files_directory_path).exists()){
                         //creo la cartella files/username
-                        QDir().mkdir(images_directory_path);
+                        QDir().mkdir(files_directory_path);
                     }
 
+                    path.append("/").append(filename).append(".txt"); //  esempio --> currdir/files/ilio/prova.txt
+
                     QSqlQuery query3;
-                    query3.prepare("INSERT INTO files(FileName, Id, userName, Path, SiteCounter) VALUES ((:filename), (:fileId), (:username), (:path), 0)");
+                    query3.prepare("INSERT INTO files(FileName, FileId, UserId, Path, SiteCounter) VALUES ((:filename), (:fileId), (:userid), (:path), 0)");
                     query3.bindValue(":filename", filename);
                     query3.bindValue(":fileId", fileId + 1);
-                    query3.bindValue(":username", username);
+                    query3.bindValue(":userid", userId);
                     query3.bindValue(":path", path);
 
                     if(query3.exec()){
                         QFile file(path);
                         if(file.open(QIODevice::WriteOnly)){
                             QTextStream stream(&file);
-                            stream << path;
+                            stream << "";
                             file.close();
                         }
                         File *newfile = new File(fileId, path);
@@ -674,8 +674,8 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
     }
     else {
         if(URI != nullptr){
-            //caso in cui provengo da openSharedFile e quindi ho già la URI(path) del file. Evito cosi un'ulteriore query al server
-            //l'utente è la prima volta che apre questo file, quindi avrà siteCounter = 0
+            //caso in cui provengo da openSharedFile e quindi ho gi�  la URI(path) del file. Evito cosi un'ulteriore query al server
+            //l'utente è la prima volta che apre questo file, quindi avr�  siteCounter = 0
             f = new File(fileId, URI);
             instance->files.insert(fileId, f);
             f->addUser(client);
@@ -736,7 +736,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client, QString URI){
 }
 
 void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client){
-    //per ogni utente che richiede la chiusura del file verrà fatta una removeUser
+    //per ogni utente che richiede la chiusura del file verr�  fatta una removeUser
     QByteArray response;
     QString message;
     File* f;
@@ -745,7 +745,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         return;
     }
 
-    if(!instance->files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è già chiuso oppure che non esiste
+    if(!instance->files.contains(fileId)){ // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi è gi�  chiuso oppure che non esiste
         qDebug()<<"this file does not exist or it is not opened!\n";
         message = "this file does not exist or it is not opened!";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
@@ -838,7 +838,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
 }
 
 void DBInteraction::deleteFile(int fileId, ClientManager* client){
-    //per ogni utente che richiede la cancellazione verrà cancellata nel DB la riga corrispondente
+    //per ogni utente che richiede la cancellazione verr�  cancellata nel DB la riga corrispondente
     QByteArray response;
     QString message;
     QSqlQuery query;
@@ -894,7 +894,7 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
 
     // nel caso in cui il file sia condiviso tra più utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
     f = instance->files.value(fileId);
-    f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarà l'ultima)
+    f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sar�  l'ultima)
 
     sendSuccess(client);
 }
@@ -906,8 +906,8 @@ void DBInteraction::getURIToShare(int fileid, ClientManager *client){
     if(!instance->isUserLogged(client)){
         return;
     }
-    if(files.contains(fileid)){
-        URI = files.value(fileid)->getPath();
+    if(instance->files.contains(fileid)){
+        URI = instance->files.value(fileid)->getPath();
         response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
         client->writeData(response);
     }
@@ -1184,7 +1184,7 @@ File* DBInteraction::getFile(int fileid){
 
 bool DBInteraction::isUserLogged(ClientManager* client){
 
-    if(!activeusers.contains(client)){
+    if(!instance->activeusers.contains(client)){
         qDebug()<<"user not authorized!\n";
         //anche se non è attivo, l'utente ha comunque un socket
         sendError(client);
