@@ -273,6 +273,16 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 		}
 		break;
 	}
+	case SENDURI: {
+		//funzione per mostrare uri
+		showURI(message);
+		/*QStringList serverMessage = Serialize::responseUnserialize(message);
+		QMessageBox resultDialog(this);
+		resultDialog.setInformativeText(serverMessage[1]);
+		resultDialog.exec();*/
+		/*break;*/
+
+	}
 	default:
 		break;
 	}
@@ -286,6 +296,13 @@ void FileBrowser::processEditorMessage(QJsonObject message)
 	if (it != m_textEditors.end()) {
 		it->second->remoteAction(m.second);
 	}
+}
+
+void FileBrowser::showURI(QJsonObject msg) {
+	QString serverMessage = Serialize::URIUnserialize(msg);
+	QMessageBox resultDialog(this);
+	resultDialog.setInformativeText(serverMessage);
+	resultDialog.exec();
 }
 
 void FileBrowser::on_addSharedFileButton_clicked() {
@@ -312,3 +329,5 @@ void FileBrowser::showErrorMessage() {
 	errorDialog.exec();
 	qDebug() << "messaggio di errore per il login";
 }
+
+

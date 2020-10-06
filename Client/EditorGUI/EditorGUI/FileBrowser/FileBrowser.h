@@ -41,6 +41,7 @@ private:
 	void closeEvent(QCloseEvent* event);
 	void removeBlank();
 	void requestFiles();
+	/*void showURI(QJsonObject msg);*/
 
 private slots:
 	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
@@ -57,6 +58,7 @@ private slots:
 	void handleNewMessage(QJsonObject message);
 	void processEditorMessage(QJsonObject message);
 	void showErrorMessage();
+	void showURI(QJsonObject msg);
 
 signals:
 	void showParent();

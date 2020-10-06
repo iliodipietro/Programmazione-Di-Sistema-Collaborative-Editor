@@ -259,6 +259,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("SENDURI request\n");
         fileId = Serialize::openDeleteFileUnserialize(ObjData); //uso questa funzione perche ritorna l'id del file
 
+        qDebug("SENDURI dopo serialize request\n");
         db->getURIToShare(fileId, client);
 
         break;

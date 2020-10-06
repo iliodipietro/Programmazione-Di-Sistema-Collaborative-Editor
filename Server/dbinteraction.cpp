@@ -51,7 +51,7 @@ DBInteraction* DBInteraction::startDBConnection(){
                                   "FileId       INT      NOT NULL,"
                                   "UserId       INT      NOT NULL,"
                                   "Path     VARCHAR(255),"
-                                  "SiteCounter INT"
+                                  "SiteCounter INT,"
                                   "PRIMARY KEY(FileId, UserId) );");
                     if(query1.exec() && query2.exec()){
                         qDebug("tables created!!!\n");
@@ -147,12 +147,12 @@ bool DBInteraction::checkPassword(QString password,  ClientManager* client){
         QString salt;
         QString message;
         QByteArray response;
-        int userid = client->getId();
+        QString username = client->getUsername();
 
         qDebug()<<"checking password...\n";
 
-        query.prepare("SELECT Password, userid, Salt, profileImage FROM users WHERE userid = (:userid)");
-        query.bindValue(":userid", userid);
+        query.prepare("SELECT Password, userid, Salt, profileImage FROM users WHERE username = (:username)");
+        query.bindValue(":username", username);
         if (query.exec()) {
 
             if(query.next()){
@@ -486,7 +486,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
             else{
                 //il file non esiste, quindi posso crearlo
                 QSqlQuery query2;
-                query2.prepare("SELECT MAX(Id) FROM files"); //l'id del file è un intero crescente: uso MAX perchè l'id deve essere unico per file differenti ma uguale per file uguali, quindi se avessi:
+                query2.prepare("SELECT MAX(FileId) FROM files"); //l'id del file è un intero crescente: uso MAX perchè l'id deve essere unico per file differenti ma uguale per file uguali, quindi se avessi:
                                                              // 1 prova.txt Mattia
                                                              // 1 prova.txt Ilio   (Ilio e Mattia condividono il file prova.txt)
                                                              // 2 file.txt Ilio
@@ -497,7 +497,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                     }
                     qDebug()<< "fileId: "<< fileId << "\n";
 
-                    path.append(username).append("/").append(filename).append(".txt"); //  esempio --> currdir/files/ilio/prova.txt
+
 
                     qDebug()<< "Path: " << path << "\n";
 
@@ -507,11 +507,13 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                         QDir().mkdir(images_directory_path);
                     }
 
+                    path.append("/").append(filename).append(".txt"); //  esempio --> currdir/files/ilio/prova.txt
+
                     QSqlQuery query3;
-                    query3.prepare("INSERT INTO files(FileName, Id, userName, Path, SiteCounter) VALUES ((:filename), (:fileId), (:username), (:path), 0)");
+                    query3.prepare("INSERT INTO files(FileName, FileId, UserId, Path, SiteCounter) VALUES ((:filename), (:fileId), (:userid), (:path), 0)");
                     query3.bindValue(":filename", filename);
                     query3.bindValue(":fileId", fileId + 1);
-                    query3.bindValue(":username", username);
+                    query3.bindValue(":userid", userId);
                     query3.bindValue(":path", path);
 
                     if(query3.exec()){
@@ -897,12 +899,17 @@ void DBInteraction::getURIToShare(int fileid, ClientManager *client){
     QByteArray response;
     QString message;
     QString URI;
+
+    qDebug("qui ci arrivo? si qui ci arrivo crasha dopo\n");
     if(!instance->isUserLogged(client)){
+        qDebug("SENDURI request user not logged\n");
         return;
     }
-    if(files.contains(fileid)){
-        URI = files.value(fileid)->getPath();
+    if(instance->files.contains(fileid)){
+        qDebug("SENDURI in if in dbinteraction request\n");
+        URI = instance->files.value(fileid)->getPath();
         response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
+
         client->writeData(response);
     }
     else {
@@ -1178,7 +1185,8 @@ File* DBInteraction::getFile(int fileid){
 
 bool DBInteraction::isUserLogged(ClientManager* client){
 
-    if(!activeusers.contains(client)){
+    qDebug("fallisce qui?/n");
+    if(!instance->activeusers.contains(client)){
         qDebug()<<"user not authorized!\n";
         //anche se non è attivo, l'utente ha comunque un socket
         sendError(client);

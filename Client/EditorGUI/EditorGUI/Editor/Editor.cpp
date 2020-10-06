@@ -536,7 +536,15 @@ void Editor::filePrintPdf() {
 }
 
 
+
+//funzione atta a creare un link per la condivisione di un file, da connettere al tasto share
 void Editor::shareLink() {
+	
+	QJsonObject obj = Serialize::openDeleteFileSerialize(m_fileId, SENDURI);
+	QByteArray msg = Serialize::fromObjectToArray(obj);
+	if (m_socketHandler->writeData(msg) == false) {
+		return;
+	}
 
 }
 

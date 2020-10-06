@@ -158,4 +158,5 @@ private slots:
 signals:
 	void editorClosed(int);
 	void styleChange();
+	
 };

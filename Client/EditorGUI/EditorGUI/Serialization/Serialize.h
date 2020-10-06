@@ -74,6 +74,8 @@ public:
 	static QJsonObject responseSerialize(bool res, QString message, int userID, int type);
 	static QStringList responseUnserialize(QJsonObject obj);
 
+	static QString URIUnserialize(QJsonObject uri);
+
 	static QJsonObject ObjectFromString(QString& in);
 
 	static QJsonObject cursorPostionSerialize(int position, int user, int fileId, int type);
@@ -92,6 +94,8 @@ public:
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
+
+	static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
 
 
 	//void setType(QString type);
