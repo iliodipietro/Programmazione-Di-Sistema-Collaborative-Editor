@@ -19,7 +19,7 @@
 
 
 //altre define
-#define TIMEOUT 2000000// dopo quanto tempo il crdt deve essere salvato su file
+#define TIMEOUT 2000// dopo quanto tempo il crdt deve essere salvato su file
 //#define TIMEOUT 10000 // 10 secondi
 
 class Message;
@@ -67,6 +67,9 @@ public:
 	void readFromFile();
 
 	QTimer* getTimer();
+
+    std::vector<Symbol>::iterator getCursorPosition(std::vector<int> crdtPos);
+    std::vector<int> fromIteratorToPosition(std::vector<Symbol>::iterator it);
 
 public slots:
 	void saveOnFile();//versione base salva solo i caratteri e non il formato--> da testare

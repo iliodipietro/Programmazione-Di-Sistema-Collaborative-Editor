@@ -61,7 +61,7 @@ public:
 	void saveOnFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
 	bool isEmpty();
 
-
+	__int64 getCursorPosition(std::vector<int> crdtPos);
 
 	//for fractional position debug
 	void printPositions()
