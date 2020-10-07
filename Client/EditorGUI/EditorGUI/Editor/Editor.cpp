@@ -10,6 +10,10 @@
 #include <QChar>
 #include <Qdebug>
 
+
+#include <chrono>
+#include <thread>
+
 #define PADDING 10
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
@@ -587,6 +591,7 @@ void Editor::localInsert() {
 
 
 
+
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
 	for (int i = lastCursor; i < TC.position(); i++) {
 		if (i < 0)
@@ -621,6 +626,14 @@ void Editor::localInsert() {
 
 		Message m = this->_CRDT->localInsert(pos, chr, font, color, alignment);
 		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
+
+
+		//mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
+		if (((i - lastCursor % 50) == 0) && i != 0) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));//stop per 1/100 di sec
+		}
+
+
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
