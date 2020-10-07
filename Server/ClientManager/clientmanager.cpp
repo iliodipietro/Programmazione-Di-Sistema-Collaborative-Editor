@@ -63,13 +63,13 @@ QString ClientManager::getUsername(){
     return this->m_username;
 }
 
-QString ClientManager::getNickname(){
-    return this->m_nickname;
+QString ClientManager::getEmail(){
+    return this->m_email;
 
 }
 
-void ClientManager::setNickname(QString nickname){
-    this->m_nickname = nickname;
+void ClientManager::setEmail(QString email){
+    this->m_email = email;
 
 }
 int ClientManager::getId(){

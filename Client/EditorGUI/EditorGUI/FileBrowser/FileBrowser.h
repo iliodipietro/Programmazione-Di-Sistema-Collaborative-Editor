@@ -11,7 +11,7 @@
 #include "Editor/Editor.h"
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
-#include "ModifyProfile.h"
+#include "Modify Profile/ModifyProfile.h"
 #include "ui_FileBrowser.h"
 
 class FileBrowser : public QMainWindow
