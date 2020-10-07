@@ -1,51 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
-      <Extensions>qrc;*</Extensions>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
     <Filter Include="Form Files">
       <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
       <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
-      <Extensions>moc;h;cpp</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Login\Login.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileBrowser\FileBrowser.cpp">
+    <ClCompile Include="CRDT\CRDT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CRDT\CRDT.cpp">
+    <ClCompile Include="FileBrowser\FileBrowser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CRDT\Symbol.cpp">
+    <ClCompile Include="Login\Login.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRDT\Message.cpp">
@@ -60,32 +71,83 @@
     <ClCompile Include="SocketHandler\SocketMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CRDT\Symbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_FileBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Login.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_NewAccount.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Editor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_FileBrowser.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Login.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_NewAccount.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Editor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_FileBrowser.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Login.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_NewAccount.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="Serialization\Serialize.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Modify Profile\ModifyProfile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\CustomCursor.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="Editor\MyTextEdit.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_Login.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Login\Login.h">
+    <ClInclude Include="CRDT\CRDT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Editor\Editor.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="FileBrowser\FileBrowser.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Editor\Editor.h">
+    <ClInclude Include="Structures\FormatStructure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Login\Login.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <ClInclude Include="CRDT\Message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <QtMoc Include="NewAccount\NewAccount.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -95,21 +157,73 @@
     <QtMoc Include="SocketHandler\SocketMessage.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Serialization\Serialize.h">
+    <ClInclude Include="CRDT\Symbol.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="Modify Profile\ModifyProfile.h">
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\moc_predefs.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="Modify Profile\ModifyProfile.h">
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_prova.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="Editor\CustomCursor.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="Editor\MyTextEdit.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
+    </ClInclude>
+    <ClInclude Include="Serialization\define.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FileBrowser.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_Login.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_NewAccount.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_Editor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Structures\MessageTypes.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeneratedFiles\moc_Editor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_FileBrowser.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_Login.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_NewAccount.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_SocketHandler.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\moc_SocketMessage.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <CustomBuild Include="GeneratedFiles\moc_predefs.h.cbt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="Editor\Editor.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="FileBrowser\FileBrowser.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Login\Login.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="NewAccount\NewAccount.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Modify Profile\modifyProfile.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Login\Login.qrc">
@@ -117,52 +231,77 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="Login\Login.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtUic Include="FileBrowser\FileBrowser.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtUic Include="Editor\Editor.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtUic Include="NewAccount\NewAccount.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
-    <QtUic Include="Modify Profile\ModifyProfile.ui">
-      <Filter>Form Files</Filter>
-    </QtUic>
+    <QtMoc Include="Modify Profile\ModifyProfile.h">
+      <Filter>Generated Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Serialization\Serialize.h">
+      <Filter>Generated Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\CustomCursor.h">
+      <Filter>Generated Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Editor\MyTextEdit.h">
+      <Filter>Generated Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
-    <None Include="EditorGUI.pro" />
-    <None Include="EditorGUI.pri" />
     <None Include="Makefile" />
     <None Include="Makefile.Debug" />
     <None Include="Makefile.Release" />
     <None Include=".qmake.stash" />
+    <None Include="cpp.hint" />
+    <None Include="EditorGUI.pri" />
+    <None Include="EditorGUI.pro" />
+    <None Include="EditorGUI.pro.user.94ee295" />
+    <None Include="EditorGUI.pro.user.347e61a" />
+    <None Include="release\qmake\qtvars_x64_Release.props" />
+    <None Include="debug\qmake\temp\Makefile" />
+    <None Include="debug\qmake\temp\qtvars.pro" />
+    <None Include="debug\qmake\temp\qtvars_x64_Debug.props" />
+    <None Include="debug\qmake\qtvars_x64_Debug.props" />
+    <None Include="debug\vc142.pdb" />
+    <None Include="debug\EditorGUI.tlog\CL.10376.write.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\CL.command.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\CL.read.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\CustomBuild.command.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\CustomBuild.read.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\CustomBuild.write.1.tlog" />
+    <None Include="debug\EditorGUI.tlog\EditorGUI.lastbuildstate" />
+    <None Include="debug\EditorGUI.tlog\EditorGUI.write.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\moc.read.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\moc.write.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\rcc.read.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\rcc.write.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\uic.read.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\uic.write.1u.tlog" />
+    <None Include="debug\EditorGUI.tlog\unsuccessfulbuild" />
+    <None Include="release\qmake\temp\38EDC49A-C640-3BB7-BBD6-A08467C10EE4.EditorGUI.designtime.idx" />
+    <None Include="release\qmake\temp\Makefile" />
+    <None Include="release\qmake\temp\qtvars.pro" />
+    <None Include="release\qmake\temp\qtvars_x64_Release.props" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Structures\FormatStructure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRDT\CRDT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRDT\Symbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRDT\Message.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Structures\MessageTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Serialization\define.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRDT\MessageType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <Text Include="config.txt" />
+    <Text Include="PROVA SCRITTURA.txt" />
+    <Text Include="debug\qmake\temp\props.txt" />
+    <Text Include="debug\qmake\temp\qtvars.log" />
+    <Text Include="debug\EditorGUI.Build.CppClean.log" />
+    <Text Include="debug\EditorGUI.log" />
+    <Text Include="debug\EditorGUI.vcxproj.FileListAbsolute.txt" />
+    <Text Include="debug\qt_work.log" />
+    <Text Include="x64\Debug\EditorGUI.log" />
+    <Text Include="release\qmake\temp\props.txt" />
+    <Text Include="release\qmake\temp\qtvars.log" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="debug\CRDT.obj" />
+    <Object Include="debug\Message.obj" />
+    <Object Include="debug\moc_Editor.obj" />
+    <Object Include="debug\moc_NewAccount.obj" />
+    <Object Include="debug\moc_SocketHandler.obj" />
+    <Object Include="debug\moc_SocketMessage.obj" />
+    <Object Include="debug\SocketHandler.obj" />
+    <Object Include="debug\SocketMessage.obj" />
+    <Object Include="debug\Symbol.obj" />
   </ItemGroup>
 </Project>
