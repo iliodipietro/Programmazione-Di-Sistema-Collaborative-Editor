@@ -26,10 +26,13 @@ private:
     bool m_mousePress;
     CRDT* m_crdt;
 
+    void paintCustomCursors();
+    void paintUsersIntervals();
+
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent* e);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
 
