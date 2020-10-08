@@ -12,14 +12,14 @@ class ClientManager : public QObject
 public:
     ClientManager(QTcpSocket* socket, QObject *parent = nullptr);
     void setUsername(QString username);
-    void setNickname(QString nickname);
+    void setEmail(QString email);
     void setColor(QColor color);
     void setId(int id);
     bool writeData(QByteArray& data);
 
 
     QString getUsername();
-    QString getNickname();
+    QString getEmail();
     int getId();
     inline  QColor getColor() { return m_color; }
 
@@ -37,7 +37,7 @@ public slots:
 private:
     QColor m_color;
     QString m_username;
-    QString m_nickname;
+    QString m_email;
     int m_id;
     QSharedPointer<QTcpSocket> m_clientSocket;
     QSharedPointer<QByteArray> m_socketBuffer;

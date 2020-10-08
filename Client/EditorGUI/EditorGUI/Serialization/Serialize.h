@@ -36,7 +36,7 @@ public:
 	static int actionType(QJsonObject obj);
 
 
-	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
+	static QJsonObject userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
@@ -87,6 +87,7 @@ public:
 
 	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);//augusto
 	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);//augusto
+
 
 	static QJsonObject logoutUserSerialize(int type);//augusto
 
