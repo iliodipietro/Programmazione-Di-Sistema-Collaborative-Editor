@@ -10,7 +10,7 @@ Serialize::Serialize(QObject* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage)
 {
 	/*
 	Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio è discriminato dal valore di type
@@ -30,7 +30,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
 
 	if (type == REGISTER) {
 		//il nickname serve solo in fase di register per salvarlo sul server
-		obj.insert("nickname", QJsonValue(nickname));
+		obj.insert("email", QJsonValue(email));
 		obj.insert("img", Serialize::jsonValFromPixmap(*profileImage));
 	}
 
@@ -57,7 +57,8 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	-->lunghezza 3 se LOGIN:
 		list[0]: username
 		list[1]: password
-		list[2]: nickname
+		list[2]: email
+		list[3]: img
 	*/
 
 	QString usr = obj.value("user").toString();
@@ -68,8 +69,8 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	list.append(usr);
 	list.append(password);
 	if (Serialize::actionType(obj) == REGISTER) {
-		QString nickname = obj.value("nickname").toString();
-		list.append(nickname);
+		QString email = obj.value("email").toString();
+		list.append(email);
 		QString img = obj.value("img").toString();
 		list.append(img);
 	}

@@ -30,7 +30,7 @@ public:
     static int actionType(QJsonObject obj);
 
     //usate in myserver.cpp per login o register
-    static QJsonObject userSerialize(QString user, QString password, QString nickname, QPixmap profileImage, int type);//type usato per discriminare login o register
+    static QJsonObject userSerialize(QString username, QString email, QString password, QString profileImage, int type);//type usato per discriminare login o register
     static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
     //la register l'immagine viene serializzata a parte per ora
 
@@ -52,8 +52,8 @@ public:
     static QJsonObject renameFileSerialize(int fileId, QString newName, int type);// ilio
     static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
-    static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+    static QJsonObject sharedFileAcquisitionSerialize(QString URI, int type); // ilio
+    static QString sharedFileAcquisitionUnserialize(QJsonObject obj); // ilio
 
     static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
     static QStringList changePasswordUnserialize(QJsonObject obj); // ilio

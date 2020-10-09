@@ -1,0 +1,12 @@
+debug/CRDT.o
+debug/Message.o
+debug/Symbol.o
+debug/clientmanager.o
+debug/Serialize.o
+debug/dbinteraction.o
+debug/file.o
+debug/main.o
+debug/myserver.o
+debug/moc_CRDT.o
+debug/moc_clientmanager.o
+debug/moc_myserver.o
