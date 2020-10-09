@@ -78,10 +78,6 @@ void SocketHandler::readyRead()
 	}
 }
 
-QString responseForSynchronousWait(int message) {
-	return message;
-}
-
 bool SocketHandler::writeData(SocketMessage& data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{

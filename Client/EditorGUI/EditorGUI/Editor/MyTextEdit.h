@@ -24,6 +24,7 @@ private:
 
     std::map<int, CustomCursor*> m_cursorsToPrint;
     bool m_mousePress;
+    bool m_usersIntervalsEnabled;
     CRDT* m_crdt;
 
     void paintCustomCursors();

@@ -1,15 +1,22 @@
 #include "MyTextEdit.h"
+#include "Editor.h"
 #include <QPainter>
 #include <QKeyEvent>
 #include <QDebug>
 
-MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false)
+MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false), m_usersIntervalsEnabled(false)
 {
 }
 
 void MyTextEdit::paintEvent(QPaintEvent* event)
 {
 	QTextEdit::paintEvent(event);
+	paintCustomCursors();
+	if (m_usersIntervalsEnabled)
+		paintUsersIntervals();
+}
+
+void MyTextEdit::paintCustomCursors() {
 	QPainter painter(viewport());
 	auto it = m_cursorsToPrint.begin();
 	for (it; it != m_cursorsToPrint.end(); it++) {
@@ -17,6 +24,32 @@ void MyTextEdit::paintEvent(QPaintEvent* event)
 		QRect rect = it->second->getCursorPos();
 		rect.setX(rect.x() - 1);
 		painter.fillRect(rect, QBrush((it->second)->getCursorColor()));
+	}
+}
+
+void MyTextEdit::paintUsersIntervals() {
+	Editor* editor = qobject_cast<Editor*>(parent());
+	auto m_usersCharactersIntervals = editor->getUsersCharactersIntervals();
+	std::vector<std::pair<int, int>> rowDimensions;
+	QStringList strLst = this->toPlainText().split('\n');
+	QFont textEditFont = this->font();
+	QFontMetrics fm(textEditFont);
+	auto it = m_usersCharactersIntervals->begin();
+	for (int i = 0; i < strLst.length(); i++)
+	{
+		int length = it->getIntervalLenght();
+		if (length <= strLst[i].length()) {
+			QString subStrs = strLst[i].left(length);
+			strLst[i] = strLst[i].mid(length);
+
+			int pixelsWide = fm.width(subStrs);
+			int pixelsHigh = fm.height();
+			rowDimensions.emplace_back(pixelsWide, pixelsHigh);
+			it++;
+		}
+		else {
+
+		}
 	}
 }
 
@@ -109,7 +142,7 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 		if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition >= mainCursorPosition) {
 			it->second->setCursorPosition(cursorPosition - offsetPosition, CustomCursor::ChangePosition);
 		}
-		else if(cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < mainCursorPosition){
+		else if (cursorPosition > mainCursorPosition && cursorPosition - offsetPosition < mainCursorPosition) {
 			it->second->setCursorPosition(mainCursorPosition, CustomCursor::ChangePosition);
 		}
 	}

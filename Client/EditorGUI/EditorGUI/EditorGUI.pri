@@ -8,12 +8,16 @@ message("You are running qmake on a generated .pro file. This may not work!")
 
 
 HEADERS += ./CRDT/CRDT.h \
+    $$PWD/Editor/CustomCursor.h \
+    $$PWD/Editor/MyTextEdit.h \
+    $$PWD/Editor/UserInterval.h \
     $$PWD/GeneratedFiles/moc_predefs.h \
     $$PWD/GeneratedFiles/ui_Editor.h \
     $$PWD/GeneratedFiles/ui_FileBrowser.h \
     $$PWD/GeneratedFiles/ui_Login.h \
     $$PWD/GeneratedFiles/ui_NewAccount.h \
     $$PWD/GeneratedFiles/ui_prova.h \
+    $$PWD/Modify Profile/ModifyProfile.h \
     $$PWD/SocketHandler/SocketHandler.h \
     $$PWD/SocketHandler/SocketMessage.h \
     ./CRDT/Message.h \
@@ -22,8 +26,13 @@ HEADERS += ./CRDT/CRDT.h \
     ./Login/Login.h \
     ./FileBrowser/FileBrowser.h \
     ./Editor/Editor.h \
+    ./Modify Profile/ModifyProfile.h \
     ./NewAccount/NewAccount.h
+
 SOURCES += ./CRDT/CRDT.cpp \
+    $$PWD/Editor/CustomCursor.cpp \
+    $$PWD/Editor/MyTextEdit.cpp \
+    $$PWD/Editor/UserInterval.cpp \
     $$PWD/GeneratedFiles/Debug/moc_Editor.cpp \
     $$PWD/GeneratedFiles/Debug/moc_FileBrowser.cpp \
     $$PWD/GeneratedFiles/Debug/moc_Login.cpp \
@@ -33,6 +42,7 @@ SOURCES += ./CRDT/CRDT.cpp \
     $$PWD/GeneratedFiles/moc_Login.cpp \
     $$PWD/GeneratedFiles/moc_NewAccount.cpp \
     $$PWD/GeneratedFiles/qrc_Login.cpp \
+    $$PWD/Modify Profile/ModifyProfile.cpp \
     $$PWD/SocketHandler/SocketHandler.cpp \
     $$PWD/SocketHandler/SocketMessage.cpp \
     ./CRDT/Message.cpp \
@@ -41,8 +51,10 @@ SOURCES += ./CRDT/CRDT.cpp \
     ./FileBrowser/FileBrowser.cpp \
     ./Login/Login.cpp \
     ./main.cpp \
+    ./Modify Profile/ModifyProfile.cpp \
     ./NewAccount/NewAccount.cpp
 FORMS += ./Editor/Editor.ui \
+    ./Modify Profile/modifyProfile.ui \
     ./FileBrowser/FileBrowser.ui \
     ./Login/Login.ui \
     ./NewAccount/NewAccount.ui
