@@ -41,7 +41,7 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 			int id = item->data(Qt::UserRole).toInt();
 			editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
 			m_textEditors.insert(std::pair<int, Editor*>(id, editor));
-			QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, OPEN));
+			QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, OPEN));
 			this->m_socketHandler->writeData(data);
 		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
@@ -94,7 +94,7 @@ void FileBrowser::on_deleteFile_clicked()
 	}
 	QString filename = current_item->text();
 	int id = current_item->data(Qt::UserRole).toInt();
-	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, DELETE));
+	QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, DELETE));
 	this->m_socketHandler->writeData(data);
 	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
 	if (item != nullptr) {
@@ -182,7 +182,7 @@ void FileBrowser::editorClosed(int fileId) {
 	editor->deleteLater();
 	QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(this->clientID, fileId, REMOVEEDITINGUSER));
 	m_socketHandler->writeData(message);
-	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(fileId, CLOSE));
+	QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(fileId, m_textEditors.at(fileId)->getSiteCounter() ,CLOSE));
 	this->m_socketHandler->writeData(data);
 	filename_id.remove(fileId);
 	m_textEditors.erase(fileId);
@@ -214,7 +214,7 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 		QString filename = map.value(id);
 		Editor *editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
 		m_textEditors.insert(std::pair<int, Editor*>(id, editor));
-		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, OPEN));
+		QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, OPEN));
 		this->m_socketHandler->writeData(data);
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();

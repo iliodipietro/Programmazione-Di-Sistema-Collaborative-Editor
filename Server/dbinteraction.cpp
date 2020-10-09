@@ -563,32 +563,13 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
                             stream << text_path;
                             file.close();
                         }*/
-                        /*
-                        QSqlQuery query4;
-
-                        query4.prepare("SELECT fileId FROM files WHERE userid = (:userid) AND filename = (:filename)");
-                        query4.bindValue(":userid", userId);
-                        query4.bindValue(":filename", filename);
-                        if(query4.exec()){
-                            if(query4.next()){
-                                fileId = query4.value(0).toInt();
-                                qDebug()<<"ok!!!!!!!!!!!!\n";
-                            }
-
-                        }
-                        else {
-                            qDebug() << "SELECT fileId failed: " << query4.lastError() << "\n";
-                            instance->db.close();
-                        }
-                        qDebug()<< "fileid: "<<fileId<<"\n";
-                        */
-                        File* newfile = new File(fileId, path);
+                        //File* newfile = new File(fileId, path);
                         response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
                         client->writeData(response);
                         qDebug() << "sono qui\n";
 
-                        instance->files.insert(fileId, newfile);
-                        instance->openFile(fileId, client);
+                        //instance->files.insert(fileId, newfile);
+                        //instance->openFile(fileId, client);
                         instance->db.close();
 
                     }
@@ -692,6 +673,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
     if (!instance->isUserLogged(client)) {
         return;
     }
+    qDebug() << "fileId da aprire: " << fileId << "\n";
     if (instance->files.contains(fileId)) {
         //il file Ã¨ gia in RAM
 
@@ -752,8 +734,9 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
                 if (query.next()) {
                     path = QString(query.value("path").toString());
                     f = new File(fileId, path);
-                    f->addUser(client);
+                    //f->addUser(client);
                     instance->files.insert(fileId, f);
+                    instance->files.value(fileId)->addUser(client);
                     qDebug() << "user added!\n";
                     //sendSuccess(client);
                     response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
@@ -797,6 +780,8 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
     if (!instance->isUserLogged(client)) {
         return;
     }
+    qDebug() << "fileId da chiudere: " << fileId << "\n";
+    qDebug() << "sitecounter del file da chiudere: " << siteCounter << "\n";
 
     if (!instance->files.contains(fileId)) { // se il file non si trova nella mappa di file attivi in quel momento vuol dire che o nessuno lo sta utilizzando e quindi Ã¨ giÃ  chiuso oppure che non esiste
         qDebug() << "this file does not exist or it is not opened!\n";
@@ -817,9 +802,10 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         if (instance->db.open()) {
             QSqlQuery query;
             int userid = client->getId();
-            query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) userid = (:userid)");
+            qDebug() << "userId dell'utente che vuole chiudere il file: " << userid << "\n";
+            query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) AND userid = (:userid)");
             query.bindValue(":sitecounter", siteCounter);
-            query.bindValue(":fileId", fileId);
+            query.bindValue(":fileid", fileId);
             query.bindValue(":userid", userid);
 
             if (!query.exec()) {
@@ -828,6 +814,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
                 instance->db.close();
                 return;
             }
+            qDebug() << "update riuscita\n";
             instance->db.close();
 
         }
@@ -905,6 +892,7 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
     QString message;
     QSqlQuery query;
     QString path;
+    bool last = false;
 
 
     if (!instance->isUserLogged(client)) {
@@ -916,17 +904,55 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
 
     if (instance->files.contains(fileId)) {
         //qualcuno sta usando il file
-        path = instance->files.value(fileId)->getPath(); // controllare se esiste il file id nel DB e se non esiste eliminare il file (bool QFile::remove(const QString &fileName))
-
-
         if (instance->files.value(fileId)->getUsers().contains(client)) {
             //il file è aperto dal nostro utente (MA PUO DARSI CHE NON SIA IL SOLO CHE LO STA USANDO!!)
             instance->files.value(fileId)->removeUser(client);
         }
     }
-    //prima della cancellazione devo salvare di nuovo il file? nel caso di altri utenti attivi sullo stesso
 
     if (instance->db.open()) {
+        QSqlQuery query2;
+        int cnt = -1;
+
+        query2.prepare("SELECT COUNT(*) FROM files WHERE fileId = (:fileid)"); //nel caso fosse rimansto solamente 1 file con quel id vuol dire che con la delete che farò dopo non ci sarà piu nel DB, allora lo posso cancellare dalla tabella
+        query2.bindValue(":fileid", fileId);
+
+        if (query2.exec()) {
+            if (query2.next()) {
+                cnt = query2.value(0).toInt();
+                if (cnt == 1) {
+                    //il file non esisterà più nel DB, allora lo elimino anche dalla cartella files
+                    qDebug() << "file da eliminare dalla cartella files\n";
+                    QSqlQuery query3;
+                    last = true;
+                    
+
+                    query3.prepare("SELECT path FROM files WHERE fileid = (:fileid) AND userid = (:userid)");
+                    query3.bindValue(":userid", userid);
+                    query3.bindValue(":fileid", fileId);
+                    if (query3.exec()) {
+                        if (query3.next()) {
+                            path = QString(query3.value("path").toString());
+                        }
+                    }
+                    else {
+                        qDebug() << "SELECT path failed: " << query3.lastError() << "\n";
+                        sendError(client);
+                        instance->db.close();
+                        return;
+                    }
+                }
+
+
+            }
+            else{
+                qDebug() << "SELECT COUNT(*) failed: " << query2.lastError() << "\n";
+                sendError(client);
+                instance->db.close();
+                return;
+
+            }
+        }
         query.prepare("DELETE FROM files WHERE fileId = (:fileid) AND userid = (:userid)");
         query.bindValue(":userid", userid);
         query.bindValue(":fileid", fileId);
@@ -934,6 +960,10 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
             qDebug() << "file deleted!!\n";
             sendSuccess(client);
             instance->db.close();
+            if (last) {
+                qDebug() << "il file verrà anche rimosso dalla cartella perchè eliminato da tutti gli utenti\n";
+                QFile::remove(path);
+            }
         }
         else {
             qDebug() << "DELETE failed: " << query.lastError() << "\n";
@@ -941,6 +971,11 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
             instance->db.close();
             return;
         }
+
+
+
+
+
     }
     else {
         qDebug() << "DB not opened!!\n";
@@ -1046,8 +1081,8 @@ void DBInteraction::SharedFileAcquisition(QString URI, ClientManager* client) {
                 QByteArray message = Serialize::fromObjectToArray(Serialize::FileListSerialize(id_file, SEND_FILES));
                 client->writeData(message);
                 instance->db.close();
-                //instance->openFile(fileId, client, URI); Ã¨ meglio aspettare una richiesta specifica dal client per aprire il file
-                //perchÃ¨ se il client fosse lento si perderebbe i messaggi
+                //Ã¨ meglio aspettare una richiesta specifica dal client per aprire il file perchÃ¨ se il client fosse lento si perderebbe i messaggi
+                
 
 
             }

@@ -30,6 +30,7 @@ public:
 	int getFileId();
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
+	int getSiteCounter(); // ilio
 
 private:
 	Ui::Editor ui;
@@ -90,6 +91,7 @@ private:
 	bool styleBounce = false;
 
 	//FINE-------------------------------------------------------------------------------------------------------
+
 
 	void closeEvent(QCloseEvent* event);
 	void createActions();

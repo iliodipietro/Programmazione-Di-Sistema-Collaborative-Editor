@@ -193,7 +193,17 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj) {
 }
 
 
-QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
+QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type) {
+	QJsonObject obj;
+
+	obj.insert("fileId", fileId);
+	obj.insert("sitecounter", siteCounter);
+	obj.insert("type", type);
+
+	return obj;
+}
+
+QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
 {
 	/*
 	Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
