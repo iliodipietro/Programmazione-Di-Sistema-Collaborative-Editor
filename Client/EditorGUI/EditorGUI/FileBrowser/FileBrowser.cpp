@@ -233,7 +233,6 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 	case NEWFILE:
 		addFile(message);
 		break;
-	case OPEN:
 
 	case NEWEDITINGUSER: {
 		QPair<int, QStringList> fileUserInfo = Serialize::addEditingUserUnserialize(message);
@@ -263,6 +262,11 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 		break;
 	}
 	case SITECOUNTER: {
+		QPair<int, int> fileId_siteCounter = Serialize::siteCounterUnserialize(message);
+		auto it = m_textEditors.find(fileId_siteCounter.first);
+		if (it != m_textEditors.end()) {
+			it->second->setSiteCounter(fileId_siteCounter.second);
+		}
 		break;
 	}
 	default:

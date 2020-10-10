@@ -98,6 +98,7 @@ public:
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
 
+	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
 
 	//void setType(QString type);
 

@@ -727,6 +727,16 @@ QJsonObject Serialize::logoutUserSerialize(int type)
 	return obj;
 }
 
+QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj) {
+	QJsonObject obj;
+
+	int siteCounter = obj.value("siteCounter").toInt();
+	int fileId = obj.value("fileId").toInt();
+	return QPair<int, int>(fileId, siteCounter);
+
+
+}
+
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)
 //{
 //	QJsonObject obj;
