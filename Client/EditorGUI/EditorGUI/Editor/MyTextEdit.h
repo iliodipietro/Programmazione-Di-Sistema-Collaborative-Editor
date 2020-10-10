@@ -1,8 +1,18 @@
 #pragma once
 #include <QObject>
 #include <QTextEdit>
+#include <QColor>
 #include <map>
 #include "CustomCursor.h"
+
+struct Interval{
+    int height;
+    int width;
+    int row;
+    QColor color;
+
+    Interval(int height, int width, int row, QColor color) :height(height), width(width), row(row), color(color) {};
+};
 
 class MyTextEdit : public QTextEdit
 {

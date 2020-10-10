@@ -29,28 +29,67 @@ void MyTextEdit::paintCustomCursors() {
 
 void MyTextEdit::paintUsersIntervals() {
 	Editor* editor = qobject_cast<Editor*>(parent());
-	auto m_usersCharactersIntervals = editor->getUsersCharactersIntervals();
-	std::vector<std::pair<int, int>> rowDimensions;
+	auto usersCharactersIntervals = editor->getUsersCharactersIntervals();
+	std::vector<Interval> rowDimensions;
 	QStringList strLst = this->toPlainText().split('\n');
 	QFont textEditFont = this->font();
 	QFontMetrics fm(textEditFont);
-	auto it = m_usersCharactersIntervals->begin();
-	for (int i = 0; i < strLst.length(); i++)
-	{
-		int length = it->getIntervalLenght();
-		if (length <= strLst[i].length()) {
-			QString subStrs = strLst[i].left(length);
-			strLst[i] = strLst[i].mid(length);
 
+	int i = 0;
+	for (auto it = usersCharactersIntervals->begin(); it != usersCharactersIntervals->end(); it++) {
+		int intervalLength = it->getIntervalLenght();
+
+		if (intervalLength < strLst[i].length()) {
+			QString subStrs = strLst[i].left(intervalLength);
 			int pixelsWide = fm.width(subStrs);
 			int pixelsHigh = fm.height();
-			rowDimensions.emplace_back(pixelsWide, pixelsHigh);
-			it++;
+			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			strLst[i] = strLst[i].mid(intervalLength);
+		}
+		else if (intervalLength == strLst[i].length()) {
+			int pixelsWide = fm.width(strLst[i]);
+			int pixelsHigh = fm.height();
+			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			i++;
 		}
 		else {
+			int partialLength = intervalLength;
+			do {
+				partialLength -= strLst[i].length();
+				int pixelsWide = fm.width(strLst[i]);
+				int pixelsHigh = fm.height();
+				rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				i++;
+			} while (partialLength > strLst[i].length());
 
+			QString subStrs = strLst[i].left(partialLength);
+			int pixelsWide = fm.width(subStrs);
+			int pixelsHigh = fm.height();
+			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			strLst[i] = strLst[i].mid(partialLength);
 		}
 	}
+
+	QTextCursor TC = this->textCursor();
+	int initialPos = TC.position();
+	TC.movePosition(QTextCursor::Start);
+	this->setTextCursor(TC);
+	QPainter painter(viewport());
+
+	for (auto it = rowDimensions.begin(); it != rowDimensions.end();) {
+		QRect rect = this->cursorRect(TC);
+		do {
+			painter.setRenderHint(QPainter::Antialiasing, true);
+			rect.setWidth(it->width);
+			painter.fillRect(rect, QBrush((it->color)));
+			rect.setX(it->width + 1);
+			it++;
+		} while (it != rowDimensions.end() && it->row == (it - 1)->row);
+		TC.movePosition(QTextCursor::Down);
+	}
+
+	TC.setPosition(initialPos);
+	this->setTextCursor(TC);
 }
 
 void MyTextEdit::addCursor(int id, QColor color, QString username, int position) {
