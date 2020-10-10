@@ -356,7 +356,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 
 	int action = obj.value("action").toInt();
 	int sender = obj.value("sender").toInt();
-	int fileId = obj.value("fileid").toInt();
+	int fileId = obj.value("fileId").toInt();
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -393,8 +393,11 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 		pos.push_back(qj.toInt());
 	}
 
+
+	QString str_p = obj.value("font").toString();
+	//QFont font(obj.value("font").toString());
 	QFont font;
-	font.fromString(obj.value("font").toString());
+	font.fromString(str_p);
 
 	//int red = obj.value("red").toInt();
 	//int green = obj.value("green").toInt();

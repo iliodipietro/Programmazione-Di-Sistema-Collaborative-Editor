@@ -677,6 +677,7 @@ void Editor::localDelete() {
 
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
 
+
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
 	//for (int i = lastCursor; i > TC.position(); i--) {
@@ -814,6 +815,10 @@ void Editor::maybedecrement(__int64 index)
 
 void Editor::updateLastPosition()
 {
+
+	if (this->remoteEvent)
+		return;
+
 	QTextCursor TC = m_textEdit->textCursor();
 	if (TC.hasSelection()) {
 
@@ -827,8 +832,7 @@ void Editor::updateLastPosition()
 		lastEnd = 0;
 	}
 
-	if (this->remoteEvent)
-		return;
+
 
 	if (this->lastText.compare(this->m_textEdit->toPlainText()))//aggiorno  il cursore solo se non è delete or insert
 		return;
@@ -1021,12 +1025,17 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	if (e->matches(QKeySequence::Paste)) {
 		if (this->lastStart != this->lastEnd && !this->_CRDT->isEmpty()) {
 			//
+
+			start = this->lastStart;
+			end = this->lastEnd;
+
 			this->localDelete();
 
-			int lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			int lastCursor = start < end ? start : end;
 
 			this->m_textEdit->refresh(e);
 
+			QString ss = this -> m_textEdit->toPlainText();
 			this->lastCursor = lastCursor;
 
 			this->localInsert();
@@ -1037,6 +1046,9 @@ void Editor::tastoPremuto(QKeyEvent* e)
 			return;
 		}
 
+	}
+	else {
+		this->lastCursor = TC.position();
 	}
 
 
@@ -1060,6 +1072,11 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		break;
 	case Qt::Key_Alt:
 		break;
+	case Qt::Key_Up:
+	case Qt::Key_Down:
+	case Qt::Key_Left:
+	case Qt::Key_Right:
+		this->lastEnd = this->lastStart = 0;
 	default:
 		if ((e->text() == "") || (isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
 			break;

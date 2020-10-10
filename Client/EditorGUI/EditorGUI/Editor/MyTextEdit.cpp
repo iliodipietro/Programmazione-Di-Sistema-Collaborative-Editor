@@ -36,7 +36,7 @@ void MyTextEdit::removeCursor(int id) {
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
-	this->repaint();
+	//this->repaint();
 }
 
 void MyTextEdit::updateTextSize() {
@@ -86,6 +86,7 @@ void MyTextEdit::keyPressEvent(QKeyEvent* e)
 	case Qt::Key_Right: {
 		QTextEdit::keyPressEvent(e);
 		emit updateCursorPosition(false);
+		emit propaga(e);
 		break;
 	}
 	default:

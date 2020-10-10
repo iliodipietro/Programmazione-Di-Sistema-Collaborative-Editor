@@ -5,6 +5,8 @@ ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(pare
 m_clientSocket(socket), m_socketBuffer(new QByteArray())
 {
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    m_clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    //m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     m_clientSocket->setReadBufferSize(0);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
     connect(m_clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnect()));

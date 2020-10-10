@@ -3,6 +3,7 @@
 #include <QTextEdit>
 #include <QLabel>
 #include "CRDT/CRDT.h"
+#include "QTimer"
 
 class CustomCursor : public QObject
 {
@@ -41,7 +42,13 @@ private:
 	void updateViewAfterDelete(Message m, __int64 index);
 	void updateViewAfterStyleChange(Message m, __int64 index);
 
+	QTimer* timer;
+	std::vector<Message> message_list;
+	std::vector<int> index_list;
+
+
 public slots:
 	void textSizeChanged();
+	void paintNow();
 };
 

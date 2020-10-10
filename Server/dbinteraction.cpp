@@ -819,7 +819,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
                 int userid = client->getId();
                 query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) userid = (:userid)");
                 query.bindValue("sitecounter", siteCounter);
-                query.bindValue("fileId", fileId);
+                query.bindValue("fileid", fileId);
                 query.bindValue("userid", userid);
 
                 if(!query.exec()){
@@ -1266,6 +1266,7 @@ void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteAr
 {
     //qDebug()<< data;
     QPair<int, Message> fileid_message = Serialize::messageUnserialize(obj);
+    QString ssss = fileid_message.second.getSymbol().getFont().toString();
 
     //File *f = instance->getFile(fileid_message.first);
     File* f = instance->getFile(fileid_message.first);// debug only
