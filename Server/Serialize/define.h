@@ -24,4 +24,4 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define CHANGE_PROFILE 19
 #define NEWEDITINGUSER 22
 #define REMOVEEDITINGUSER 23
-
+#define SITECOUNTER 24
