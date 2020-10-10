@@ -340,6 +340,11 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
+	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	m_showUsersIntervals->setCheckable(false);
+	m_showUsersIntervals->setPriority(QAction::LowPriority);
+	connect(m_showUsersIntervals, &QAction::triggered, this, &Editor::showHideUsersIntervals);
+
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
 	ui.toolBar->addAction(m_actionShowEditingUsers);
@@ -1286,4 +1291,8 @@ void Editor::updateUsersCharactersIntervalAfterDelete(int userId, __int64 index)
 			return;
 		}
 	}
+}
+
+void Editor::showHideUsersIntervals() {
+	emit showHideUsersIntervalsSignal();
 }

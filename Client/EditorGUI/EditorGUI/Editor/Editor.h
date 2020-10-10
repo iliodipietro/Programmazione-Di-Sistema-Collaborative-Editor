@@ -55,6 +55,7 @@ private:
 	QAction* actionAlignJustify;
 	QAction* actionTextColor;
 	QAction* m_actionShowEditingUsers;
+	QAction* m_showUsersIntervals;
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
@@ -152,9 +153,11 @@ private slots:
 	void textColor();
 	void showEditingUsers();
 	void updateCursorPosition(bool isSelection);
+	void showHideUsersIntervals();
 
 //---------------------------------------------------------------------------------------------------
 signals:
 	void editorClosed(int);
 	void styleChange();
+	void showHideUsersIntervalsSignal();
 };

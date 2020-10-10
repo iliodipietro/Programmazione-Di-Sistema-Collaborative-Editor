@@ -52,5 +52,9 @@ signals:
     void clickOnTextEdit(QMouseEvent*);
     void propaga(QKeyEvent* e);
     void updateCursorPosition(bool);
+
+private slots:
+    void showHideUsersIntervals();
+
 };
 

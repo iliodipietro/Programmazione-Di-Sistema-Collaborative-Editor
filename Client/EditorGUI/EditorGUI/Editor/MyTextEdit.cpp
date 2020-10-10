@@ -6,6 +6,8 @@
 
 MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false), m_usersIntervalsEnabled(false)
 {
+	Editor* editor = qobject_cast<Editor*>(this->parent());
+	connect(editor, &Editor::showHideUsersIntervalsSignal, this, &MyTextEdit::showHideUsersIntervals);
 }
 
 void MyTextEdit::paintEvent(QPaintEvent* event)
@@ -185,4 +187,8 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 			it->second->setCursorPosition(mainCursorPosition, CustomCursor::ChangePosition);
 		}
 	}
+}
+
+void MyTextEdit::showHideUsersIntervals() {
+	m_usersIntervalsEnabled = !m_usersIntervalsEnabled;
 }
