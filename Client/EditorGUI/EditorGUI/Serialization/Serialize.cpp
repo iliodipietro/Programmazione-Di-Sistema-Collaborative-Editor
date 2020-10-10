@@ -728,7 +728,6 @@ QJsonObject Serialize::logoutUserSerialize(int type)
 }
 
 QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj) {
-	QJsonObject obj;
 
 	int siteCounter = obj.value("siteCounter").toInt();
 	int fileId = obj.value("fileId").toInt();
