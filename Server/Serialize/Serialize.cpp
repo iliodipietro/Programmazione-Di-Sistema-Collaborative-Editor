@@ -322,9 +322,10 @@ QJsonObject Serialize::URISerialize(QString URI, int type){
 
 }
 
-QJsonObject Serialize::siteCounterSerialize(int siteCounter, int type){
+QJsonObject Serialize::siteCounterSerialize(int fileId, int siteCounter, int type){
     QJsonObject obj;
 
+    obj.insert("fileId", fileId);
     obj.insert("siteCounter", siteCounter);
     obj.insert("type", type);
 

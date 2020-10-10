@@ -20,7 +20,6 @@ public:
 	QRect getCursorPos();
 	int getCursorPosition();
 	void setActiveCursor();
-	//void insertText(QString &text);
 	void updateLabelPosition();
 
 private:

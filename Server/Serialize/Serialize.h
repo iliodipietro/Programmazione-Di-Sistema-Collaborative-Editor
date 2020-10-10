@@ -63,7 +63,7 @@ public:
 
     static QJsonObject URISerialize(QString URI, int type);// ilio
 
-    static QJsonObject siteCounterSerialize(int siteCounter, int type);
+    static QJsonObject siteCounterSerialize(int fileId, int siteCounter, int type);
 
 
 

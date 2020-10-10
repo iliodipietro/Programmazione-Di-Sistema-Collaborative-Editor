@@ -24,4 +24,12 @@
 /Client/EditorGUI/EditorGUI/.vs/EditorGUI
 /Server/.vs/Server/v15
 /Client/EditorGUI/EditorGUI/config.txt
-/Server/prova
+/build-Server-Desktop_Qt_5_12_3_MinGW_64_bit-Debug
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Debug
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Profile/.qmake.stash
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Profile/Makefile
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Profile/Makefile.Debug
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Profile/Makefile.Release
+/Client/EditorGUI/build-EditorGUI-Desktop_Qt_5_12_3_MSVC2017_64bit-Release
+/Client/EditorGUI/EditorGUI/release/qmake/temp
+/Client/EditorGUI/EditorGUI/release/qmake
