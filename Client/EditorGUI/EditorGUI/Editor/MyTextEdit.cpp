@@ -165,36 +165,38 @@ void MyTextEdit::updateUsersIntervals() {
 
 	int i = 0;
 	for (auto it = usersCharactersIntervals->begin(); it != usersCharactersIntervals->end(); it++) {
-		int intervalLength = it->getIntervalLenght();
+		if (m_cursorsToPrint.find(it->getUserId()) != m_cursorsToPrint.end()) {
+			int intervalLength = it->getIntervalLenght();
 
-		if (intervalLength < strLst[i].length()) {
-			QString subStrs = strLst[i].left(intervalLength);
-			int pixelsWide = fm.width(subStrs);
-			int pixelsHigh = fm.height();
-			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			strLst[i] = strLst[i].mid(intervalLength);
-		}
-		else if (intervalLength == strLst[i].length()) {
-			int pixelsWide = fm.width(strLst[i]);
-			int pixelsHigh = fm.height();
-			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			i++;
-		}
-		else {
-			int partialLength = intervalLength;
-			do {
-				partialLength -= strLst[i].length();
+			if (intervalLength < strLst[i].length()) {
+				QString subStrs = strLst[i].left(intervalLength);
+				int pixelsWide = fm.width(subStrs);
+				int pixelsHigh = fm.height();
+				m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				strLst[i] = strLst[i].mid(intervalLength);
+			}
+			else if (intervalLength == strLst[i].length()) {
 				int pixelsWide = fm.width(strLst[i]);
 				int pixelsHigh = fm.height();
 				m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
 				i++;
-			} while (partialLength > strLst[i].length());
+			}
+			else {
+				int partialLength = intervalLength;
+				do {
+					partialLength -= strLst[i].length();
+					int pixelsWide = fm.width(strLst[i]);
+					int pixelsHigh = fm.height();
+					m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+					i++;
+				} while (partialLength > strLst[i].length());
 
-			QString subStrs = strLst[i].left(partialLength);
-			int pixelsWide = fm.width(subStrs);
-			int pixelsHigh = fm.height();
-			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			strLst[i] = strLst[i].mid(partialLength);
+				QString subStrs = strLst[i].left(partialLength);
+				int pixelsWide = fm.width(subStrs);
+				int pixelsHigh = fm.height();
+				m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				strLst[i] = strLst[i].mid(partialLength);
+			}
 		}
 	}
 }

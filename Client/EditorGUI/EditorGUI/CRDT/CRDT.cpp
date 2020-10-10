@@ -290,7 +290,7 @@ int CRDT::getId()
 	return this->_siteId;
 }
 
-int CRDT::getCounter(){
+int CRDT::getCounter() {
 	return this->_counter;
 }
 
@@ -556,16 +556,30 @@ void CRDT::updateUserInterval() {
 	int start = 0;
 	int end = 0;
 	int userId = -1;
-	for (auto it = _symbols.begin(); it != _symbols.end(); ) {
-		start = end;
-		do {
+	for (auto it = _symbols.begin(); it != _symbols.end(); it++) {
+		if (it->getId()[0] != this->_siteId) {
 			userId = it->getId()[0];
 			end++;
-			it++;
-			if (it == _symbols.end()) break;
-		} while (it->getId()[0] == userId);
-		m_usersInterval.emplace_back(userId, start, end);
+			if ((it + 1) != _symbols.end() && userId != (it + 1)->getId()[0]) {
+				m_usersInterval.emplace_back(userId, start, end);
+				start = end;
+			}
+		}
+		else {
+			start++;
+			end = start;
+		}
+
+		//start = end;
+		//do {
+		//	userId = it->getId()[0];
+		//	end++;
+		//	it++;
+		//	if (it == _symbols.end()) break;
+		//} while (it->getId()[0] == userId);
+		//m_usersInterval.emplace_back(userId, start, end);
 	}
+	m_usersInterval.emplace_back(userId, start, end);
 }
 
 void CRDT::setSiteCounter(int siteCounter) {
