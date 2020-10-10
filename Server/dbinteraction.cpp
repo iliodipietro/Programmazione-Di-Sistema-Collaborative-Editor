@@ -817,7 +817,7 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
             if(instance->db.open()){
                 QSqlQuery query;
                 int userid = client->getId();
-                query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) userid = (:userid)");
+                query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) AND userid = (:userid)");
                 query.bindValue("sitecounter", siteCounter);
                 query.bindValue("fileId", fileId);
                 query.bindValue("userid", userid);
