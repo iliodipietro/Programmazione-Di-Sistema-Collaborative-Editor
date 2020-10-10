@@ -160,4 +160,5 @@ signals:
 	void editorClosed(int);
 	void styleChange();
 	void showHideUsersIntervalsSignal();
+	void updateUsersIntervals();
 };

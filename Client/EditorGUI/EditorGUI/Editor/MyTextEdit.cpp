@@ -8,6 +8,7 @@ MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(pa
 {
 	Editor* editor = qobject_cast<Editor*>(this->parent());
 	connect(editor, &Editor::showHideUsersIntervalsSignal, this, &MyTextEdit::showHideUsersIntervals);
+	connect(editor, &Editor::updateUsersIntervals, this, &MyTextEdit::updateUsersIntervals);
 }
 
 void MyTextEdit::paintEvent(QPaintEvent* event)
@@ -30,55 +31,13 @@ void MyTextEdit::paintCustomCursors() {
 }
 
 void MyTextEdit::paintUsersIntervals() {
-	Editor* editor = qobject_cast<Editor*>(parent());
-	auto usersCharactersIntervals = editor->getUsersCharactersIntervals();
-	std::vector<Interval> rowDimensions;
-	QStringList strLst = this->toPlainText().split('\n');
-	QFont textEditFont = this->font();
-	QFontMetrics fm(textEditFont);
-
-	int i = 0;
-	for (auto it = usersCharactersIntervals->begin(); it != usersCharactersIntervals->end(); it++) {
-		int intervalLength = it->getIntervalLenght();
-
-		if (intervalLength < strLst[i].length()) {
-			QString subStrs = strLst[i].left(intervalLength);
-			int pixelsWide = fm.width(subStrs);
-			int pixelsHigh = fm.height();
-			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			strLst[i] = strLst[i].mid(intervalLength);
-		}
-		else if (intervalLength == strLst[i].length()) {
-			int pixelsWide = fm.width(strLst[i]);
-			int pixelsHigh = fm.height();
-			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			i++;
-		}
-		else {
-			int partialLength = intervalLength;
-			do {
-				partialLength -= strLst[i].length();
-				int pixelsWide = fm.width(strLst[i]);
-				int pixelsHigh = fm.height();
-				rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-				i++;
-			} while (partialLength > strLst[i].length());
-
-			QString subStrs = strLst[i].left(partialLength);
-			int pixelsWide = fm.width(subStrs);
-			int pixelsHigh = fm.height();
-			rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-			strLst[i] = strLst[i].mid(partialLength);
-		}
-	}
-
 	QTextCursor TC = this->textCursor();
 	int initialPos = TC.position();
 	TC.movePosition(QTextCursor::Start);
 	this->setTextCursor(TC);
 	QPainter painter(viewport());
 
-	for (auto it = rowDimensions.begin(); it != rowDimensions.end();) {
+	for (auto it = m_rowDimensions.begin(); it != m_rowDimensions.end();) {
 		QRect rect = this->cursorRect(TC);
 		do {
 			painter.setRenderHint(QPainter::Antialiasing, true);
@@ -86,7 +45,7 @@ void MyTextEdit::paintUsersIntervals() {
 			painter.fillRect(rect, QBrush((it->color)));
 			rect.setX(it->width + 1);
 			it++;
-		} while (it != rowDimensions.end() && it->row == (it - 1)->row);
+		} while (it != m_rowDimensions.end() && it->row == (it - 1)->row);
 		TC.movePosition(QTextCursor::Down);
 	}
 
@@ -191,4 +150,48 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 
 void MyTextEdit::showHideUsersIntervals() {
 	m_usersIntervalsEnabled = !m_usersIntervalsEnabled;
+}
+
+void MyTextEdit::updateUsersIntervals() {
+	Editor* editor = qobject_cast<Editor*>(parent());
+	auto usersCharactersIntervals = m_crdt->getUsersInterval();
+	m_rowDimensions.clear();
+	QStringList strLst = this->toPlainText().split('\n');
+	QFont textEditFont = this->font();
+	QFontMetrics fm(textEditFont);
+
+	int i = 0;
+	for (auto it = usersCharactersIntervals->begin(); it != usersCharactersIntervals->end(); it++) {
+		int intervalLength = it->getIntervalLenght();
+
+		if (intervalLength < strLst[i].length()) {
+			QString subStrs = strLst[i].left(intervalLength);
+			int pixelsWide = fm.width(subStrs);
+			int pixelsHigh = fm.height();
+			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			strLst[i] = strLst[i].mid(intervalLength);
+		}
+		else if (intervalLength == strLst[i].length()) {
+			int pixelsWide = fm.width(strLst[i]);
+			int pixelsHigh = fm.height();
+			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			i++;
+		}
+		else {
+			int partialLength = intervalLength;
+			do {
+				partialLength -= strLst[i].length();
+				int pixelsWide = fm.width(strLst[i]);
+				int pixelsHigh = fm.height();
+				m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				i++;
+			} while (partialLength > strLst[i].length());
+
+			QString subStrs = strLst[i].left(partialLength);
+			int pixelsWide = fm.width(subStrs);
+			int pixelsHigh = fm.height();
+			m_rowDimensions.emplace_back(pixelsWide, pixelsHigh, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+			strLst[i] = strLst[i].mid(partialLength);
+		}
+	}
 }

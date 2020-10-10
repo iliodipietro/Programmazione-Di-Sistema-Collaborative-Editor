@@ -208,17 +208,6 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 		this->filename_id.insert(id, map.value(id));
 	}
 	removeBlank();
-
-	if (m_openAfterUri) {
-		int id = map.keys()[0];
-		QString filename = map.value(id);
-		Editor *editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
-		m_textEditors.insert(std::pair<int, Editor*>(id, editor));
-		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, OPEN));
-		this->m_socketHandler->writeData(data);
-		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
-		editor->show();
-	}
 }
 
 void FileBrowser::addFile(QJsonObject file) {
@@ -294,7 +283,6 @@ void FileBrowser::on_addSharedFileButton_clicked() {
 		QByteArray message = Serialize::fromObjectToArray(Serialize::openSharedFileSerialize(uri, OPENSHARE));
 		bool result = m_socketHandler->writeData(message);
 		if (result) {
-			m_openAfterUri = true;
 			m_timer->setInterval(2000);
 			m_timer->setSingleShot(true);
 			m_timer->start();

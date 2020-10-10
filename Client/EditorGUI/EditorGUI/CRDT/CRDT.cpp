@@ -546,3 +546,19 @@ __int64 CRDT::getCursorPosition(std::vector<int> crdtPos) {
 	else
 		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 
 }
+
+void CRDT::updateUserInterval() {
+	m_usersInterval.clear();
+	int start = 0;
+	int end = 0;
+	int userId = -1;
+	for (auto it = _symbols.begin(); it != _symbols.end(); ) {
+		start = end;
+		do {
+			userId = it->getId()[0];
+			end++;
+			it++;
+		} while (it->getId()[0] == userId);
+		m_usersInterval.emplace_back(start, end, userId);
+	}
+}

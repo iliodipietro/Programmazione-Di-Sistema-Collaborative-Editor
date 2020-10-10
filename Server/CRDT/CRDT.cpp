@@ -16,7 +16,7 @@ il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anc
 CRDT::CRDT(int id, QString path) :_siteId(id), _counter(0),path(path)
 {
 	this->timer = new QTimer();
-	this->timer->setSingleShot(true);//altrimenti verrebbe chiamato ogni tot secondi
+    this->timer->setSingleShot(true);//altrimenti verrebbe chiamato ogni tot secondi
 	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
 	this->readFromFile();
 	timer->start(TIMEOUT);
@@ -555,11 +555,17 @@ QString CRDT::crdt_serialize()
 }
 void CRDT::saveOnFile()
 {
+    QFile file(this->path);
+    if(file.open(QIODevice::WriteOnly)){
+        QTextStream stream(&file);
+        stream << "";
+        file.close();
+    }
 	if (this->_symbols.size() > 0) {
 
 		QString serialized_text = this->crdt_serialize();
 
-		std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
+        std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
 		if (oFile.is_open())
 		{
 

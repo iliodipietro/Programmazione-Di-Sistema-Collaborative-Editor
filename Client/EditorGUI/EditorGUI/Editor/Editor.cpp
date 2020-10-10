@@ -344,6 +344,7 @@ void Editor::createActions() {
 	m_showUsersIntervals->setCheckable(false);
 	m_showUsersIntervals->setPriority(QAction::LowPriority);
 	connect(m_showUsersIntervals, &QAction::triggered, this, &Editor::showHideUsersIntervals);
+	ui.toolBar->addAction(m_showUsersIntervals);
 
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
@@ -741,7 +742,7 @@ void Editor::remoteAction(Message m)
 
 		pos > index ? pos++ : pos = pos;
 
-		updateUsersCharactersIntervalAfterInsert(userId, index);
+		//updateUsersCharactersIntervalAfterInsert(userId, index);
 
 		break;
 	case DELETE_S:
@@ -749,12 +750,15 @@ void Editor::remoteAction(Message m)
 
 		pos > index ? pos-- : pos = pos;
 
-		updateUsersCharactersIntervalAfterDelete(userId, index);
+		//updateUsersCharactersIntervalAfterDelete(userId, index);
 
 		break;
 	default:
 		break;
 	}
+
+	this->_CRDT->updateUserInterval();
+	emit updateUsersIntervals();
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
@@ -1269,6 +1273,9 @@ void Editor::updateUsersCharactersIntervalAfterInsert(int userId, __int64 index)
 				m_usersCharactersIntervals.insert(it + 2, split);
 				return;
 			}
+		}
+		else if(!it->positionInInterval(index)){
+
 		}
 	}
 	m_usersCharactersIntervals.push_back(UserInterval(userId, index));

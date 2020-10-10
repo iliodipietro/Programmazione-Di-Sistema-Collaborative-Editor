@@ -11,7 +11,7 @@ public:
 	void mergeIntervals(UserInterval &interval);
 	bool positionInInterval(int position);
 	inline int getUserId() { return m_userId; };
-	inline int getIntervalLenght() { return m_endPosition + 1 - m_startPosition; };
+	inline int getIntervalLenght() { return m_endPosition - m_startPosition; };
 
 	~UserInterval() {};
 

@@ -33,6 +33,7 @@ public:
 private:
 
     std::map<int, CustomCursor*> m_cursorsToPrint;
+    std::vector<Interval> m_rowDimensions;
     bool m_mousePress;
     bool m_usersIntervalsEnabled;
     CRDT* m_crdt;
@@ -55,6 +56,6 @@ signals:
 
 private slots:
     void showHideUsersIntervals();
-
+    void updateUsersIntervals();
 };
 
