@@ -42,8 +42,10 @@ void MyTextEdit::paintUsersIntervals() {
 		do {
 			painter.setRenderHint(QPainter::Antialiasing, true);
 			rect.setWidth(it->width);
-			painter.fillRect(rect, QBrush((it->color)));
-			rect.setX(it->width + 1);
+			QColor color = it->color;
+			color.setAlpha(70);
+			painter.fillRect(rect, QBrush(color));
+			rect.setX(it->width);
 			it++;
 		} while (it != m_rowDimensions.end() && it->row == (it - 1)->row);
 		TC.movePosition(QTextCursor::Down);
@@ -150,6 +152,7 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 
 void MyTextEdit::showHideUsersIntervals() {
 	m_usersIntervalsEnabled = !m_usersIntervalsEnabled;
+	this->repaint();
 }
 
 void MyTextEdit::updateUsersIntervals() {

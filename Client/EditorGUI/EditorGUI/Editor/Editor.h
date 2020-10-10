@@ -32,6 +32,7 @@ public:
 	inline std::vector<UserInterval>* getUsersCharactersIntervals() { return &m_usersCharactersIntervals; };
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
+	void setSiteCounter(int siteCounter);
 
 private:
 	Ui::Editor ui;
@@ -157,7 +158,7 @@ private slots:
 
 //---------------------------------------------------------------------------------------------------
 signals:
-	void editorClosed(int);
+	void editorClosed(int, int);
 	void styleChange();
 	void showHideUsersIntervalsSignal();
 	void updateUsersIntervals();

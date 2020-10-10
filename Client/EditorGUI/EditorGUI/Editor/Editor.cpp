@@ -81,7 +81,7 @@ Editor::~Editor()
 }
 
 void Editor::closeEvent(QCloseEvent* event) {
-	emit editorClosed(m_fileId);
+	emit editorClosed(m_fileId, this->_CRDT->getSiteCounter());
 	this->close();
 }
 
@@ -742,6 +742,9 @@ void Editor::remoteAction(Message m)
 
 		pos > index ? pos++ : pos = pos;
 
+		this->_CRDT->updateUserInterval();
+		emit updateUsersIntervals();
+
 		//updateUsersCharactersIntervalAfterInsert(userId, index);
 
 		break;
@@ -750,15 +753,15 @@ void Editor::remoteAction(Message m)
 
 		pos > index ? pos-- : pos = pos;
 
+		this->_CRDT->updateUserInterval();
+		emit updateUsersIntervals();
+
 		//updateUsersCharactersIntervalAfterDelete(userId, index);
 
 		break;
 	default:
 		break;
 	}
-
-	this->_CRDT->updateUserInterval();
-	emit updateUsersIntervals();
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
@@ -1302,4 +1305,8 @@ void Editor::updateUsersCharactersIntervalAfterDelete(int userId, __int64 index)
 
 void Editor::showHideUsersIntervals() {
 	emit showHideUsersIntervalsSignal();
+}
+
+void Editor::setSiteCounter(int siteCounter) {
+	this->_CRDT->setSiteCounter(siteCounter);
 }

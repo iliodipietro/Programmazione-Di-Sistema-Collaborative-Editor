@@ -64,6 +64,8 @@ public:
 	bool isEmpty();
 	void updateUserInterval();
 	inline std::vector<UserInterval>* getUsersInterval() { return &m_usersInterval; };
+	void setSiteCounter(int siteCounter);
+	inline int getSiteCounter() { return this->_counter; };
 
 	__int64 getCursorPosition(std::vector<int> crdtPos);
 

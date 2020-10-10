@@ -558,7 +558,12 @@ void CRDT::updateUserInterval() {
 			userId = it->getId()[0];
 			end++;
 			it++;
+			if (it == _symbols.end()) break;
 		} while (it->getId()[0] == userId);
-		m_usersInterval.emplace_back(start, end, userId);
+		m_usersInterval.emplace_back(userId, start, end);
 	}
+}
+
+void CRDT::setSiteCounter(int siteCounter) {
+	this->_counter = siteCounter;
 }

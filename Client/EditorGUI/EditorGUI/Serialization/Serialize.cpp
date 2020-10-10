@@ -193,7 +193,26 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj) {
 }
 
 
-QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
+QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type) {
+	QJsonObject obj;
+
+	obj.insert("fileid", fileId);
+	obj.insert("sitecounter", siteCounter);
+	obj.insert("type", type);
+
+	return obj;
+}
+
+QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj) {
+	QPair<int, int> res;
+	res.first = obj.value("fileid").toInt();
+	res.second = obj.value("sitecounter").toInt();
+	return res;
+
+}
+
+
+QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
 {
 	/*
 	Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
@@ -209,6 +228,21 @@ QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
 
 
 	return obj;
+}
+
+int Serialize::openDeleteFileUnserialize(QJsonObject obj)
+{
+	/*
+	Questa funzione de-serializza i nome del file
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info
+	RETURN:
+	- una QstringList con il nome del file
+	*/
+	int fileId;
+	fileId = obj.value("fileId").toInt();
+
+	return fileId;
 }
 
 QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type) {

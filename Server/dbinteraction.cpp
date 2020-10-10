@@ -733,7 +733,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client){
         f = instance->getFile(fileId);
         f->addUser(client);
         qDebug()<<"ho inviato il file che era gia in RAM\n";
-        response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
+        response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SITECOUNTER));
         client->writeData(response);
 
        // sendSuccess(client);
@@ -756,7 +756,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client){
                     f->addUser(client);
                     qDebug() << "user added!\n";
                     //sendSuccess(client);
-                    response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SERVER_ANSWER));
+                    response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(siteCounter, SITECOUNTER));
                     client->writeData(response);
                     instance->db.close();
 
