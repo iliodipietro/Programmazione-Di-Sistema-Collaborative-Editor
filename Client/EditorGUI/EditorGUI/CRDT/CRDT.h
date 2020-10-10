@@ -55,6 +55,7 @@ public:
 	__int64 process(const Message& m);
 	std::string to_string();//usare Qstring??
 	int getId();
+	int getCounter();//ilio
 	Symbol getSymbol(int index);
 	//SERVER ONLY
 	//void dispatchMessages();-->sul server

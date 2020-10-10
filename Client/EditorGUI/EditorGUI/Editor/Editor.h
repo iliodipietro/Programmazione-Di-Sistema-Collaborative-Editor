@@ -96,6 +96,7 @@ private:
 
 	//FINE-------------------------------------------------------------------------------------------------------
 
+
 	void closeEvent(QCloseEvent* event);
 	void createActions();
 	void open();
