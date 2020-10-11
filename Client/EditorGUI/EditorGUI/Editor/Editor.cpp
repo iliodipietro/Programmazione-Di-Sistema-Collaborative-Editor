@@ -847,7 +847,7 @@ void Editor::initialFileLoad(Message m_, __int64 index_) {
 		}
 
 
-		if (this->list_of_msg.size() >= 50) {//se ho almeno 50 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
+		if (this->list_of_msg.size() >= 30) {//se ho almeno 30 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
 			insertCharBatch();
 			this->list_of_msg.push_back(m_);
 			this->list_of_idx.push_back(index_);

@@ -36,7 +36,7 @@ void MyTextEdit::removeCursor(int id) {
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
-	//this->repaint();
+	this->repaint();
 }
 
 void MyTextEdit::updateTextSize() {
