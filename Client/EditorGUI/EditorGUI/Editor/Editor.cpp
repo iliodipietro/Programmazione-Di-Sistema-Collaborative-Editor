@@ -84,10 +84,6 @@ Editor::~Editor()
 	//FINE---------------------
 }
 
-int Editor::getSiteCounter(){
-	return this->_CRDT->getCounter();
-}
-
 void Editor::closeEvent(QCloseEvent* event) {
 	emit editorClosed(m_fileId, this->_CRDT->getSiteCounter());
 	this->close();

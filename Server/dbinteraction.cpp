@@ -562,7 +562,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
                             QTextStream stream(&file);
                             stream << "";
                             file.close();
-                        }*/
+                        }
                         //File* newfile = new File(fileId, path);
                         response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
                         client->writeData(response);
