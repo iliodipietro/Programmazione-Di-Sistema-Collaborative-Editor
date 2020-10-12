@@ -196,7 +196,7 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj) {
 QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type) {
 	QJsonObject obj;
 
-	obj.insert("fileid", fileId);
+	obj.insert("fileId", fileId);
 	obj.insert("sitecounter", siteCounter);
 	obj.insert("type", type);
 
@@ -205,7 +205,7 @@ QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type)
 
 QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj) {
 	QPair<int, int> res;
-	res.first = obj.value("fileid").toInt();
+	res.first = obj.value("fileId").toInt();
 	res.second = obj.value("sitecounter").toInt();
 	return res;
 

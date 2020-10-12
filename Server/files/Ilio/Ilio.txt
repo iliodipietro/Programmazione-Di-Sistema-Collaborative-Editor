@@ -1,0 +1,4 @@
+{"alignment":1,"character":99,"color":"#000000","font":",-1,-1,5,50,0,0,0,0,0","globalCharacterId":[1,0],"position":[0]}
+{"alignment":1,"character":105,"color":"#000000","font":",-1,-1,5,50,0,0,0,0,0","globalCharacterId":[1,1],"position":[1]}
+{"alignment":1,"character":97,"color":"#000000","font":",-1,-1,5,50,0,0,0,0,0","globalCharacterId":[1,2],"position":[2]}
+{"alignment":1,"character":111,"color":"#000000","font":",-1,-1,5,50,0,0,0,0,0","globalCharacterId":[1,3],"position":[3]}
