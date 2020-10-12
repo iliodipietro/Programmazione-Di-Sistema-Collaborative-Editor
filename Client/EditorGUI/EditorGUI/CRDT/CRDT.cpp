@@ -290,10 +290,6 @@ int CRDT::getId()
 	return this->_siteId;
 }
 
-int CRDT::getCounter() {
-	return this->_counter;
-}
-
 Symbol CRDT::getSymbol(int index)
 {
 	if (index < this->_symbols.size())

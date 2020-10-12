@@ -68,7 +68,7 @@ public:
 
 	QTimer* getTimer();
 
-    std::vector<Symbol>::iterator getCursorPosition(std::vector<int> crdtPos);
+    std::vector<int> getNextCursorPosition(std::vector<int> crdtPos);
     std::vector<int> fromIteratorToPosition(std::vector<Symbol>::iterator it);
 
 public slots:
