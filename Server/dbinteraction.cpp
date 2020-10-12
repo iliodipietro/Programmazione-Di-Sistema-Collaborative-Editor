@@ -940,11 +940,17 @@ void DBInteraction::changeFileName(QString oldPath, QString newName, int fileId,
         //copio il precedente path eliminando l'ultima stringa che rappresenta il nome del vecchio file
         newPath.append(oldPathList.at(i)).append("/");
     }
+    QString oldName = oldPathList.at(i);
+    qDebug() << "old filename: " << oldName << "\n";
 
     QStringList parts = newName.split('.');
     newName = parts.at(0);
-    newPath.append(newName).append(".txt");
+    newName.append(".txt");
+    newPath.append(newName);
+    qDebug() << "new filename: " << newName << "\n";
     qDebug() << "new path: " << newPath << "\n";
+
+    QFile::rename(oldPath, newPath);
 
     if (instance->db.open()) {
         QSqlQuery query;
@@ -954,6 +960,7 @@ void DBInteraction::changeFileName(QString oldPath, QString newName, int fileId,
         query.bindValue(":fileid", fileId);
 
         if (query.exec()) {
+            
 
             sendSuccess(client);//utile?
         }
@@ -986,7 +993,7 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         return;
     }
 
-    if (!instance->files.contains(fileId) || (instance->files.value(fileId)->getUsers().contains(client) && instance->files.value(fileId)->getUsers().size() == 1)) {
+    if (!instance->files.contains(fileId) /*|| (instance->files.value(fileId)->getUsers().contains(client) && instance->files.value(fileId)->getUsers().size() == 1)*/) {
         //nessuno sta lavorando sul file oppure solo l'utente in questione lo sta usando, lo posso rinominare senza problemi 
         QSqlQuery query;
         int userid = client->getId();
@@ -1014,13 +1021,11 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
             sendError(client);
             return;
         }
-
-        
-    
     }
     else{
         //il file Ë aperto da altri utenti
         // nel caso in cui il file sia condiviso tra pi√π utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
+        qDebug() << "il file Ë ancora aperto prima del cambio nome\n";
         f = instance->files.value(fileId);
         f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sar√  l'ultima)
     }
