@@ -10,7 +10,8 @@ SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSh
 m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
 {
 	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-	m_tcpSocket->setReadBufferSize(2097152);
+	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+	m_tcpSocket->setReadBufferSize(0);
 	connect(m_tcpSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
 	connect(m_tcpSocket.get(), SIGNAL(disconnected()), this, SLOT(disconnected()));
 	connect(m_tcpSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));

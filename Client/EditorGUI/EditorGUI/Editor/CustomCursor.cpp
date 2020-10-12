@@ -3,6 +3,8 @@
 #include <QWindow>
 #include <QDebug>
 
+
+#define TIME_TO_SHOW 100 //number of millisecond before repaint
 CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
 m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(crdt)
@@ -27,26 +29,22 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(
 	m_usernameLabel->setContentsMargins(QMargins(4, 1, 4, 2));
 	m_usernameLabel->show();
 	m_editor->setTextCursor(TCPrevious);
+
+	//------------------------------
+	timer = new QTimer();
+	timer->setSingleShot(true);
+	timer->setInterval(TIME_TO_SHOW);
+	connect(timer, SIGNAL(timeout()), this, SLOT(paintNow()));
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
-	switch (m.getAction()) {
-	case INSERT:
-		updateViewAfterInsert(m, index);
-		break;
-	case DELETE_S:
-		updateViewAfterDelete(m, index);
-		break;
-	case CHANGE:
-		updateViewAfterStyleChange(m, index);
-		break;
-	case CURSOR_S:
-		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
-		break;
-	default:
-		break;
-	}
-	updateLabelPosition();
+
+	this->message_list.push_back(m);
+	this->index_list.push_back(index);
+
+	if (!this->timer->isActive())
+		this->timer->start();
+
 }
 
 void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSelection) {
@@ -173,6 +171,39 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index)
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
 	m_TextCursor->insertText(chr, format);
+}
+
+void CustomCursor::paintNow()
+{
+	if (this->index_list.size() <= 0)
+		return;
+
+	for (int i = 0; i < this->message_list.size(); i++) {
+
+		Message m = this->message_list[i];
+		int index = this->index_list[i];
+
+		//disegno ogni tot di caratteri e non sempre
+		switch (m.getAction()) {
+		case INSERT:
+			updateViewAfterInsert(m, index);
+			break;
+		case DELETE_S:
+			updateViewAfterDelete(m, index);
+			break;
+		case CHANGE:
+			updateViewAfterStyleChange(m, index);
+			break;
+		case CURSOR_S:
+			setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
+			break;
+		default:
+			break;
+		}
+	}
+	updateLabelPosition();
+	this->message_list.clear();
+	this->index_list.clear();
 }
 
 void CustomCursor::textSizeChanged() {

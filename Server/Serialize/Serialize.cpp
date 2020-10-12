@@ -482,10 +482,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
         pos.push_back(qj.toInt());
     }
 
-    //QFont font;
-    //font.fromString(obj.value("font").toString());
-    QFont font(obj.value("font").toString());
-
+    QFont font;
+    font.fromString(obj.value("font").toString());
+    //QFont font(obj.value("font").toString());
     //int red = obj.value("red").toInt();
     //int green = obj.value("green").toInt();
     //int blue = obj.value("blue").toInt();
