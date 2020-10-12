@@ -231,6 +231,8 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("CLOSE request\n");
         close = Serialize::closeFileUnserialize(ObjData);
 
+        qDebug() << "Fileid in myserver.cpp da eliminare: " << close.first << "\n";
+
         db->closeFile(close.first, close.second, client);
 
         break;

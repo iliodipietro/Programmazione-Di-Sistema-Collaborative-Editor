@@ -53,7 +53,11 @@ public:
 	static QJsonObject newFileSerialize(QString filename, int type);// ilio
 	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
 
-	static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
+	static QJsonObject openDeleteFileSerialize(int fileId, int type); // ilio
+	static int openDeleteFileUnserialize(QJsonObject obj);// ilio
+
+	static QJsonObject closeFileSerialize(int fileId, int siteCounter, int type);
+	static QPair<int, int> closeFileUnserialize(QJsonObject obj);
 
 	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
 
@@ -94,6 +98,7 @@ public:
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
 
+	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
 
 	//void setType(QString type);
 

@@ -92,7 +92,7 @@ Editor::~Editor()
 }
 
 void Editor::closeEvent(QCloseEvent* event) {
-	emit editorClosed(m_fileId);
+	emit editorClosed(m_fileId, this->_CRDT->getSiteCounter());
 	this->close();
 }
 
@@ -350,6 +350,12 @@ void Editor::createActions() {
 	QWidget* spacer = new QWidget();
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
+
+	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	m_showUsersIntervals->setCheckable(false);
+	m_showUsersIntervals->setPriority(QAction::LowPriority);
+	connect(m_showUsersIntervals, &QAction::triggered, this, &Editor::showHideUsersIntervals);
+	ui.toolBar->addAction(m_showUsersIntervals);
 
 	m_actionShowEditingUsers = new QAction(QIcon(*m_profileImage), tr(m_username.toUtf8()), this);
 	m_actionShowEditingUsers->setPriority(QAction::LowPriority);
@@ -754,7 +760,8 @@ void Editor::remoteAction(Message m)
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
-	if (m.getSenderId() == -1)
+	int userId = m.getSenderId();
+	if (userId == -1)
 		initialFileLoad(m, index);
 	else
 		m_textEdit->handleMessage(m.getSenderId(), m, index);
@@ -765,11 +772,21 @@ void Editor::remoteAction(Message m)
 
 		pos > index ? pos++ : pos = pos;
 
+		this->_CRDT->updateUserInterval();
+		emit updateUsersIntervals();
+
+		//updateUsersCharactersIntervalAfterInsert(userId, index);
+
 		break;
 	case DELETE_S:
 		maybedecrement(index);
 
 		pos > index ? pos-- : pos = pos;
+
+		this->_CRDT->updateUserInterval();
+		emit updateUsersIntervals();
+
+		//updateUsersCharactersIntervalAfterDelete(userId, index);
 
 		break;
 	default:
@@ -1355,4 +1372,52 @@ void Editor::updateCursorPosition(bool isSelection) {
 	QTextCursor TC = m_textEdit->textCursor();
 	Message m(this->_CRDT->getSymbol(TC.position()).getPos(), CURSOR_S, _CRDT->getId(), isSelection);
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+}
+
+void Editor::updateUsersCharactersIntervalAfterInsert(int userId, __int64 index) {
+	for (auto it = m_usersCharactersIntervals.begin(); it != m_usersCharactersIntervals.end(); it++) {
+		if (it->positionInInterval(index)) {
+			if (it->getUserId() == userId) {
+				it->updateIntervalAfterInsert();
+				return;
+			}
+			else {
+				UserInterval split = it->splitInterval(index);
+				m_usersCharactersIntervals.insert(it + 1, UserInterval(userId, index));
+				m_usersCharactersIntervals.insert(it + 2, split);
+				return;
+			}
+		}
+		else if(!it->positionInInterval(index)){
+
+		}
+	}
+	m_usersCharactersIntervals.push_back(UserInterval(userId, index));
+}
+
+void Editor::updateUsersCharactersIntervalAfterDelete(int userId, __int64 index) {
+	for (auto it = m_usersCharactersIntervals.begin(); it != m_usersCharactersIntervals.end(); it++) {
+		if (it->positionInInterval(index)) {
+			it->updateIntervalAfterDelete(index);
+			
+			if(it->getIntervalLenght() == 0) {
+				if (it != m_usersCharactersIntervals.begin() && (it-1)->getUserId() == (it + 1)->getUserId()) {
+					(it-1)->mergeIntervals(*(it+1));
+					m_usersCharactersIntervals.erase(it, it + 1);
+				}
+				else {
+					m_usersCharactersIntervals.erase(it);
+				}
+			}
+			return;
+		}
+	}
+}
+
+void Editor::showHideUsersIntervals() {
+	emit showHideUsersIntervalsSignal();
+}
+
+void Editor::setSiteCounter(int siteCounter) {
+	this->_CRDT->setSiteCounter(siteCounter);
 }

@@ -144,7 +144,7 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj){
 QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type){
     QJsonObject obj;
 
-    obj.insert("fileid", fileId);
+    obj.insert("fileId", fileId);
     obj.insert("sitecounter", siteCounter);
     obj.insert("type", type);
 
@@ -322,9 +322,10 @@ QJsonObject Serialize::URISerialize(QString URI, int type){
 
 }
 
-QJsonObject Serialize::siteCounterSerialize(int siteCounter, int type){
+QJsonObject Serialize::siteCounterSerialize(int fileId, int siteCounter, int type){
     QJsonObject obj;
 
+    obj.insert("fileId", fileId);
     obj.insert("siteCounter", siteCounter);
     obj.insert("type", type);
 
