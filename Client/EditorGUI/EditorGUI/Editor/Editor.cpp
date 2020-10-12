@@ -596,11 +596,11 @@ void Editor::localInsert() {
 	int li = TC.anchor();
 	int la = TC.anchor();
 
-
-	int dim = TC.position() - lastCursor;
+	int end = TC.position();
+	int dim = end - lastCursor;
 
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
-	for (int i = lastCursor; i < TC.position(); i++) {
+	for (int i = lastCursor; i < end; i++) {
 		if (i < 0)
 			return;
 
@@ -625,9 +625,11 @@ void Editor::localInsert() {
 		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
 		//	return;
 		//}
+		TC.setPosition(pos);
 
 		QTextCharFormat format = TC.charFormat();
 		QFont font = format.font();
+		//qDebug() << font.toString();
 		QColor color = format.foreground().color();
 		Qt::AlignmentFlag alignment = this->getAlignementFlag(m_textEdit->alignment());
 
@@ -812,13 +814,15 @@ void Editor::insertCharBatch() {
 	TC.setPosition(index);
 	m_textEdit->setTextCursor(TC);
 	TC.insertText(str, format);
-	TC.setPosition(0);
-	m_textEdit->setTextCursor(TC);
+
 
 	QTextBlockFormat blockFormat = TC.blockFormat();
 	blockFormat.setAlignment(alignment);
 
 	TC.mergeBlockFormat(blockFormat);
+
+	TC.setPosition(0);
+	m_textEdit->setTextCursor(TC);
 }
 
 
@@ -849,8 +853,6 @@ void Editor::initialFileLoad(Message m_, __int64 index_) {
 
 		if (this->list_of_msg.size() >= 30) {//se ho almeno 30 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
 			insertCharBatch();
-			this->list_of_msg.push_back(m_);
-			this->list_of_idx.push_back(index_);
 			this->insert_timer->start();//parte solo se c'è almeno un carattere
 		}
 
