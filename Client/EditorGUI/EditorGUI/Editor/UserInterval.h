@@ -5,13 +5,10 @@ class UserInterval {
 public:
 	UserInterval(int userId, int start);
 	UserInterval(int userId, int start, int end);
-	void updateIntervalAfterInsert();
-	void updateIntervalAfterDelete(int position);
-	UserInterval splitInterval(int position);
-	void mergeIntervals(UserInterval &interval);
-	bool positionInInterval(int position);
 	inline int getUserId() { return m_userId; };
 	inline int getIntervalLenght() { return m_endPosition - m_startPosition; };
+	inline int getStartPosition() { return m_startPosition; };
+	inline int getEndPosition() { return m_endPosition; };
 
 	~UserInterval() {};
 

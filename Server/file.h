@@ -6,6 +6,15 @@
 #include <QTcpSocket>
 #include "Serialize/Serialize.h"
 #include "ClientManager/clientmanager.h"
+
+struct CursorPosition{
+    std::vector<int> pos;
+    bool afterInsert;
+
+    CursorPosition(){};
+    CursorPosition(std::vector<int> pos, bool afterInsert) : pos(pos), afterInsert(afterInsert){};
+};
+
 class File
 {
 public:
@@ -34,7 +43,7 @@ private:
     QString path;
     //QVector<ClientManager*> users;
     QMap <int, ClientManager*> users;
-    QMap <ClientManager*, std::vector<Symbol>::iterator> m_usersCursorPosition;
+    QMap <ClientManager*, CursorPosition> m_usersCursorPosition;
 
 };
 

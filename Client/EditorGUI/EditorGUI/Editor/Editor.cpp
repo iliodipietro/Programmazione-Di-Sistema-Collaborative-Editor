@@ -649,6 +649,8 @@ void Editor::localInsert() {
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
 	m_textEdit->moveForwardCursorsPosition(pos, offset);
+	this->_CRDT->updateUserInterval();
+	emit updateUsersIntervals();
 }
 
 void Editor::localDelete() {
@@ -682,6 +684,8 @@ void Editor::localDelete() {
 	}
 
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
+	this->_CRDT->updateUserInterval();
+	emit updateUsersIntervals();
 
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
@@ -758,8 +762,6 @@ void Editor::remoteAction(Message m)
 		this->_CRDT->updateUserInterval();
 		emit updateUsersIntervals();
 
-		//updateUsersCharactersIntervalAfterInsert(userId, index);
-
 		break;
 	case DELETE_S:
 		maybedecrement(index);
@@ -769,9 +771,12 @@ void Editor::remoteAction(Message m)
 		this->_CRDT->updateUserInterval();
 		emit updateUsersIntervals();
 
-		//updateUsersCharactersIntervalAfterDelete(userId, index);
-
 		break;
+
+	case CHANGE:
+		emit updateUsersIntervals();
+		break;
+
 	default:
 		break;
 	}
@@ -993,6 +998,7 @@ void Editor::localStyleChange()
 	//this->lastEnd = 0;
 	this->lastText = m_textEdit->toPlainText();
 	this->lastCursor = TC.position();
+	emit updateUsersIntervals();
 }
 
 //FINE-------------------------------------------------------------------------------------------------------------
@@ -1276,46 +1282,6 @@ void Editor::updateCursorPosition(bool isSelection) {
 	QTextCursor TC = m_textEdit->textCursor();
 	Message m(this->_CRDT->getSymbol(TC.position()).getPos(), CURSOR_S, _CRDT->getId(), isSelection);
 	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
-}
-
-void Editor::updateUsersCharactersIntervalAfterInsert(int userId, __int64 index) {
-	for (auto it = m_usersCharactersIntervals.begin(); it != m_usersCharactersIntervals.end(); it++) {
-		if (it->positionInInterval(index)) {
-			if (it->getUserId() == userId) {
-				it->updateIntervalAfterInsert();
-				return;
-			}
-			else {
-				UserInterval split = it->splitInterval(index);
-				m_usersCharactersIntervals.insert(it + 1, UserInterval(userId, index));
-				m_usersCharactersIntervals.insert(it + 2, split);
-				return;
-			}
-		}
-		else if(!it->positionInInterval(index)){
-
-		}
-	}
-	m_usersCharactersIntervals.push_back(UserInterval(userId, index));
-}
-
-void Editor::updateUsersCharactersIntervalAfterDelete(int userId, __int64 index) {
-	for (auto it = m_usersCharactersIntervals.begin(); it != m_usersCharactersIntervals.end(); it++) {
-		if (it->positionInInterval(index)) {
-			it->updateIntervalAfterDelete(index);
-			
-			if(it->getIntervalLenght() == 0) {
-				if (it != m_usersCharactersIntervals.begin() && (it-1)->getUserId() == (it + 1)->getUserId()) {
-					(it-1)->mergeIntervals(*(it+1));
-					m_usersCharactersIntervals.erase(it, it + 1);
-				}
-				else {
-					m_usersCharactersIntervals.erase(it);
-				}
-			}
-			return;
-		}
-	}
 }
 
 void Editor::showHideUsersIntervals() {
