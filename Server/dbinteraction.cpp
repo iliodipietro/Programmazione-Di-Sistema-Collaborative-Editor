@@ -520,7 +520,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client){
                         QFile file(path);
                         if(file.open(QIODevice::WriteOnly)){
                             QTextStream stream(&file);
-                            stream << path;
+                            stream << "";
                             file.close();
                         }
                         File *newfile = new File(fileId, path);
@@ -900,13 +900,13 @@ void DBInteraction::getURIToShare(int fileid, ClientManager *client){
     QString message;
     QString URI;
 
-    qDebug("qui ci arrivo? si qui ci arrivo crasha dopo\n");
+
     if(!instance->isUserLogged(client)){
-        qDebug("SENDURI request user not logged\n");
+
         return;
     }
     if(instance->files.contains(fileid)){
-        qDebug("SENDURI in if in dbinteraction request\n");
+
         URI = instance->files.value(fileid)->getPath();
         response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
 
@@ -1185,7 +1185,7 @@ File* DBInteraction::getFile(int fileid){
 
 bool DBInteraction::isUserLogged(ClientManager* client){
 
-    qDebug("fallisce qui?/n");
+
     if(!instance->activeusers.contains(client)){
         qDebug()<<"user not authorized!\n";
         //anche se non è attivo, l'utente ha comunque un socket

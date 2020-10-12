@@ -59,6 +59,7 @@ private slots:
 	void processEditorMessage(QJsonObject message);
 	void showErrorMessage();
 	void showURI(QJsonObject msg);
+	/*void copia();*/
 
 signals:
 	void showParent();

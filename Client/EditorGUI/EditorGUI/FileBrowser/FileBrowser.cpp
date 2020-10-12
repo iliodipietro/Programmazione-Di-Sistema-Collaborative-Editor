@@ -300,9 +300,22 @@ void FileBrowser::processEditorMessage(QJsonObject message)
 
 void FileBrowser::showURI(QJsonObject msg) {
 	QString serverMessage = Serialize::URIUnserialize(msg);
-	QMessageBox resultDialog(this);
-	resultDialog.setInformativeText(serverMessage);
+	QInputDialog resultDialog(this);
+	resultDialog.setLabelText("File Link");
+	resultDialog.setTextValue(serverMessage);
+
+	/*QDialog* dial = new QDialog(this);
+	QLabel label(serverMessage);
+	QPushButton button("copia", dial);
+	connect(&button, &QPushButton::clicked, this, &FileBrowser::copia);*/
+
+	
+	/*dial->exec();*/
+
 	resultDialog.exec();
+	
+
+	/*QClipBoard *clipboard = QApplication::clipboard();*/
 }
 
 void FileBrowser::on_addSharedFileButton_clicked() {
@@ -321,6 +334,7 @@ void FileBrowser::on_addSharedFileButton_clicked() {
 		}
 	}
 }
+
 
 //dialog per mostrare un errore di connessione se la risposta dal server non arriva in tempo
 void FileBrowser::showErrorMessage() {
