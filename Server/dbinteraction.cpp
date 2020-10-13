@@ -562,11 +562,11 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
                     query3.bindValue(":path", text_path);
 
                     if (query3.exec()) {
-                        /*
-                        QFile file(text_path);
-                        if(file.open(QIODevice::WriteOnly)){
+
+                            QFile file(text_path);
+                            if(file.open(QIODevice::WriteOnly)){
                             QTextStream stream(&file);
-                            stream << text_path;
+                            stream << "";
                             file.close();
                         }
                         //File* newfile = new File(fileId, path);

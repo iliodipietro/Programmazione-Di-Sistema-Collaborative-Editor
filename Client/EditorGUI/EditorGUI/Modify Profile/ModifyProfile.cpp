@@ -73,7 +73,7 @@ void ModifyProfile::on_submit_clicked() {
 				ui.crop->setPixmap(*m_croppedImage);
 			}
 			if (m_croppedImage != Q_NULLPTR) {
-				QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(email, user, "stringa per l'immagine" /*m_croppedImage*/);//type da definire in define.h  devo usare changeProfileSerialize
+				QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(email, user, "stringa per l'immagine" /*m_croppedmage*/);//type da definire in define.h  devo usare changeProfileSerialize
 				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 				if (result) {
 					m_timer->setSingleShot(true);
