@@ -5,6 +5,7 @@
 
 
 #define TIME_TO_SHOW 100 //number of millisecond before repaint
+
 CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
 m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(crdt)
@@ -39,8 +40,8 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(
 
 void CustomCursor::messageHandler(Message& m, int index) {
 
-	this->message_list.push_back(m);
-	this->index_list.push_back(index);
+	this->message_list.push(m);
+	this->index_list.push(index);
 
 	if (!this->timer->isActive())
 		this->timer->start();
@@ -96,11 +97,11 @@ void CustomCursor::updateLabelPosition() {
 	m_usernameLabel->show();
 }
 
-void CustomCursor::updateViewAfterInsert(Message m, __int64 index)
-{
 
+
+void CustomCursor::updateViewAfterInsert(Message m, __int64 index, QString str)
+{
 	//retrieving remote state
-	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -122,19 +123,12 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index)
 	//m_textEdit->setTextColor(r_color);
 
 	setCursorPosition(index, AfterInsert);
-	m_TextCursor->insertText(chr, format);
+	m_TextCursor->insertText(str, format);
 
 	QTextBlockFormat blockFormat = m_TextCursor->blockFormat();
 	blockFormat.setAlignment(alignment);
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
-
-
-	//ripristino
-	//TC.setPosition(this->lastCursor);
-	//m_textEdit->setFont(font);
-	//m_textEdit->setTextColor(color);
-
 }
 
 void CustomCursor::updateViewAfterDelete(Message m, __int64 index)
@@ -148,12 +142,18 @@ void CustomCursor::updateViewAfterDelete(Message m, __int64 index)
 	//TC.deletePreviousChar();//oppure è questo se il primo non funziona
 }
 
-void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index)
+void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString str)
 {
 	//QTextCursor TC = m_editor->textCursor();
-	setCursorPosition(index, ChangePosition);
-	m_TextCursor->deleteChar();
 
+	for (int i = index ; i > index - str.size()   ; i--) {
+
+		setCursorPosition(i, ChangePosition);
+		m_TextCursor->deleteChar();
+	}
+	
+	int i = index - str.size() + 1;
+	setCursorPosition(i , ChangePosition);
 	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
@@ -170,7 +170,44 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index)
 	blockFormat.setAlignment(alignment);
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
-	m_TextCursor->insertText(chr, format);
+	m_TextCursor->insertText(str, format);
+}
+
+
+
+
+QString CustomCursor::groupTogether()
+{
+	// entro in questa funzione solo se è una insert o una change style
+	QString s;
+
+	Message m = this->message_list.front();
+	this->message_list.pop();
+	this->index_list.pop();
+	s.append(m.getSymbol().getChar());
+
+	while (!this->message_list.empty())
+	{
+		Message m2 = this->message_list.front();
+		if (m2.getAction() == m.getAction() && 
+			(m2.getSymbol().getColor() == m.getSymbol().getColor()) && 
+			(m2.getSymbol().getFont() == m.getSymbol().getFont()) && 
+			(m2.getSymbol().getAlignment() == m.getSymbol().getAlignment())) {
+			
+			s.append(m2.getSymbol().getChar());
+			this->message_list.pop();
+			this->index_list.pop();
+		}
+		else {
+			break;
+		}
+
+	}
+	if (m.getAction() == CHANGE) {
+		std::reverse(s.begin(), s.end());
+	}
+
+	return s;
 }
 
 void CustomCursor::paintNow()
@@ -178,33 +215,43 @@ void CustomCursor::paintNow()
 	if (this->index_list.size() <= 0)
 		return;
 
-	for (int i = 0; i < this->message_list.size(); i++) {
+	QString str;
 
-		Message m = this->message_list[i];
-		int index = this->index_list[i];
+	while (! this->index_list.empty()) {
+
+		Message m = this->message_list.front();
+		int index = this->index_list.front();
 
 		//disegno ogni tot di caratteri e non sempre
 		switch (m.getAction()) {
 		case INSERT:
-			updateViewAfterInsert(m, index);
+			str = groupTogether();
+			updateViewAfterInsert(m, index,str);
 			break;
 		case DELETE_S:
 			updateViewAfterDelete(m, index);
+			this->message_list.pop();
+			this->index_list.pop();
 			break;
 		case CHANGE:
-			updateViewAfterStyleChange(m, index);
+			str = groupTogether();
+			updateViewAfterStyleChange(m, index,str);
 			break;
 		case CURSOR_S:
 			setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
+			this->message_list.pop();
+			this->index_list.pop();
 			break;
 		default:
 			break;
 		}
 	}
 	updateLabelPosition();
-	this->message_list.clear();
-	this->index_list.clear();
+	//this->message_list.clear();
+	//this->index_list.clear();
 }
+
+
 
 void CustomCursor::textSizeChanged() {
 	m_TextCursor->setPosition(m_position);

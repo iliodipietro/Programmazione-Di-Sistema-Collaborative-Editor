@@ -43,8 +43,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
-	connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
-	connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
+	//connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
+	//connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
 	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
@@ -215,15 +215,15 @@ void Editor::createActions() {
 	//menu->addSeparator();
 #endif
 
-	const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon("./Icons/058-undo.png"));
-	this->actionUndo = ui.menuModifica->addAction(undoIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
-	this->actionUndo->setShortcut(QKeySequence::Undo);
-	ui.toolBar->addAction(this->actionUndo);
+	//const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon("./Icons/058-undo.png"));
+	//this->actionUndo = ui.menuModifica->addAction(undoIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
+	//this->actionUndo->setShortcut(QKeySequence::Undo);
+	//ui.toolBar->addAction(this->actionUndo);
 
-	const QIcon redoIcon = QIcon::fromTheme("edit-redo", QIcon("./Icons/044-redo.png"));
-	this->actionRedo = ui.menuModifica->addAction(redoIcon, tr("&Redo"), m_textEdit, &QTextEdit::redo);
-	this->actionRedo->setShortcut(QKeySequence::Redo);
-	ui.toolBar->addAction(this->actionRedo);
+	//const QIcon redoIcon = QIcon::fromTheme("edit-redo", QIcon("./Icons/044-redo.png"));
+	//this->actionRedo = ui.menuModifica->addAction(redoIcon, tr("&Redo"), m_textEdit, &QTextEdit::redo);
+	//this->actionRedo->setShortcut(QKeySequence::Redo);
+	//ui.toolBar->addAction(this->actionRedo);
 
 	this->italicAct = new QAction(QIcon("./Icons/031-italic.png"), tr("&Corsivo"), this);
 	this->italicAct->setCheckable(true);
@@ -777,7 +777,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		//emit updateUsersIntervals();
+		emit updateUsersIntervals();
 
 		break;
 	case DELETE_S:
@@ -786,7 +786,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		//emit updateUsersIntervals();
+		emit updateUsersIntervals();
 
 		break;
 
@@ -1225,6 +1225,10 @@ void Editor::insertImage() {
 }
 
 void Editor::textAlign(QAction* a) {
+
+	if (this->lastStart == this->lastEnd)
+		return;
+
 	if (a == actionAlignLeft)
 		this->m_textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
 	else if (a == actionAlignCenter)

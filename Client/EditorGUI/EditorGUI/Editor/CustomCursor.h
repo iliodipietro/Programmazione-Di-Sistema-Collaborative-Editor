@@ -4,6 +4,7 @@
 #include <QLabel>
 #include "CRDT/CRDT.h"
 #include "QTimer"
+#include <queue>
 
 class CustomCursor : public QObject
 {
@@ -22,7 +23,7 @@ public:
 	int getCursorPosition();
 	void setActiveCursor();
 	void updateLabelPosition();
-
+	
 private:
 
 	QTextEdit* m_editor;
@@ -37,13 +38,14 @@ private:
 	int m_startSelection;
 	int m_endSelection;
 
-	void updateViewAfterInsert(Message m, __int64 index);
+	void updateViewAfterInsert(Message m, __int64 index, QString str);
 	void updateViewAfterDelete(Message m, __int64 index);
-	void updateViewAfterStyleChange(Message m, __int64 index);
+	void updateViewAfterStyleChange(Message m, __int64 index, QString str);
 
 	QTimer* timer;
-	std::vector<Message> message_list;
-	std::vector<int> index_list;
+	std::queue<Message> message_list;
+	std::queue<int> index_list;
+	QString groupTogether();
 
 
 public slots:
