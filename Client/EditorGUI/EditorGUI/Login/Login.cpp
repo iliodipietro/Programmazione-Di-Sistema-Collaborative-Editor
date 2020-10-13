@@ -24,9 +24,8 @@ void Login::closeEvent(QCloseEvent* event)
 
 void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor) {
 	m_timer->stop();
-	QString username = ui.usernameTextLine->text();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor, username, this->clientID);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor, m_username, this->clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
@@ -36,13 +35,13 @@ void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userCol
 
 void Login::on_loginButton_clicked()
 {
-	QString username = ui.usernameTextLine->text();
+	m_username = ui.usernameTextLine->text();
 	QString password = ui.passwordTextLine->text();
-	if (username != "" && password != "") {
+	if (m_username != "" && password != "") {
 		//QString loginInfo = "";
 		//loginInfo.append(username).append(",").append(password);
 		//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
-		QJsonObject message = Serialize::userSerialize(username, password, username, LOGIN);
+		QJsonObject message = Serialize::userSerialize(m_username, password, m_username, LOGIN);
 		bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
 		if (result) {
 			m_timer->setSingleShot(true);
@@ -77,13 +76,21 @@ void Login::loginResult(QJsonObject response) {
 	if (result) {
 		this->clientID = serverMessage[2].toInt();
 		QString profileImageBase64 = serverMessage[1];
-		QSharedPointer<QPixmap> profileImage = QSharedPointer<QPixmap>(new QPixmap());
-		profileImage->loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		QPixmap profileImage;
+		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		QPixmap target(QSize(50, 50));
+		target.fill(Qt::transparent);
+		QPainter painter(&target);
+		painter.setRenderHint(QPainter::Antialiasing, true);
+		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+		QPainterPath path;
+		path.addRoundedRect(0, 0, 50, 50, 25, 25);
+		painter.setClipPath(path);
+		painter.drawPixmap(0, 0, profileImage);
+		QSharedPointer<QPixmap> roundedProfileImage = QSharedPointer<QPixmap>(new QPixmap(target));
 		QColor userColor(serverMessage[3]);
 		//dato che ho successo elimino username e password dalla gui
-		ui.usernameTextLine->setText("");
-		ui.passwordTextLine->setText("");
-		openFileBrowser(profileImage, userColor);
+		openFileBrowser(roundedProfileImage, userColor);
 	}
 	else {
 		//dialog per mostrare il messaggio di errore ricevuto dal server
@@ -105,6 +112,8 @@ void Login::on_newAccount_clicked() {
 
 //funzione per ri-aprire la finestra di login dopo che il filebrowser è stato chiuso
 void Login::childWindowClosed() {
+	ui.usernameTextLine->setText("");
+	ui.passwordTextLine->setText("");
 	this->show();
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);
 }
