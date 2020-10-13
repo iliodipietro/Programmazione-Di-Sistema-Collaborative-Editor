@@ -9,6 +9,8 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	ui.setupUi(this);
 	//ui.usernameLabel->setText(" " + username);
 	ui.profileImage->setPixmap(*m_profileImage);
+
+
 	this->username = username;
 	this->clientID = clientID;
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);

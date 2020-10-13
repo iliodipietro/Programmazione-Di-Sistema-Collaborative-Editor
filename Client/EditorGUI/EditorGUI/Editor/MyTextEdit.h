@@ -6,13 +6,20 @@
 #include "CustomCursor.h"
 
 struct Interval{
-    int height;
-    int width;
-    int row;
+    QRect rect;
     QColor color;
 
-    Interval(int height, int width, int row, QColor color) :height(height), width(width), row(row), color(color) {};
+    Interval(QRect rect, QColor color) :rect(rect), color(color) {};
 };
+
+struct IntervalToPrint {
+    QRect rect;
+    QColor color;
+
+    IntervalToPrint(QRect rect, QColor color) : rect(rect), color(color) {};
+};
+
+class Editor;
 
 class MyTextEdit : public QTextEdit
 {
@@ -34,9 +41,13 @@ private:
 
     std::map<int, CustomCursor*> m_cursorsToPrint;
     std::vector<Interval> m_rowDimensions;
+    std::vector<IntervalToPrint> m_intervalsToPrint;
     bool m_mousePress;
     bool m_usersIntervalsEnabled;
+    bool m_usersIntervalsRepaint;
+    bool m_rectAlreadyDone;
     CRDT* m_crdt;
+    Editor* m_parentEditor;
 
     void paintCustomCursors();
     void paintUsersIntervals();

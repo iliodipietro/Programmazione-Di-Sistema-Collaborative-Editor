@@ -23,7 +23,8 @@ File::File(int fileId, QString path): id(fileId),path(path){
 
 void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 {
-    std::vector<Symbol>::iterator pos;
+    std::vector<int> pos;
+    bool afterInsert = true;
     if (m.getAction() != CURSOR_S) {
 		this->handler->process(m);//i cursori non sono slavati nel CRDT
 
@@ -34,20 +35,25 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 
 		//this->handler->printText();
 
-        pos = this->handler->getCursorPosition(m.getSymbol().getPos());
+        pos = m.getSymbol().getPos();
 
-        if(m.getAction() == INSERT_SYMBOL) pos++;
+        if(m.getAction() != INSERT_SYMBOL)
+            afterInsert = false;
+
         //if(m.getAction() == DELETE_SYMBOL) pos--;
     }
     else{
-        pos = this->handler->getCursorPosition(m.getCursorPosition());
+        pos = m.getCursorPosition();
+        afterInsert = false;
     }
 
+    CursorPosition CP(pos, afterInsert);
+
     if(m_usersCursorPosition.find(sender) != m_usersCursorPosition.end()){
-        m_usersCursorPosition[sender] = pos;
+        m_usersCursorPosition[sender] = CP;
     }
     else{
-        m_usersCursorPosition.insert(sender, pos);
+        m_usersCursorPosition.insert(sender, CP);
     }
 
 	QList<int> keys = this->users.keys();
@@ -90,7 +96,9 @@ void File::sendNewFile(ClientManager* socket)
         qDebug() << "time to send: " << (end - start) << '\n';
 
         for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
-            std::vector<int> pos = this->handler->fromIteratorToPosition(it.value());
+            std::vector<int> pos;
+            if(it.value().afterInsert)
+                pos = this->handler->getNextCursorPosition(it.value().pos);
             Message cursorPosition(pos, CURSOR_S, it.key()->getId());
             QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
             socket->writeData(bytes);

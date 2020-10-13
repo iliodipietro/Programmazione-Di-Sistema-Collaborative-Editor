@@ -587,17 +587,19 @@ void CRDT::saveOnFile()
 	//this->timer->start(TIMEOUT);
 }
 
-std::vector<Symbol>::iterator CRDT::getCursorPosition(std::vector<int> crdtPos) {
+std::vector<int> CRDT::getNextCursorPosition(std::vector<int> crdtPos) {
     std::vector<Symbol>::iterator positionInVector = this->_symbols.begin();
-
+    std::vector<int> pos;
 
     if (this->_symbols.empty()) {
         //inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
         //quando carico dal server
-        return positionInVector;
+        pos.push_back(0);
+        return pos;
     }
     else if (crdtPos > this->_symbols.back().getPos()) {
-        return this->_symbols.end();
+        pos.push_back(INT_MAX);
+        return pos;
     }
     else {
 
@@ -617,13 +619,18 @@ std::vector<Symbol>::iterator CRDT::getCursorPosition(std::vector<int> crdtPos) 
             return false;
             });
 
-        if (positionInVector != _symbols.end()) {
-            return positionInVector;
+        if ((positionInVector + 1) != _symbols.end()) {
+            positionInVector++;
+            return positionInVector->getPos();
             //index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione
            //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato
            //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
 
 
+        }
+        else{
+            pos.push_back(INT_MAX);
+            return pos;
         }
     }
 

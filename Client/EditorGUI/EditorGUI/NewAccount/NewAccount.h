@@ -12,6 +12,7 @@
 #include "ui_NewAccount.h"
 #include "SocketHandler/SocketHandler.h"
 
+
 class NewAccount : public QMainWindow
 {
 	Q_OBJECT
