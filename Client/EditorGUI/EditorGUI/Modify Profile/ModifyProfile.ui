@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
+    <width>1064</width>
     <height>712</height>
    </rect>
   </property>
@@ -29,7 +29,7 @@ QLineEdit { border-radius: 3px; }</string>
      <x>120</x>
      <y>120</y>
      <width>551</width>
-     <height>202</height>
+     <height>111</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout_3">
@@ -43,7 +43,7 @@ QLineEdit { border-radius: 3px; }</string>
      <number>10</number>
     </property>
     <item row="1" column="0">
-     <widget class="QLabel" name="nicknameLabel">
+     <widget class="QLabel" name="emailLabel">
       <property name="minimumSize">
        <size>
         <width>150</width>
@@ -59,12 +59,12 @@ QLineEdit { border-radius: 3px; }</string>
        <string notr="true">QLabel { color: white; }</string>
       </property>
       <property name="text">
-       <string>Nuovo Nickname:</string>
+       <string>Nuova Email:</string>
       </property>
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="nickNameLine_3">
+     <widget class="QLineEdit" name="emailLine_3">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -79,7 +79,7 @@ QLineEdit { border-radius: 3px; }</string>
      </widget>
     </item>
     <item row="2" column="0">
-     <widget class="QLabel" name="passwordLabel">
+     <widget class="QLabel" name="usernameLabel">
       <property name="minimumSize">
        <size>
         <width>150</width>
@@ -95,46 +95,12 @@ QLineEdit { border-radius: 3px; }</string>
        <string notr="true">QLabel { color: white; }</string>
       </property>
       <property name="text">
-       <string>Password:</string>
+       <string>Nuovo Username:</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="passwordLine_3">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="rePasswordLabel">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel { color: white; }</string>
-      </property>
-      <property name="text">
-       <string>Reinserisci Password:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="rePasswordLine_3">
+     <widget class="QLineEdit" name="usernameLine_3">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -181,7 +147,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>340</y>
+     <y>250</y>
      <width>156</width>
      <height>40</height>
     </rect>

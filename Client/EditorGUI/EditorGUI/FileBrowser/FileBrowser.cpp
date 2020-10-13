@@ -4,12 +4,12 @@
 FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString username,
 	int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage), m_userColor(userColor), m_timer(new QTimer(this)),
-	m_openAfterUri(false)
+	m_openAfterUri(false), username(username)
 {
 	ui.setupUi(this);
 	//ui.usernameLabel->setText(" " + username);
 	ui.profileImage->setPixmap(*m_profileImage);
-	this->username = username;
+	//this->username = username;
 	this->clientID = clientID;
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
 	connect(m_timer, &QTimer::timeout, this, &FileBrowser::showErrorMessage);
@@ -167,7 +167,7 @@ void FileBrowser::on_logoutButton_clicked() {
 //viene aperta la finestra per la modifica dei dati dell'utente
 void FileBrowser::on_modifyProfile_clicked()
 {
-	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username);
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, "email" ,this->m_profileImage); //devo passargli l'email devo capire dove prenderla l'immagine è uno shared pointer
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
 	this->hide();
@@ -261,6 +261,16 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 		}
 		break;
 	}
+	case SHARE: {
+		//funzione per mostrare uri
+		showURI(message);
+		/*QStringList serverMessage = Serialize::responseUnserialize(message);
+		QMessageBox resultDialog(this);
+		resultDialog.setInformativeText(serverMessage[1]);
+		resultDialog.exec();*/
+		break;
+
+	}
 	case SITECOUNTER: {
 		QPair<int, int> fileId_siteCounter = Serialize::siteCounterUnserialize(message);
 		auto it = m_textEditors.find(fileId_siteCounter.first);
@@ -269,16 +279,7 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 		}
 		break;
 	}
-	case SENDURI: {
-		//funzione per mostrare uri
-		showURI(message);
-		/*QStringList serverMessage = Serialize::responseUnserialize(message);
-		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText(serverMessage[1]);
-		resultDialog.exec();*/
-		/*break;*/
-
-	}
+	
 	default:
 		break;
 	}

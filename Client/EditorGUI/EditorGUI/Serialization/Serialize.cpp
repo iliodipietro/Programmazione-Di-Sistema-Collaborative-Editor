@@ -791,20 +791,23 @@ int Serialize::actionType(QJsonObject obj)
 //	this->type = type;
 //}
 
-QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
-{
-	/*
-	Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
-	INPUT:
-	- fileId: intero che contiene l'id del file
-	- type: intero che basandomi sul file define.h mi dice cosa devo fare, i tipi che possono esere passati qui sono OPEN O CLOSE O DELETE
-	RETURN:
-	- una Qstring che contiene il tutto serializzano come QJson
-	*/
+QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QString newImage) {
+
 	QJsonObject obj;
-	obj.insert("type", QJsonValue(type));
-	obj.insert("fileId", QJsonValue(fileId));
-
-
+	obj.insert("newname", newUsername);
+	obj.insert("newnick", newEmail);
+	obj.insert("newimage", newImage);
 	return obj;
+
+}
+
+QStringList Serialize::changeProfileUnserialize(QJsonObject obj) {
+	QStringList list;
+
+	list.append(obj.value("newUsername").toString());
+	list.append(obj.value("newEmail").toString());
+	list.append(obj.value("newimage").toString());
+
+	return list;
+
 }

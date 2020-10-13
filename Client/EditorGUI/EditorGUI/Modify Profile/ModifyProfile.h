@@ -17,7 +17,7 @@ class ModifyProfile : public QMainWindow
 	Q_OBJECT
 
 public:
-	ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent = Q_NULLPTR);
+	ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username,QString email, QSharedPointer<QPixmap> profileImage, QMainWindow* parent = Q_NULLPTR);
 	~ModifyProfile();
 
 private:
@@ -34,6 +34,7 @@ private:
 	QRect newSelection;
 	QSize m_originalSize;
 	QString username;
+	QString email;
 
 	void closeEvent(QCloseEvent* event);
 
