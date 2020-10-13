@@ -35,6 +35,10 @@ public:
 	//QJsonObject unserialize(QString str); // old
 	static int actionType(QJsonObject obj);
 
+	static QJsonObject changeProfileSerialize(QString newUsername, QString newEmail, QPixmap* newImage, int type);
+
+	static QStringList changeProfileUnserialize(QJsonObject obj);
+
 
 	static QJsonObject userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
@@ -78,6 +82,8 @@ public:
 	static QJsonObject responseSerialize(bool res, QString message, int userID, int type);
 	static QStringList responseUnserialize(QJsonObject obj);
 
+	static QString URIUnserialize(QJsonObject uri);
+
 	static QJsonObject ObjectFromString(QString& in);
 
 	static QJsonObject cursorPostionSerialize(int position, int user, int fileId, int type);
@@ -99,6 +105,8 @@ public:
 	static QJsonObject fromArrayToObject(QByteArray data);
 
 	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
+	//static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
+
 
 	//void setType(QString type);
 

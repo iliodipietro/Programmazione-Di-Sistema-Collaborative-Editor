@@ -584,6 +584,11 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	return list;
 }
 
+QString Serialize::URIUnserialize(QJsonObject uri)
+{
+	return uri.value("URI").toString();
+}
+
 QJsonObject Serialize::ObjectFromString(QString& in)//OLD
 {
 	//Ritorna un Qjson a partire dalla stringa ricevuta ed elimina il \n\r
@@ -788,3 +793,26 @@ int Serialize::actionType(QJsonObject obj)
 //{
 //	this->type = type;
 //}
+
+QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QPixmap* newImage, int type) {
+
+	QJsonObject obj;
+	obj.insert("newname", newUsername);
+	obj.insert("newnick", newEmail);
+	obj.insert("newimage", Serialize::jsonValFromPixmap(*newImage));
+	obj.insert("type", QJsonValue(type));
+	
+	return obj;
+
+}
+
+QStringList Serialize::changeProfileUnserialize(QJsonObject obj) {
+	QStringList list;
+
+	list.append(obj.value("newUsername").toString());
+	list.append(obj.value("newEmail").toString());
+	list.append(obj.value("newimage").toString());
+
+	return list;
+
+}

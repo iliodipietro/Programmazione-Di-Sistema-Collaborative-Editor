@@ -3,17 +3,22 @@
 #include <QMessageBox>
 #define RUBBER_SIZE 150
 
-ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
+ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QString email, QSharedPointer<QPixmap> profileImage, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
 m_timer(new QTimer(this))
 {
 	ui.setupUi(this);
 	this->move_rubberband = false;
 	m_selectionArea = Q_NULLPTR;
-	m_croppedImage = Q_NULLPTR;
+	//m_croppedImage = Q_NULLPTR;
 	m_resizedImage = Q_NULLPTR;;
 	m_selectedImage = Q_NULLPTR;
 	this->username = username;
-	
+	this->email = email;
+	m_croppedImage = profileImage.get();
+	qDebug() << username;   //l'username non viene preso
+	ui.usernameLine_3->setText(username);
+	ui.emailLine_3->setText(email);
+	ui.imageLabel->setPixmap(*profileImage);
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(registrationResult(QJsonObject)));
@@ -53,16 +58,17 @@ void ModifyProfile::on_selectImageButton_clicked() {
 
 void ModifyProfile::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
-	if (m_croppedImage != Q_NULLPTR) {
-		delete m_croppedImage;
-		m_croppedImage = Q_NULLPTR;
-	}
+	//if (m_croppedImage != Q_NULLPTR) {
+		//delete m_croppedImage;
+		//m_croppedImage = Q_NULLPTR;
+		//m_croppedImage = 
+	//}
 
-	QString nickname = ui.nickNameLine_3->text();
-	QString password = ui.passwordLine_3->text();
-	QString password_re = ui.rePasswordLine_3->text();
-	if (nickname != "") {
-		if (password.compare(password_re) == 0) {
+	QString email = ui.emailLine_3->text();
+	QString user = ui.usernameLine_3->text();
+	
+	if (email != "") {
+		if (user != "") { 
 			if (m_selectionArea != Q_NULLPTR) {
 				QPoint areaPos = m_selectionArea->geometry().topLeft();
 				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
@@ -71,7 +77,7 @@ void ModifyProfile::on_submit_clicked() {
 				ui.crop->setPixmap(*m_croppedImage);
 			}
 			if (m_croppedImage != Q_NULLPTR) {
-				QJsonObject userInfoSerialized = Serialize::userSerialize(this->username, password, nickname, 2, m_croppedImage);//type da definire in define.h
+				QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(user, email,  m_croppedImage, CHANGE_PROFILE);//type da definire in define.h  devo usare changeProfileSerialize
 				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 				if (result) {
 					m_timer->setSingleShot(true);
@@ -86,15 +92,15 @@ void ModifyProfile::on_submit_clicked() {
 				//QMessageBox::information(this, "NewAccount", "New Account Created");
 			}
 			else {
-				QMessageBox::warning(this, "NewAccount", "A picture is needed");
+				QMessageBox::warning(this, "Modifica Profilo", "A picture is needed");
 			}
 		}
 		else {
-			QMessageBox::warning(this, "Modifica Password", "The password is incorrect!");
+			QMessageBox::warning(this, "Modifica Profilo", "Missing username!");
 		}
 	}
 	else {
-		QMessageBox::warning(this, "Modifica Password", "Nickname mancante");
+		QMessageBox::warning(this, "Modifica Profilo", "email mancante");
 	}
 
 }
