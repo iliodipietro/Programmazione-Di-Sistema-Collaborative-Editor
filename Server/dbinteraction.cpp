@@ -134,19 +134,74 @@ void DBInteraction::sendSuccess(ClientManager* client) {
 }
 
 bool DBInteraction::is_email_valid(QString email) {
-    // define a regular expression
 
     QRegularExpression re("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);   //("([a-z]+)([_.a-z0-9]*)([a-z0-9]+)(@)([a-z]+)([.a-z]+)([a-z]+)");      //("(\\w+)(\\.|_)?(\\w*)@(\\w+)(\\.(\\w+))+");
+    QSqlQuery query;
+    int cnt = 0;
 
-    if (!re.isValid()) {
-        qDebug() << "re non valida\n";
+    if (re.match(email).hasMatch()) {
+        //controllo unicità della email
+        if (instance->db.open()) {
+            query.prepare("SELECT COUNT(*) FROM users WHERE email = (:email)");
+            query.bindValue(":email", email);
+
+            if (query.exec()) {
+                if (query.next()) {
+                    cnt = query.value(0).toInt();
+                    if (cnt > 0) {
+                        qDebug("email already exists\n");
+                        instance->db.close();
+                        return false;
+                    }
+                }
+            }
+            else {
+                qDebug() << "SELECT COUNT2 query failed!" << query.lastError() << "\n";
+                instance->db.close();
+                return false;
+            }
+
+        }
+        else {
+            return false;
+        }
+  
     }
     else {
-        qDebug() << "re valida\n";
+        return false;
     }
-    // try to match the string with the regular expression
-    return re.match(email).hasMatch();
+    return true;
 
+}
+
+bool DBInteraction::is_username_unique(QString username){
+    QSqlQuery query;
+    int cnt = 0;
+
+    if (instance->db.open()) {
+        query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
+        query.bindValue(":username", username); // no matching member function for call to 'bindValue' --> risolto con #incliude <QVariant>
+
+        if (query.exec()) {
+            if (query.next()) {
+                cnt = query.value(0).toInt();
+                if (cnt > 0) {
+                    instance->db.close();
+                    return false;
+                }
+            }
+        }
+        else {
+            qDebug() << "SELECT COUNT query failed!" << query.lastError() << "\n";
+            instance->db.close();
+            return false;
+        }
+    }
+    else {
+        qDebug() << "DB not opened!!\n";
+        return false;
+    }
+    return true;
 }
 
 QString DBInteraction::computeHashPassword(QString password) {
@@ -222,83 +277,37 @@ bool DBInteraction::checkPassword(QString password, ClientManager* client) {
 
 void DBInteraction::registration(QString username, QString email, QString password, QString profileImage, ClientManager* incomingClient) {
 
-    QSqlQuery query, query2;
     QByteArray salted_pwd;
     QString hashed_pwd;
     QString salt;
     QByteArray response;
     QString message;
-    int cnt2 = 0;
-    int cnt = 0;
     int userid;
 
-    /*CONTROLLO VALIDITà EMAIL */
+    /*CONTROLLO VALIDITà ED UNICITà DELLA EMAIL */
     if (!is_email_valid(email)) {
-        qDebug() << "Email format is incorrect.!\n";
-        message = "Email format is incorrect.";
+        message = "Email format is incorrect or the email used is not unique.";
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+        incomingClient->writeData(response);
+        return;
+
+    }
+
+    /*CONTROLLO UNICITÃ USERNAME  */
+    if (!instance->is_username_unique(username)) {
+        qDebug("username already exists\n");
+        message = "Username already exist";
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
         incomingClient->writeData(response);
         return;
     }
 
-    if (instance->db.open()) { //bisogna aprire la connessione al db prima altrimenti non funziona
-
-        /*CONTROLLO UNICITÃ  USERNAME E EMAIL */
-
-        query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
-        query.bindValue(":username", username); // no matching member function for call to 'bindValue' --> risolto con #incliude <QVariant>
-
-        if (query.exec()) {
-            if (query.next()) {
-                cnt = query.value(0).toInt();
-                if (cnt > 0) {
-                    qDebug("username already exists\n");
-                    message = "Username already used";
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-                    incomingClient->writeData(response);
-                    instance->db.close();
-                    return;
-                }
-            }
-        }
-        else {
-            qDebug() << "SELECT COUNT query failed!" << query.lastError() << "\n";
-            sendError(incomingClient);
-            instance->db.close();
-            return;
-        }
-
-        query2.prepare("SELECT COUNT(*) FROM users WHERE email = (:email)");
-        query2.bindValue(":email", email);
-
-        if (query2.exec()) {
-            if (query2.next()) {
-                cnt2 = query.value(0).toInt();
-                if (cnt2 > 0) {
-                    qDebug("email already exists\n");
-                    message = "email already used";
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-                    incomingClient->writeData(response);
-                    instance->db.close();
-                    return;
-                }
-            }
-        }
-        else {
-            qDebug() << "SELECT COUNT2 query failed!" << query.lastError() << "\n";
-            sendError(incomingClient);
-            instance->db.close();
-            return;
-        }
-
-
-
-
-
-        /*FINE CONTROLLO*/
+    if (instance->db.open()) { 
 
         /*INSERIMENTO DATI NEL DB*/
         qDebug("insertion...\n");
+
+        QSqlQuery query;
         salt = instance->generateRandomString(password.size());
         salted_pwd = password.append(salt).toUtf8();
         hashed_pwd = QString(QCryptographicHash::hash(salted_pwd, QCryptographicHash::Sha256));
@@ -350,18 +359,15 @@ void DBInteraction::registration(QString username, QString email, QString passwo
             QDir().mkdir(user_directory_path);
         }
 
-
-
-        QSqlQuery query3;
-        query3.prepare("INSERT INTO users(username, userid, password, email, salt, profileImage) VALUES ((:username), NULL, (:password), (:email), (:salt), (:profileImage))");
-        query3.bindValue(":username", username);
+        query.prepare("INSERT INTO users(username, userid, password, email, salt, profileImage) VALUES ((:username), NULL, (:password), (:email), (:salt), (:profileImage))");
+        query.bindValue(":username", username);
         //query3.bindValue(":userid", userid);
-        query3.bindValue(":password", hashed_pwd);
-        query3.bindValue(":email", email);
-        query3.bindValue(":salt", salt);
-        query3.bindValue(":profileImage", path);
+        query.bindValue(":password", hashed_pwd);
+        query.bindValue(":email", email);
+        query.bindValue(":salt", salt);
+        query.bindValue(":profileImage", path);
 
-        if (query3.exec()) {
+        if (query.exec()) {
             //success
             qDebug("new user added!\n");
             sendSuccess(incomingClient);
@@ -369,7 +375,7 @@ void DBInteraction::registration(QString username, QString email, QString passwo
         }
         else {
             qDebug("INSERT failed\n");
-            qDebug() << query3.lastError();
+            qDebug() << query.lastError();
             sendError(incomingClient);
             instance->db.close();
             return;
@@ -480,9 +486,7 @@ void DBInteraction::logout(ClientManager* client) {
             f->removeUser(client);
         }
     }
-    //sendSuccess(client); // ??
     instance->activeusers.removeOne(client);
-
 }
 
 void DBInteraction::createFile(QString filename, ClientManager* client) {
@@ -555,12 +559,12 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
                     query3.bindValue(":userid", userId);
                     query3.bindValue(":path", text_path);
 
-                    if(query3.exec()){
-
+                    if (query3.exec()) {
+                        /*
                         QFile file(text_path);
                         if(file.open(QIODevice::WriteOnly)){
                             QTextStream stream(&file);
-                            stream << "";
+                            stream << text_path;
                             file.close();
                         }
                         //File* newfile = new File(fileId, path);
@@ -714,7 +718,7 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
 
         f = instance->getFile(fileId);
         f->addUser(client);
-        qDebug()<<"ho inviato il file che era gia in RAM\n";
+        qDebug() << "ho inviato il file che era gia in RAM\n";
         response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(fileId, siteCounter, SITECOUNTER));
         client->writeData(response);
 
@@ -789,16 +793,12 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
         client->writeData(response);
         return;
-
     }
 
     if (instance->files.value(fileId)->getUsers().contains(client)) {
         //se il file risulta aperto dall'utente allora lo puÃ² chiudere
-        //aggiorno il valore di siteCounter nel DB
 
         //aggiornamento del siteCounter
-        //if(siteCounter != -1){
-            // -1 indica che ho chimato la close nella deleteFile..se devo cancellare il file non mi interessa di aggiornare il sitecounter dell'utente, tanto sto per cancellare la righa
         if (instance->db.open()) {
             QSqlQuery query;
             int userid = client->getId();
@@ -816,7 +816,6 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
             }
             qDebug() << "update riuscita\n";
             instance->db.close();
-
         }
         else {
             qDebug() << "DB not opened!!\n";
@@ -824,13 +823,9 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
             return;
         }
 
-        // }
-
-
         f = instance->files.value(fileId);
         f->removeUser(client);
 
-        //nel caso in cui questa funzione venga chiamata quando chiamo la deleteFile, potrebbe causare problemi questa parte??? --->controllare
         if (!f->thereAreUsers()) {
             // in questo momento che il file non Ã¨ aperto da nessuno, controllo se uno degli utenti ha richiesto di rinominare il file e nel caso lo rinomino
             //se non ho piÃ¹ utenti attivi che lavorano sul file allora lo rimuovo dalla mappa (no dal DB, quindi il file esiste ancora!!)
@@ -839,48 +834,10 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
                 QString username = client->getUsername();
                 QString newName = f->getNewName();
                 QString oldPath = f->getPath();
-                QString newPath;
-                int i;
 
-                QStringList oldPathList = oldPath.split("/");
-                for (i = 0; i < oldPathList.size() - 1; i++) {
-                    //copio il precedente path eliminando l'ultima stringa che rappresenta il nome del vecchio file
-                    newPath.append(oldPathList.at(i));
-                }
-
-                QStringList parts = newName.split('.');
-                newName = parts.at(0);
-                newPath.append("/").append(newName).append(".txt");
-                qDebug() << "new path: " << newPath << "\n";
-
-                if (instance->db.open()) {
-                    QSqlQuery query;
-                    query.prepare("UPDATE files SET filename = (:newname), path = (:newpath) WHERE FileId = (:fileid) ");
-                    query.bindValue(":newname", newName);
-                    query.bindValue(":newpath", newPath);
-                    query.bindValue(":fileid", fileId);
-
-                    if (query.exec()) {
-                        instance->files.remove(fileId); // nessuno sta piu lavorando sul file
-
-                        sendSuccess(client);//utile?
-
-                    }
-                    else {
-                        qDebug() << "UPDATE failed: " << query.lastError() << "\n";
-                        sendError(client);
-                        instance->db.close();
-                        return;
-                    }
-                    instance->db.close();
-                }
-                else {
-                    qDebug() << "DB not opened!!\n";
-                    sendError(client);
-                    return;
-                }
+                instance->changeFileName(oldPath, newName, fileId, client);
             }
-            instance->files.remove(fileId);
+            instance->files.remove(fileId);//nessuno sta più usando il file
         }
     }
     return;
@@ -926,7 +883,6 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
                     QSqlQuery query3;
                     last = true;
                     
-
                     query3.prepare("SELECT path FROM files WHERE fileid = (:fileid) AND userid = (:userid)");
                     query3.bindValue(":userid", userid);
                     query3.bindValue(":fileid", fileId);
@@ -942,15 +898,12 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
                         return;
                     }
                 }
-
-
             }
             else{
                 qDebug() << "SELECT COUNT(*) failed: " << query2.lastError() << "\n";
                 sendError(client);
                 instance->db.close();
                 return;
-
             }
         }
         query.prepare("DELETE FROM files WHERE fileId = (:fileid) AND userid = (:userid)");
@@ -971,11 +924,47 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
             instance->db.close();
             return;
         }
+    }
+    else {
+        qDebug() << "DB not opened!!\n";
+        sendError(client);
+        return;
+    }
+    return;
+}
 
+void DBInteraction::changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client){
+    QString newPath;
+    int i;
+    QStringList oldPathList = oldPath.split("/");
+    for (i = 0; i < oldPathList.size() - 1; i++) {
+        //copio il precedente path eliminando l'ultima stringa che rappresenta il nome del vecchio file
+        newPath.append(oldPathList.at(i)).append("/");
+    }
 
+    QStringList parts = newName.split('.');
+    newName = parts.at(0);
+    newPath.append(newName).append(".txt");
+    qDebug() << "new path: " << newPath << "\n";
 
+    if (instance->db.open()) {
+        QSqlQuery query;
+        query.prepare("UPDATE files SET filename = (:newname), path = (:newpath) WHERE FileId = (:fileid) ");
+        query.bindValue(":newname", newName);
+        query.bindValue(":newpath", newPath);
+        query.bindValue(":fileid", fileId);
 
+        if (query.exec()) {
 
+            sendSuccess(client);//utile?
+        }
+        else {
+            qDebug() << "UPDATE failed: " << query.lastError() << "\n";
+            sendError(client);
+            instance->db.close();
+            return;
+        }
+        instance->db.close();
     }
     else {
         qDebug() << "DB not opened!!\n";
@@ -984,8 +973,7 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
     }
 
 
-    // if COUNT (*)
-    return;
+
 }
 
 void DBInteraction::renameFile(int fileId, QString newName, ClientManager* client) {
@@ -999,11 +987,45 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         return;
     }
 
-    //instance->closeFile(fileId, client); // controllo prima se il file Ã¨ rimasto aperto e se Ã¨ cosi lo chiudo.-->INUTILE???
+    if (!instance->files.contains(fileId) || (instance->files.value(fileId)->getUsers().contains(client) && instance->files.value(fileId)->getUsers().size() == 1)) {
+        //nessuno sta lavorando sul file oppure solo l'utente in questione lo sta usando, lo posso rinominare senza problemi 
+        QSqlQuery query;
+        int userid = client->getId();
 
-    // nel caso in cui il file sia condiviso tra piÃ¹ utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
-    f = instance->files.value(fileId);
-    f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarÃ  l'ultima)
+        if (instance->db.open()) {
+            query.prepare("SELECT path FROM files WHERE fileid = (:fileid) AND userid = (:userid)");
+            query.bindValue(":fileid", fileId);
+            query.bindValue(":userid", userid);
+
+            if (query.exec()) {
+                if (query.next()) {
+                    QString oldPath = QString(query.value("path").toString());
+                    instance->changeFileName(oldPath, newName, fileId, client);
+                }
+            }
+            else {
+                qDebug() << "SELECT path failed: " << query.lastError() << "\n";
+                sendError(client);
+                instance->db.close();
+                return;
+            }
+        }
+        else{
+            qDebug() << "DB not opened!!\n";
+            sendError(client);
+            return;
+        }
+
+        
+    
+    }
+    else{
+        //il file è aperto da altri utenti
+        // nel caso in cui il file sia condiviso tra piÃ¹ utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
+        f = instance->files.value(fileId);
+        f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarÃ  l'ultima)
+    }
+
 
     sendSuccess(client);
 }
@@ -1152,7 +1174,8 @@ void DBInteraction::changePassword(QString oldPassword, QString newPassword, Cli
     }
 }
 
-void DBInteraction::changeUsername(QString newUsername, ClientManager* client) {
+/*
+* void DBInteraction::changeUsername(QString newUsername, ClientManager* client) {
 
     if (instance->db.open()) {
         int userid = client->getId();
@@ -1161,8 +1184,8 @@ void DBInteraction::changeUsername(QString newUsername, ClientManager* client) {
         QSqlQuery query;
 
         query.prepare("UPDATE users SET username = (:newname) WHERE userid = (:userid)");
-        query.bindValue("newname", newUsername);
-        query.bindValue("userid", userid);
+        query.bindValue(":newname", newUsername);
+        query.bindValue(":userid", userid);
 
         if (query.exec()) {
             client->setUsername(newUsername);
@@ -1183,6 +1206,7 @@ void DBInteraction::changeUsername(QString newUsername, ClientManager* client) {
     }
 }
 
+
 void DBInteraction::changeEmail(QString newEmail, ClientManager* client) {
     QByteArray response;
     QString message;
@@ -1198,38 +1222,14 @@ void DBInteraction::changeEmail(QString newEmail, ClientManager* client) {
 
 
     if (instance->db.open()) {
-        QSqlQuery query2;
         int userid = client->getId();
-        int cnt = -1;
 
         QSqlQuery query;
 
-        query2.prepare("SELECT COUNT(*) FROM users WHERE email = (:newEmail)");
-        query2.bindValue(":newEmail", newEmail);
-
-        if (query2.exec()) {
-            if (query2.next()) {
-                cnt = query.value(0).toInt();
-                if (cnt > 0) {
-                    qDebug("email already exists\n");
-                    message = "email already exists";
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
-                    client->writeData(response);
-                    instance->db.close();
-                    return;
-                }
-            }
-        }
-        else {
-            qDebug() << "SELECT COUNT2 query failed!" << query.lastError() << "\n";
-            sendError(client);
-            instance->db.close();
-            return;
-        }
 
         query.prepare("UPDATE users SET email = (:newEmail) WHERE userid = (:userid)");
-        query.bindValue("newEmail", newEmail);
-        query.bindValue("userid", userid);
+        query.bindValue(":newEmail", newEmail);
+        query.bindValue(":userid", userid);
 
         if (query.exec()) {
             client->setEmail(newEmail);
@@ -1249,6 +1249,7 @@ void DBInteraction::changeEmail(QString newEmail, ClientManager* client) {
         return;
     }
 }
+
 
 void DBInteraction::changeProfilePic(QString profileImage, ClientManager* client) {
     QString username = client->getUsername();
@@ -1293,7 +1294,7 @@ void DBInteraction::changeProfilePic(QString profileImage, ClientManager* client
             instance->db.close();
         }
         else {
-            qDebug("INSERT failed\n");
+            qDebug("UPDATE failed\n");
             qDebug() << query.lastError();
             sendError(client);
             instance->db.close();
@@ -1309,13 +1310,89 @@ void DBInteraction::changeProfilePic(QString profileImage, ClientManager* client
 
 }
 
+*/
+
 void DBInteraction::changeProfile(QString newUsername, QString newEmail, QString newImage, ClientManager* client) {
     if (!instance->isUserLogged(client)) {
         return;
     }
+
+    QString username = client->getUsername();
+    QByteArray response;
+    QString message;
+    QSqlQuery query;
+
+    QString path(QDir::currentPath() + "/ImmaginiProfilo/" + username + "_profileImage.txt");
+
+    if (QFile::exists(path)) {
+        QFile::remove(path);
+    }
+
+    if (is_email_valid(newEmail) && is_username_unique(newUsername)) {
+
+        QFile file(path);
+
+        if (file.open(QIODevice::WriteOnly)) {
+            QTextStream stream(&file);
+            stream << newImage;
+            file.close();
+        }
+        else {
+            qDebug("image not saved!!\n");
+            message = "image not saved!\n";
+            response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+            client->writeData(response);
+            instance->db.close();
+            return;
+        }
+
+
+        if (instance->db.open()) {
+            QSqlQuery query;
+            int userid = client->getId();
+
+            query.prepare("UPDATE users SET username = (:newname), email = (:newEmail), profileImage = (:profileImage) WHERE userid = (:userid)");
+            query.bindValue(":newname", newUsername);
+            query.bindValue(":newEmail", newEmail);
+            query.bindValue(":profileImage", path);
+            query.bindValue(":userid", userid);
+
+
+            if (query.exec()) {
+                //success
+                qDebug("Profile updated!\n");
+                client->setUsername(newUsername);
+                client->setEmail(newEmail);
+                sendSuccess(client);
+                instance->db.close();
+            }
+            else {
+                qDebug("UPDATE failed\n");
+                qDebug() << query.lastError();
+                sendError(client);
+                instance->db.close();
+                return;
+            }
+        }
+        else {
+            qDebug() << "DB not opened!!\n";
+            sendError(client);
+            return;
+        }
+    }
+    else {
+        message = "username or email (or both) is/are not valid\n";
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
+        client->writeData(response);
+        return;
+    }
+
+    /*
     if (!newUsername.isEmpty()) instance->changeUsername(newUsername, client);
     if (!newEmail.isEmpty()) instance->changeEmail(newEmail, client);
     if (!newImage.isEmpty()) instance->changeProfilePic(newImage, client);
+    */
+
 }
 
 void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data)
