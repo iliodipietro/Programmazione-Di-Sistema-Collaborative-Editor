@@ -791,12 +791,14 @@ int Serialize::actionType(QJsonObject obj)
 //	this->type = type;
 //}
 
-QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QString newImage) {
+QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QPixmap* newImage, int type) {
 
 	QJsonObject obj;
 	obj.insert("newname", newUsername);
 	obj.insert("newnick", newEmail);
-	obj.insert("newimage", newImage);
+	obj.insert("newimage", Serialize::jsonValFromPixmap(*newImage));
+	obj.insert("type", QJsonValue(type));
+	
 	return obj;
 
 }

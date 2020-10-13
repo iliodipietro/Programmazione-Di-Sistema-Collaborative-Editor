@@ -35,7 +35,7 @@ public:
 	//QJsonObject unserialize(QString str); // old
 	static int actionType(QJsonObject obj);
 
-	static QJsonObject changeProfileSerialize(QString newUsername, QString newEmail, QString newImage);
+	static QJsonObject changeProfileSerialize(QString newUsername, QString newEmail, QPixmap* newImage, int type);
 
 	static QStringList changeProfileUnserialize(QJsonObject obj);
 
