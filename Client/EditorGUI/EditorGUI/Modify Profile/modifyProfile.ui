@@ -108,7 +108,7 @@ QLineEdit { border-radius: 3px; }</string>
        </size>
       </property>
       <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
+       <enum>QLineEdit::Normal</enum>
       </property>
      </widget>
     </item>
@@ -147,7 +147,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>250</y>
+     <y>330</y>
      <width>156</width>
      <height>40</height>
     </rect>
@@ -210,9 +210,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
   <widget class="QLabel" name="imageLabel">
    <property name="geometry">
     <rect>
-     <x>350</x>
-     <y>340</y>
-     <width>321</width>
+     <x>290</x>
+     <y>250</y>
+     <width>271</width>
      <height>200</height>
     </rect>
    </property>
