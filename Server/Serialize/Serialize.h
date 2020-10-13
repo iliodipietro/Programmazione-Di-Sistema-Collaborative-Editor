@@ -55,10 +55,10 @@ public:
     static QJsonObject sharedFileAcquisitionSerialize(QString URI, int type); // ilio
     static QString sharedFileAcquisitionUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
+    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);// ilio
     static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject changeProfileSerialize(QString newname, QString newNick, QString newImage); // ilio
+    static QJsonObject changeProfileSerialize(QString newname, QString newNick, QString newImage, int type); // ilio
     static QStringList changeProfileUnserialize(QJsonObject obj); //ilio
 
     static QJsonObject URISerialize(QString URI, int type);// ilio

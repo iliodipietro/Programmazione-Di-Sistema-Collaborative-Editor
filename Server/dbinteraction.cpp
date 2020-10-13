@@ -457,7 +457,6 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                 response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
                 incomingClient->writeData(response);
                 instance->db.close();
-
                 return;
             }
         }
