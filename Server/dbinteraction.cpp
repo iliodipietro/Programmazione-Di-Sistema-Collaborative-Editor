@@ -566,7 +566,7 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
                             QTextStream stream(&file);
                             stream << text_path;
                             file.close();
-                        }
+                        }*/
                         //File* newfile = new File(fileId, path);
                         response = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, fileId, NEWFILE));
                         client->writeData(response);
@@ -740,11 +740,14 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
                     f = new File(fileId, path);
                     //f->addUser(client);
                     instance->files.insert(fileId, f);
-                    instance->files.value(fileId)->addUser(client);
-                    qDebug() << "user added!\n";
+
                     //sendSuccess(client);
+                    //il site counter deve essere mandato prima dei messaggi e questo viene fatto in add user
                     response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(fileId, siteCounter, SITECOUNTER));
                     client->writeData(response);
+                    instance->files.value(fileId)->addUser(client);
+                    qDebug() << "user added!\n";
+
                     instance->db.close();
 
 

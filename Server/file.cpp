@@ -1,5 +1,7 @@
 #include "file.h"
-
+#include <ctime>
+#include <thread>
+#include <chrono>
 File::File():handler(nullptr),id(0),path("")
 {
 
@@ -60,17 +62,32 @@ void File::messageHandler(ClientManager* sender, Message m, QByteArray bytes)
 	}
 }
 
+void maybeSleep(int dim)
+{
+    //mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
+    if ((dim % 50) == 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));//stop per 1/100 di sec
+    }
+}
 void File::sendNewFile(ClientManager* socket)
 {
 	if (!this->handler->isEmpty()) {
-		//se e esolo se non è vuoto--> nuovo file o senza caratteri
+		//se e e solo se non è vuoto--> nuovo file o senza caratteri
 		//prendo tutto il testo come vettore di messagi, e poi un messagio per volta lo serializzo, trasformo in array e lo invio
 		std::vector<Message> msgs = this->handler->getMessageArray();
 
+        __int64 start = std::time(nullptr);
+        int i = 1;
 		for (auto m : msgs) {
             QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, m, MESSAGE));
-			socket->writeData(bytes);
+            socket->writeData(bytes); 
+            //qDebug()<< bytes.size();
+            maybeSleep(i);
+            i++;
 		}
+        __int64 end = std::time(nullptr);
+
+        qDebug() << "time to send: " << (end - start) << '\n';
 
         for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
             std::vector<int> pos = this->handler->fromIteratorToPosition(it.value());

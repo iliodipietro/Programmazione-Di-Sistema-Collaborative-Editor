@@ -17,7 +17,7 @@
 #define PADDING 10
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
-#define SLEEP_TIME 100
+#define SLEEP_TIME 150
 #define MAX_CHAR_TO_SEND 25
 
 Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
@@ -773,7 +773,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		emit updateUsersIntervals();
+		//emit updateUsersIntervals();
 
 		//updateUsersCharactersIntervalAfterInsert(userId, index);
 
@@ -784,7 +784,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		emit updateUsersIntervals();
+		//emit updateUsersIntervals();
 
 		//updateUsersCharactersIntervalAfterDelete(userId, index);
 
@@ -804,6 +804,10 @@ void Editor::remoteAction(Message m)
 }
 
 void Editor::insertCharBatch() {
+
+
+	if (this->list_of_msg.empty())
+		return;
 
 	QString str;
 	int index = this->list_of_idx[0];
@@ -861,16 +865,16 @@ void Editor::initialFileLoad(Message m_, __int64 index_) {
 			this->list_of_idx.push_back(index_);
 		}
 		else {
-			//inserisco quando c'e un cabio di stile
+			//inserisco quando c'e un cambio di stile
 			insertCharBatch();
 			this->list_of_msg.push_back(m_);
 			this->list_of_idx.push_back(index_);
+			this->insert_timer->start();//parte solo se c'è almeno un carattere
 		}
 
 
-		if (this->list_of_msg.size() >= 30) {//se ho almeno 30 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
+		if (this->list_of_msg.size() >= 50) {//se ho almeno 50 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
 			insertCharBatch();
-			this->insert_timer->start();//parte solo se c'è almeno un carattere
 		}
 
 	}
