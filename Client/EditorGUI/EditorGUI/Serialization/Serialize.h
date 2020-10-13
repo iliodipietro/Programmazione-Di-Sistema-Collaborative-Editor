@@ -36,7 +36,7 @@ public:
 	static int actionType(QJsonObject obj);
 
 
-	static QJsonObject userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
+	static QJsonObject userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
@@ -53,7 +53,11 @@ public:
 	static QJsonObject newFileSerialize(QString filename, int type);// ilio
 	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
 
-	static QJsonObject openCloseDeleteFileSerialize(int fileId, int type); // ilio
+	static QJsonObject openDeleteFileSerialize(int fileId, int type); // ilio
+	static int openDeleteFileUnserialize(QJsonObject obj);// ilio
+
+	static QJsonObject closeFileSerialize(int fileId, int siteCounter, int type);
+	static QPair<int, int> closeFileUnserialize(QJsonObject obj);
 
 	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
 
@@ -90,11 +94,13 @@ public:
 	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);//augusto
 	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);//augusto
 
+
 	static QJsonObject logoutUserSerialize(int type);//augusto
 
 	static QByteArray fromObjectToArray(QJsonObject obj);
 	static QJsonObject fromArrayToObject(QByteArray data);
 
+	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
 	static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
 
 

@@ -10,7 +10,7 @@ Serialize::Serialize(QObject* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, int type, QPixmap* profileImage)
+QJsonObject Serialize::userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage)
 {
 	/*
 	Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio è discriminato dal valore di type
@@ -30,7 +30,7 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
 
 	if (type == REGISTER) {
 		//il nickname serve solo in fase di register per salvarlo sul server
-		obj.insert("nickname", QJsonValue(nickname));
+		obj.insert("email", QJsonValue(email));
 		obj.insert("img", Serialize::jsonValFromPixmap(*profileImage));
 	}
 
@@ -57,7 +57,8 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	-->lunghezza 3 se LOGIN:
 		list[0]: username
 		list[1]: password
-		list[2]: nickname
+		list[2]: email
+		list[3]: img
 	*/
 
 	QString usr = obj.value("user").toString();
@@ -68,8 +69,8 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
 	list.append(usr);
 	list.append(password);
 	if (Serialize::actionType(obj) == REGISTER) {
-		QString nickname = obj.value("nickname").toString();
-		list.append(nickname);
+		QString email = obj.value("email").toString();
+		list.append(email);
 		QString img = obj.value("img").toString();
 		list.append(img);
 	}
@@ -192,7 +193,26 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj) {
 }
 
 
-QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
+QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type) {
+	QJsonObject obj;
+
+	obj.insert("fileid", fileId);
+	obj.insert("sitecounter", siteCounter);
+	obj.insert("type", type);
+
+	return obj;
+}
+
+QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj) {
+	QPair<int, int> res;
+	res.first = obj.value("fileid").toInt();
+	res.second = obj.value("sitecounter").toInt();
+	return res;
+
+}
+
+
+QJsonObject Serialize::openDeleteFileSerialize(int fileId, int type)
 {
 	/*
 	Questa funzione serializza l'id del file quando vuole fare un OPEN o CLOSE o DELETE, cio e' discriminato dal valore di type
@@ -208,6 +228,21 @@ QJsonObject Serialize::openCloseDeleteFileSerialize(int fileId, int type)
 
 
 	return obj;
+}
+
+int Serialize::openDeleteFileUnserialize(QJsonObject obj)
+{
+	/*
+	Questa funzione de-serializza i nome del file
+	INPUT:
+	- obj: e' un Qjson che contiene tutte le info
+	RETURN:
+	- una QstringList con il nome del file
+	*/
+	int fileId;
+	fileId = obj.value("fileId").toInt();
+
+	return fileId;
 }
 
 QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type) {
@@ -355,7 +390,7 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 
 	int action = obj.value("action").toInt();
 	int sender = obj.value("sender").toInt();
-	int fileId = obj.value("fileId").toInt();
+	int fileId = obj.value("fileid").toInt();
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -695,6 +730,15 @@ QJsonObject Serialize::logoutUserSerialize(int type)
 	obj.insert("type", QJsonValue(type));
 
 	return obj;
+}
+
+QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj) {
+
+	int siteCounter = obj.value("siteCounter").toInt();
+	int fileId = obj.value("fileId").toInt();
+	return QPair<int, int>(fileId, siteCounter);
+
+
 }
 
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)

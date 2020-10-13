@@ -12,6 +12,7 @@
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
 #include "MyTextEdit.h"
+#include "UserInterval.h"
 
 class QFontComboBox;
 class QPrinter;
@@ -28,8 +29,10 @@ public:
 	void loadFile(const QString& fileName);
 	void remoteAction(Message m);
 	int getFileId();
+	inline std::vector<UserInterval>* getUsersCharactersIntervals() { return &m_usersCharactersIntervals; };
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
+	void setSiteCounter(int siteCounter);
 
 private:
 	Ui::Editor ui;
@@ -54,6 +57,7 @@ private:
 	QAction* actionAlignJustify;
 	QAction* actionTextColor;
 	QAction* m_actionShowEditingUsers;
+	QAction* m_showUsersIntervals;
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
@@ -66,6 +70,7 @@ private:
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
 	int m_fileId;
 	QMap<int, QString> m_editingUsers;
+	std::vector<UserInterval> m_usersCharactersIntervals;
 	bool m_showingEditingUsers;
 	QColor m_userColor;
 
@@ -91,6 +96,7 @@ private:
 	bool styleBounce = false;
 
 	//FINE-------------------------------------------------------------------------------------------------------
+
 
 	void closeEvent(QCloseEvent* event);
 	void createActions();
@@ -138,6 +144,8 @@ private:
 	//FINE----------------------------------------------------------------------
 	
 	void initialFileLoad(Message m, __int64 index);
+	void updateUsersCharactersIntervalAfterInsert(int userId, __int64 index);
+	void updateUsersCharactersIntervalAfterDelete(int userId, __int64 index);
 
 protected:
 		void mousePressEvent(QMouseEvent* event);
@@ -153,10 +161,12 @@ private slots:
 	void textColor();
 	void showEditingUsers();
 	void updateCursorPosition(bool isSelection);
+	void showHideUsersIntervals();
 
 //---------------------------------------------------------------------------------------------------
 signals:
-	void editorClosed(int);
+	void editorClosed(int, int);
 	void styleChange();
-	
+	void showHideUsersIntervalsSignal();
+	void updateUsersIntervals();
 };

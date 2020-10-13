@@ -11,7 +11,7 @@ Serialize::Serialize(QWidget* parent)
 
 
 
-QJsonObject Serialize::userSerialize(QString user, QString password, QString nickname, QPixmap profileImage, int type)
+QJsonObject Serialize::userSerialize(QString username, QString email, QString password, QString profileImage, int type)
 {
     /*
     Questa funzione serializza i dati dell'utente quando vuole fare un login o signup, cio e' discriminato dal valore di type
@@ -26,12 +26,12 @@ QJsonObject Serialize::userSerialize(QString user, QString password, QString nic
     QJsonObject obj;
 
     obj.insert("type", QJsonValue(type));
-    obj.insert("user", QJsonValue(user));
+    obj.insert("user", QJsonValue(username));
     obj.insert("password", QJsonValue(password));
 
     if (type == REGISTER) {
-        //il nickname serve solo in fase di register per salvarlo sul server
-        obj.insert("nickname", QJsonValue(nickname));
+        //l'email serve solo in fase di register per salvarlo sul server
+        obj.insert("email", QJsonValue(email));
         obj.insert("img", Serialize::jsonValFromPixmap(profileImage));
     }
 
@@ -51,29 +51,33 @@ QStringList Serialize::userUnserialize(QJsonObject obj)
     INPUT:
     - obj: e' un Qjson che contiene tutte le info dell'utente come username password e nickname per fare login o signup
     RETURN:
-    - una QstringList che puo avere lunghezza 2 0 3.
+    - una QstringList che puo avere lunghezza 2 0 5.
     -->lunghezza 2 se LOGIN:
         list[0]: username
         list[1]: password
-    -->lunghezza 3 se LOGIN:
+    -->lunghezza 3 se REGISTER:
         list[0]: username
         list[1]: password
-        list[2]: nickname
+        list[2]: email
+        list[3]: img
     */
 
     QString usr = obj.value("user").toString();
     QString password = obj.value("password").toString();
+
     //QString type = obj.value("type").toString();
 
     QStringList list;
     list.append(usr);
     list.append(password);
+
     if (Serialize::actionType(obj) == REGISTER) {
-        QString nickname = obj.value("nickname").toString();
-        list.append(nickname);
+        QString email = obj.value("email").toString();
         QString img = obj.value("img").toString();
+
+        list.append(email);
         list.append(img);
-        qDebug() << img;
+        //qDebug() << img;
     }
 
     return list;
@@ -140,7 +144,7 @@ QMap<int, QString> Serialize::fileListUnserialize(QJsonObject obj){
 QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type){
     QJsonObject obj;
 
-    obj.insert("fileid", fileId);
+    obj.insert("fileId", fileId);
     obj.insert("sitecounter", siteCounter);
     obj.insert("type", type);
 
@@ -149,7 +153,7 @@ QJsonObject Serialize::closeFileSerialize(int fileId, int siteCounter, int type)
 
 QPair<int, int> Serialize::closeFileUnserialize(QJsonObject obj){
     QPair<int, int> res;
-    res.first = obj.value("fileid").toInt();
+    res.first = obj.value("fileId").toInt();
     res.second = obj.value("sitecounter").toInt();
     return res;
 
@@ -318,9 +322,10 @@ QJsonObject Serialize::URISerialize(QString URI, int type){
 
 }
 
-QJsonObject Serialize::siteCounterSerialize(int siteCounter, int type){
+QJsonObject Serialize::siteCounterSerialize(int fileId, int siteCounter, int type){
     QJsonObject obj;
 
+    obj.insert("fileId", fileId);
     obj.insert("siteCounter", siteCounter);
     obj.insert("type", type);
 
@@ -477,8 +482,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
         pos.push_back(qj.toInt());
     }
 
-    QFont font;
-    font.fromString(obj.value("font").toString());
+    //QFont font;
+    //font.fromString(obj.value("font").toString());
+    QFont font(obj.value("font").toString());
 
     //int red = obj.value("red").toInt();
     //int green = obj.value("green").toInt();

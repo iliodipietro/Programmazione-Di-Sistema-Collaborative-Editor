@@ -17,6 +17,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
+#include <QRegularExpression>
 #include "Serialize/Serialize.h"
 #include "Serialize/define.h"
 #include "file.h"
@@ -34,10 +35,12 @@ public:
    // static void sendMessage(QTcpSocket *socket, QByteArray obj);
     static void sendError(ClientManager* user);
     static void sendSuccess(ClientManager* user);
+    static bool is_email_valid(QString email);
+    static bool is_username_unique(QString username);
     static QString computeHashPassword(QString password);
     static bool checkPassword(QString password, ClientManager* client);
 
-    void registration(QString username, QString password, QString nickname, QString profileImage, ClientManager* incomingClient);
+    void registration(QString username, QString email, QString password, QString profileImage, ClientManager* incomingClient);
     void login(QString username, QString password,  ClientManager* incomingClient);
     void logout(ClientManager* user);
 
@@ -46,14 +49,18 @@ public:
     void openFile(int fileId, ClientManager* client);
     void closeFile(int fileId, int siteCounter, ClientManager* client);
     void deleteFile(int fileId, ClientManager* client);
+    void changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client);
     void renameFile(int fileId, QString newname, ClientManager* client);
     void getURIToShare(int fileid, ClientManager* client);
     void SharedFileAcquisition(QString URI, ClientManager* client);
 
     void changePassword(QString oldPassword, QString newPassword, ClientManager* client);
+    /*
     void changeUsername(QString newUsername, ClientManager* client);
-    void changeNickname(QString newNickname, ClientManager* client);
+    void changeEmail(QString newEmail, ClientManager* client);
     void changeProfilePic(QString profileImage, ClientManager* client);
+    */
+
     void changeProfile(QString newUsername, QString newNick, QString newImagePath, ClientManager *client);
 
 

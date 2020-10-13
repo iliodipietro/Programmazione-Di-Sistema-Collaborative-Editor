@@ -11,7 +11,7 @@
 #include "Editor/Editor.h"
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
-#include "ModifyProfile.h"
+#include "Modify Profile/ModifyProfile.h"
 #include "ui_FileBrowser.h"
 
 class FileBrowser : public QMainWindow
@@ -49,7 +49,7 @@ private slots:
 	void on_modifyProfile_clicked();
 	void on_newFile_clicked();
 	void on_deleteFile_clicked();
-	void editorClosed(int);
+	void editorClosed(int, int);
 	void on_renameFile_clicked();
 	void on_addSharedFileButton_clicked();
 	void childWindowClosed();

@@ -1,8 +1,18 @@
 #pragma once
 #include <QObject>
 #include <QTextEdit>
+#include <QColor>
 #include <map>
 #include "CustomCursor.h"
+
+struct Interval{
+    int height;
+    int width;
+    int row;
+    QColor color;
+
+    Interval(int height, int width, int row, QColor color) :height(height), width(width), row(row), color(color) {};
+};
 
 class MyTextEdit : public QTextEdit
 {
@@ -23,13 +33,18 @@ public:
 private:
 
     std::map<int, CustomCursor*> m_cursorsToPrint;
+    std::vector<Interval> m_rowDimensions;
     bool m_mousePress;
+    bool m_usersIntervalsEnabled;
     CRDT* m_crdt;
+
+    void paintCustomCursors();
+    void paintUsersIntervals();
 
 protected:
     void paintEvent(QPaintEvent* event);
     void mousePressEvent(QMouseEvent* event);
-    void keyPressEvent(QKeyEvent *e);
+    void keyPressEvent(QKeyEvent* e);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
 
@@ -38,5 +53,9 @@ signals:
     void clickOnTextEdit(QMouseEvent*);
     void propaga(QKeyEvent* e);
     void updateCursorPosition(bool);
+
+private slots:
+    void showHideUsersIntervals();
+    void updateUsersIntervals();
 };
 

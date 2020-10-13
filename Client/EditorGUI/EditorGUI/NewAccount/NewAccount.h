@@ -7,6 +7,8 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include "ui_NewAccount.h"
 #include "SocketHandler/SocketHandler.h"
 
@@ -32,12 +34,15 @@ private:
 	QRect newSelection;
 	QSize m_originalSize;
 
+
+
 	void closeEvent(QCloseEvent* event);
 
 protected:
 	void mousePressEvent(QMouseEvent* e);
 	void mouseMoveEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);
+	
 
 private slots:
 	void on_selectImageButton_clicked();
@@ -46,6 +51,8 @@ private slots:
 	void registrationResult(QJsonObject);
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
+	void adjustTextColor();//ilio
+	
 
 signals:
 	void showParent();

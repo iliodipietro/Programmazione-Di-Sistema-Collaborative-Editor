@@ -4,7 +4,7 @@ MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(t
 {
     //supporto al file system da implementare
     db->startDBConnection();
-    QString images_directory_path(QDir::currentPath() + "\\files\\");
+    QString images_directory_path(QDir::currentPath() + "/files/");
     if(!QDir(images_directory_path).exists()){
         //creo la cartella files
         QDir().mkdir(images_directory_path);
@@ -176,9 +176,15 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 
         break;
     case (REGISTER): {
+        /*
+        list[0]: username
+        list[1]: password
+        list[2]: email
+        list[3]: img
+         */
         qDebug("REGISTER request\n");
         list = Serialize::userUnserialize(ObjData);
-        db->registration(list.at(0), list.at(1), list.at(2), list.at(3), client);
+        db->registration(list.at(0), list.at(2), list.at(1), list.at(3), client);
 
         list.clear();
 
@@ -224,6 +230,8 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
     case (CLOSE):
         qDebug("CLOSE request\n");
         close = Serialize::closeFileUnserialize(ObjData);
+
+        qDebug() << "Fileid in myserver.cpp da eliminare: " << close.first << "\n";
 
         db->closeFile(close.first, close.second, client);
 

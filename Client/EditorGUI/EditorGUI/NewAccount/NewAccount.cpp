@@ -2,7 +2,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 
-#define RUBBER_SIZE 50
+#define RUBBER_SIZE 150
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
 	m_timer(new QTimer(this))
@@ -15,6 +15,10 @@ NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* par
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &NewAccount::registrationResult);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
+	//ilio
+	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
+	ui.emailLine->setValidator(new QRegularExpressionValidator(rx, this));
+	connect(ui.emailLine, &QLineEdit::textChanged, this, &NewAccount::adjustTextColor);
 }
 
 NewAccount::~NewAccount()
@@ -67,7 +71,7 @@ void NewAccount::on_submit_clicked() {
 				ui.crop->setPixmap(*m_croppedImage);
 			}
 			if (m_croppedImage != Q_NULLPTR) {
-				QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, username, REGISTER, m_croppedImage);
+				QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, email, REGISTER, m_croppedImage); //ilio
 				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 				if (result) {
 					m_timer->setSingleShot(true);
@@ -180,4 +184,11 @@ void NewAccount::showErrorMessage() {
 void NewAccount::dialogClosed(QAbstractButton* button) {
 	emit showParent();
 	this->hide();
+}
+
+void NewAccount::adjustTextColor() {
+	if (!ui.emailLine->hasAcceptableInput())
+		ui.emailLine->setStyleSheet("QLineEdit { color: red;}");
+	else
+		ui.emailLine->setStyleSheet("QLineEdit { color: black;}");
 }

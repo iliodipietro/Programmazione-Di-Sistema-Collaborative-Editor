@@ -3,6 +3,7 @@
 #include <exception>
 #include "Symbol.h"
 #include "Message.h"
+#include "Editor/UserInterval.h"
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -36,6 +37,7 @@ private:
 	int _siteId;
 	int _counter;
 	std::vector<Symbol> _symbols;
+	std::vector<UserInterval> m_usersInterval;
 	//uso __int64 per evitare warning e perdita dati per troncamento
 	__int64 insert_symbol(Symbol symbol);
 	__int64 delete_symbol(Symbol symbol);
@@ -53,6 +55,7 @@ public:
 	__int64 process(const Message& m);
 	std::string to_string();//usare Qstring??
 	int getId();
+	int getCounter();//ilio
 	Symbol getSymbol(int index);
 	//SERVER ONLY
 	//void dispatchMessages();-->sul server
@@ -60,6 +63,10 @@ public:
 	std::vector<Message> readFromFile(std::string fileName);
 	void saveOnFile(std::string filename);//versione base salva solo i caratteri e non il formato--> da testare
 	bool isEmpty();
+	void updateUserInterval();
+	inline std::vector<UserInterval>* getUsersInterval() { return &m_usersInterval; };
+	void setSiteCounter(int siteCounter);
+	inline int getSiteCounter() { return this->_counter; };
 
 	__int64 getCursorPosition(std::vector<int> crdtPos);
 
@@ -77,5 +84,6 @@ public:
 		}
 		std::cout << std::endl;
 	}
+
 };
 

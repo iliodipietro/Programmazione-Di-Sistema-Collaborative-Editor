@@ -290,6 +290,10 @@ int CRDT::getId()
 	return this->_siteId;
 }
 
+int CRDT::getCounter() {
+	return this->_counter;
+}
+
 Symbol CRDT::getSymbol(int index)
 {
 	if (index < this->_symbols.size())
@@ -545,4 +549,39 @@ __int64 CRDT::getCursorPosition(std::vector<int> crdtPos) {
 		return index;
 	else
 		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 
+}
+
+void CRDT::updateUserInterval() {
+	m_usersInterval.clear();
+	int start = 0;
+	int end = 0;
+	int userId = -1;
+	for (auto it = _symbols.begin(); it != _symbols.end(); it++) {
+		if (it->getId()[0] != this->_siteId) {
+			userId = it->getId()[0];
+			end++;
+			if ((it + 1) != _symbols.end() && userId != (it + 1)->getId()[0]) {
+				m_usersInterval.emplace_back(userId, start, end);
+				start = end;
+			}
+		}
+		else {
+			start++;
+			end = start;
+		}
+
+		//start = end;
+		//do {
+		//	userId = it->getId()[0];
+		//	end++;
+		//	it++;
+		//	if (it == _symbols.end()) break;
+		//} while (it->getId()[0] == userId);
+		//m_usersInterval.emplace_back(userId, start, end);
+	}
+	m_usersInterval.emplace_back(userId, start, end);
+}
+
+void CRDT::setSiteCounter(int siteCounter) {
+	this->_counter = siteCounter;
 }

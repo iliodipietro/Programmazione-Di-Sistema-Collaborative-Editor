@@ -7,7 +7,7 @@ File::File():handler(nullptr),id(0),path("")
 
 File::~File()
 {
-    this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
+	this->handler->saveOnFile();//prima di eliminare salvo a prescinedere
 	delete this->handler;
 	this->handler = nullptr;
 }

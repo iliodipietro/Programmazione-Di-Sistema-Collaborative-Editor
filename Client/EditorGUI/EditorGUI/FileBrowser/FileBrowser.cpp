@@ -41,7 +41,7 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 			int id = item->data(Qt::UserRole).toInt();
 			editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
 			m_textEditors.insert(std::pair<int, Editor*>(id, editor));
-			QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, OPEN));
+			QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, OPEN));
 			this->m_socketHandler->writeData(data);
 		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
@@ -94,7 +94,7 @@ void FileBrowser::on_deleteFile_clicked()
 	}
 	QString filename = current_item->text();
 	int id = current_item->data(Qt::UserRole).toInt();
-	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, DELETE));
+	QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, DELETE));
 	this->m_socketHandler->writeData(data);
 	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
 	if (item != nullptr) {
@@ -177,12 +177,12 @@ void FileBrowser::childWindowClosed() {
 	this->show();
 }
 
-void FileBrowser::editorClosed(int fileId) {
+void FileBrowser::editorClosed(int fileId, int siteCounter) {
 	Editor* editor = m_textEditors.at(fileId);
 	editor->deleteLater();
 	QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(this->clientID, fileId, REMOVEEDITINGUSER));
 	m_socketHandler->writeData(message);
-	QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(fileId, CLOSE));
+	QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(fileId, siteCounter, CLOSE));
 	this->m_socketHandler->writeData(data);
 	filename_id.remove(fileId);
 	m_textEditors.erase(fileId);
@@ -208,17 +208,6 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 		this->filename_id.insert(id, map.value(id));
 	}
 	removeBlank();
-
-	if (m_openAfterUri) {
-		int id = map.keys()[0];
-		QString filename = map.value(id);
-		Editor *editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
-		m_textEditors.insert(std::pair<int, Editor*>(id, editor));
-		QByteArray data = Serialize::fromObjectToArray(Serialize::openCloseDeleteFileSerialize(id, OPEN));
-		this->m_socketHandler->writeData(data);
-		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
-		editor->show();
-	}
 }
 
 void FileBrowser::addFile(QJsonObject file) {
@@ -244,7 +233,6 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 	case NEWFILE:
 		addFile(message);
 		break;
-	case OPEN:
 
 	case NEWEDITINGUSER: {
 		QPair<int, QStringList> fileUserInfo = Serialize::addEditingUserUnserialize(message);
@@ -270,6 +258,14 @@ void FileBrowser::handleNewMessage(QJsonObject message)
 			QMessageBox resultDialog(this);
 			resultDialog.setInformativeText(serverMessage[1]);
 			resultDialog.exec();
+		}
+		break;
+	}
+	case SITECOUNTER: {
+		QPair<int, int> fileId_siteCounter = Serialize::siteCounterUnserialize(message);
+		auto it = m_textEditors.find(fileId_siteCounter.first);
+		if (it != m_textEditors.end()) {
+			it->second->setSiteCounter(fileId_siteCounter.second);
 		}
 		break;
 	}
@@ -324,7 +320,6 @@ void FileBrowser::on_addSharedFileButton_clicked() {
 		QByteArray message = Serialize::fromObjectToArray(Serialize::openSharedFileSerialize(uri, OPENSHARE));
 		bool result = m_socketHandler->writeData(message);
 		if (result) {
-			m_openAfterUri = true;
 			m_timer->setInterval(2000);
 			m_timer->setSingleShot(true);
 			m_timer->start();

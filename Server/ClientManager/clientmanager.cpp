@@ -5,7 +5,7 @@ ClientManager::ClientManager(QTcpSocket* socket, QObject *parent) : QObject(pare
 m_clientSocket(socket), m_socketBuffer(new QByteArray())
 {
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-    m_clientSocket->setReadBufferSize(10485760);
+    m_clientSocket->setReadBufferSize(0);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
     connect(m_clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnect()));
     connect(m_clientSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
@@ -63,13 +63,13 @@ QString ClientManager::getUsername(){
     return this->m_username;
 }
 
-QString ClientManager::getNickname(){
-    return this->m_nickname;
+QString ClientManager::getEmail(){
+    return this->m_email;
 
 }
 
-void ClientManager::setNickname(QString nickname){
-    this->m_nickname = nickname;
+void ClientManager::setEmail(QString email){
+    this->m_email = email;
 
 }
 int ClientManager::getId(){
