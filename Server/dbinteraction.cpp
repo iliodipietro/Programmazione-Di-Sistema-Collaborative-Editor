@@ -799,14 +799,13 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         //aggiornamento del siteCounter
         //if(siteCounter != -1){
             // -1 indica che ho chimato la close nella deleteFile..se devo cancellare il file non mi interessa di aggiornare il sitecounter dell'utente, tanto sto per cancellare la righa
-        if (instance->db.open()) {
-            QSqlQuery query;
-            int userid = client->getId();
-            qDebug() << "userId dell'utente che vuole chiudere il file: " << userid << "\n";
-            query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) AND userid = (:userid)");
-            query.bindValue(":sitecounter", siteCounter);
-            query.bindValue(":fileid", fileId);
-            query.bindValue(":userid", userid);
+            if(instance->db.open()){
+                QSqlQuery query;
+                int userid = client->getId();
+                query.prepare("UPDATE files SET SiteCounter = (:sitecounter) WHERE fileId = (:fileid) userid = (:userid)");
+                query.bindValue("sitecounter", siteCounter);
+                query.bindValue("fileid", fileId);
+                query.bindValue("userid", userid);
 
             if (!query.exec()) {
                 qDebug() << "UPDATE sitecounter failed: " << query.lastError() << "\n";
@@ -1322,6 +1321,7 @@ void DBInteraction::forwardMessage(ClientManager* user, QJsonObject obj, QByteAr
 {
     //qDebug()<< data;
     QPair<int, Message> fileid_message = Serialize::messageUnserialize(obj);
+    QString ssss = fileid_message.second.getSymbol().getFont().toString();
 
     //File *f = instance->getFile(fileid_message.first);
     File* f = instance->getFile(fileid_message.first);// debug only
