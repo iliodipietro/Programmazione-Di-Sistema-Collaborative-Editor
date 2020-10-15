@@ -20,6 +20,7 @@ public:
 private:
 	bool newWindow = false;
 	int clientID;
+	QString m_username;
 	Ui::LoginClass ui;
 	FileBrowser* m_fileBrowserWindow;
 	NewAccount* m_newAccountWindow;
