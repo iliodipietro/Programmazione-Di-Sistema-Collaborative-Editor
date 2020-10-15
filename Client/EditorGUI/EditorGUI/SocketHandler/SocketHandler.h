@@ -24,6 +24,7 @@ private:
     QSharedPointer<QTcpSocket> m_tcpSocket;
     QString m_serverIp;
     int m_serverPort;
+    qint64 m_previousSize;
 
     void readConfigFile();
     bool connectToServer();

@@ -7,7 +7,7 @@
 //#define PORT 44322
 
 SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
-m_previousPacket(QSharedPointer<QByteArray>(new QByteArray()))
+m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0)
 {
 	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
@@ -56,23 +56,24 @@ void SocketHandler::readyRead()
 		qint64 numBytes = m_tcpSocket->bytesAvailable();
 		QByteArray data = m_tcpSocket->readAll();
 		m_previousPacket->append(data);
-		qint64 messageSize = 0;
-		while ((messageSize == 0 && m_previousPacket->size() >= 8) || (messageSize > 0 && m_previousPacket->size() >= messageSize)) {
+		while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
 
-			if (messageSize == 0 && m_previousPacket->size() >= 8) {
-				messageSize = arrayToInt(m_previousPacket->mid(0, 8));
+			if (m_previousSize == 0 && m_previousPacket->size() >= 8) {
+				m_previousSize = arrayToInt(m_previousPacket->mid(0, 8));
 				m_previousPacket->remove(0, 8);
 			}
 
-			if (messageSize > 0 && m_previousPacket->size() >= messageSize) {
-				QByteArray message = m_previousPacket->mid(0, messageSize);
-				m_previousPacket->remove(0, messageSize);
-				messageSize = 0;
+			if (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize) {
+				QByteArray message = m_previousPacket->mid(0, m_previousSize);
+				m_previousPacket->remove(0, m_previousSize);
+				m_previousSize = 0;
 				QJsonParseError parseError;
 				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
 				emit dataReceived(doc.object());
 			}
 		}
+
+		if (m_previousPacket->size() < 8 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
 
 		/*qDebug() << "Reading...";
 		qDebug() << m_tcpSocket->readAll();*/

@@ -41,6 +41,7 @@ private:
     int m_id;
     QSharedPointer<QTcpSocket> m_clientSocket;
     QSharedPointer<QByteArray> m_socketBuffer;
+    qint64 m_previousSize;
 
     qint64 arrayToInt(QByteArray source);
     QByteArray intToArray(qint64 source);
