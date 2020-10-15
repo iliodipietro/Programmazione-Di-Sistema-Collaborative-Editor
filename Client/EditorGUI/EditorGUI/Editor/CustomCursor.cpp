@@ -4,7 +4,7 @@
 #include <QDebug>
 
 
-#define TIME_TO_SHOW 100 //number of millisecond before repaint
+#define TIME_TO_SHOW 150 //number of millisecond before repaint
 
 CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
@@ -42,6 +42,10 @@ void CustomCursor::messageHandler(Message& m, int index) {
 
 	this->message_list.push(m);
 	this->index_list.push(index);
+
+	if (this->message_list.size() >= 50) {
+		this->paintNow();
+	}
 
 	if (!this->timer->isActive())
 		this->timer->start();
@@ -184,7 +188,7 @@ QString CustomCursor::groupTogether()
 	Message m = this->message_list.front();
 	this->message_list.pop();
 	this->index_list.pop();
-	s.append(m.getSymbol().getChar());
+	s.append(QChar(m.getSymbol().getChar()));
 
 	while (!this->message_list.empty())
 	{
@@ -194,7 +198,7 @@ QString CustomCursor::groupTogether()
 			(m2.getSymbol().getFont() == m.getSymbol().getFont()) && 
 			(m2.getSymbol().getAlignment() == m.getSymbol().getAlignment())) {
 			
-			s.append(m2.getSymbol().getChar());
+			s.append(QChar(m2.getSymbol().getChar()));
 			this->message_list.pop();
 			this->index_list.pop();
 		}
