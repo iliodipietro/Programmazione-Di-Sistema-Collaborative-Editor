@@ -18,6 +18,8 @@
 #define PADDING 10
 #define	ICONSIZE 30
 #define RADIUS ICONSIZE/2
+#define SLEEP_TIME 100
+#define MAX_CHAR_TO_SEND 25
 
 Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
 	QString path, QString username, int fileId, int clientID, QWidget* parent)
@@ -65,6 +67,11 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	lastCursor = 0;
 	this->lastStart = this->lastEnd = 0;
 	this->lastText = "";
+
+	this->insert_timer = new QTimer(this);
+	this->insert_timer->setSingleShot(true);
+	this->insert_timer->setInterval(100);
+	Q_ASSERT(connect(this->insert_timer, SIGNAL(timeout()), this, SLOT(insertCharBatch())));
 	//FINE----------------------------------------------------------------------------------
 
 #ifdef Q_OS_MACOS
@@ -623,7 +630,7 @@ void Editor::localInsert() {
 	int la = TC.anchor();
 
 
-
+	int dim = TC.position() - lastCursor;
 
 	//funziona sia per inserimento singolo che per inserimento multiplo--> incolla
 	for (int i = lastCursor; i < TC.position(); i++) {
@@ -662,9 +669,9 @@ void Editor::localInsert() {
 
 
 		//mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
-		if (((i - lastCursor % 50) == 0) && i != 0) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));//stop per 1/100 di sec
-		}
+		maybeSleep(dim);
+		dim--;
+
 
 
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
@@ -703,16 +710,24 @@ void Editor::localDelete() {
 
 	}
 
+	int dim = end - start;
 
 	for (int i = end; i > start; i--) {
+		
 		Message m = this->_CRDT->localErase(i - 1);
 		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
+
+
+		maybeSleep(dim);
+		dim--;
+
 		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 	}
 
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
+
 
 	//this->lastStart = 0;
 	//this -> lastEnd = 0;
@@ -818,9 +833,22 @@ void Editor::remoteAction(Message m)
 	this->remoteEvent = false;
 }
 
-void Editor::initialFileLoad(Message m, __int64 index) {
-	//retrieving remote state
-	QChar chr(m.getSymbol().getChar());
+void Editor::insertCharBatch() {
+
+	QString str;
+	int index = this->list_of_idx[0];
+
+	for (int i = 0; i < this->list_of_msg.size(); i++) {
+
+		str.append( this->list_of_msg[i].getSymbol().getChar());
+	}
+
+	Message m = this->list_of_msg.back();
+
+	this->list_of_idx.clear();
+	this->list_of_msg.clear();
+
+
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -832,7 +860,7 @@ void Editor::initialFileLoad(Message m, __int64 index) {
 	QTextCursor TC = m_textEdit->textCursor();
 	TC.setPosition(index);
 	m_textEdit->setTextCursor(TC);
-	TC.insertText(chr, format);
+	TC.insertText(str, format);
 	TC.setPosition(0);
 	m_textEdit->setTextCursor(TC);
 
@@ -840,6 +868,44 @@ void Editor::initialFileLoad(Message m, __int64 index) {
 	blockFormat.setAlignment(alignment);
 
 	TC.mergeBlockFormat(blockFormat);
+}
+
+
+void Editor::initialFileLoad(Message m_, __int64 index_) {
+	//retrieving remote state
+
+	if (this->list_of_msg.empty()) {
+
+		this->list_of_msg.push_back(m_);
+		this->list_of_idx.push_back(index_);
+		this->insert_timer->start();//parte solo se c'è almeno un carattere
+		//allo scadere del timer inserisce tutti i caratteri e svuoto la lista così al prossimo messaggio sarà vuota ed il timer riparte
+
+	}
+	else {
+		if ((this->list_of_msg[0].getSymbol().getColor() == m_.getSymbol().getColor()) && (this->list_of_msg[0].getSymbol().getFont() == m_.getSymbol().getFont())) {
+
+			this->list_of_msg.push_back(m_);
+			this->list_of_idx.push_back(index_);
+		}
+		else {
+			//inserisco quando c'e un cabio di stile
+			insertCharBatch();
+			this->list_of_msg.push_back(m_);
+			this->list_of_idx.push_back(index_);
+		}
+
+
+		if (this->list_of_msg.size() >= 50) {//se ho almeno 50 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
+			insertCharBatch();
+			this->list_of_msg.push_back(m_);
+			this->list_of_idx.push_back(index_);
+			this->insert_timer->start();//parte solo se c'è almeno un carattere
+		}
+
+	}
+
+
 }
 
 int Editor::getFileId()
@@ -863,6 +929,10 @@ void Editor::maybedecrement(__int64 index)
 
 void Editor::updateLastPosition()
 {
+
+	if (this->remoteEvent)
+		return;
+
 	QTextCursor TC = m_textEdit->textCursor();
 	if (TC.hasSelection()) {
 
@@ -876,8 +946,7 @@ void Editor::updateLastPosition()
 		lastEnd = 0;
 	}
 
-	if (this->remoteEvent)
-		return;
+
 
 	if (this->lastText.compare(this->m_textEdit->toPlainText()))//aggiorno  il cursore solo se non è delete or insert
 		return;
@@ -902,6 +971,14 @@ bool Editor::isAKeySequence(QKeyEvent* e)
 	//add more if needed
 
 	return false;
+}
+
+void Editor::maybeSleep(int dim)
+{
+	//mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
+	if ((dim % MAX_CHAR_TO_SEND) == 0) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME));//stop per 1/100 di sec
+	}
 }
 
 void Editor::updateViewAfterInsert(Message m, __int64 index)
@@ -998,6 +1075,7 @@ void Editor::localStyleChange()
 	end = this->lastEnd;
 	QTextCursor TC = m_textEdit->textCursor();
 
+	int dim = end - start;
 
 	for (int i = end; i > start; i--) {
 		int pos = i - 1;
@@ -1010,6 +1088,9 @@ void Editor::localStyleChange()
 
 
 		Symbol s = this->_CRDT->getSymbol(pos);
+
+		maybeSleep(dim);
+		dim--;
 
 		if (s.getAlignment() != alignment || s.getColor() != color || s.getFont() != font) {
 
@@ -1071,12 +1152,17 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	if (e->matches(QKeySequence::Paste)) {
 		if (this->lastStart != this->lastEnd && !this->_CRDT->isEmpty()) {
 			//
+
+			start = this->lastStart;
+			end = this->lastEnd;
+
 			this->localDelete();
 
-			int lastCursor = this->lastStart < this->lastEnd ? lastStart : lastEnd;
+			int lastCursor = start < end ? start : end;
 
 			this->m_textEdit->refresh(e);
 
+			QString ss = this -> m_textEdit->toPlainText();
 			this->lastCursor = lastCursor;
 
 			this->localInsert();
@@ -1087,6 +1173,9 @@ void Editor::tastoPremuto(QKeyEvent* e)
 			return;
 		}
 
+	}
+	else {
+		this->lastCursor = TC.position();
 	}
 
 
@@ -1110,6 +1199,11 @@ void Editor::tastoPremuto(QKeyEvent* e)
 		break;
 	case Qt::Key_Alt:
 		break;
+	case Qt::Key_Up:
+	case Qt::Key_Down:
+	case Qt::Key_Left:
+	case Qt::Key_Right:
+		this->lastEnd = this->lastStart = 0;
 	default:
 		if ((e->text() == "") || (isAKeySequence(e)))//questa funzione ritorna una stringa vuota se non è un carattre alfanumerico ed esce se uno shortcut tra quelli inseriti nella funzione
 			break;

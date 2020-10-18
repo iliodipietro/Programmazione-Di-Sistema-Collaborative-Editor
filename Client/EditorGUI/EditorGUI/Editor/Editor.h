@@ -33,6 +33,7 @@ public:
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
 	void setSiteCounter(int siteCounter);
+	int getSiteCounter();
 
 private:
 	Ui::Editor ui;
@@ -94,6 +95,9 @@ private:
 	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
 	bool styleBounce = false;
 
+	std::vector<Message> list_of_msg;
+	std::vector<int> list_of_idx;
+	QTimer* insert_timer;
 	//FINE-------------------------------------------------------------------------------------------------------
 
 
@@ -131,7 +135,7 @@ private:
 	void updateLastPosition();
 	bool isAKeySequence(QKeyEvent*e);
 	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
-
+	void maybeSleep(int dim);
 
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
@@ -151,7 +155,7 @@ public slots:
 	void keyPressEvent(int e);
 	void keyRelaseEvent(QKeyEvent* e);
 	void tastoPremuto(QKeyEvent* e);
-
+	void insertCharBatch();
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();

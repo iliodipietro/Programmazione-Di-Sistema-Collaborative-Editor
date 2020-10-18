@@ -32,6 +32,7 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 {
 	__int64 index = -1;
 
+	QString ssss= symbol.getFont().toString();
 
 	if (this->_symbols.empty() || symbol.getPos() > this->_symbols.back().getPos()) {
 		//inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
@@ -135,6 +136,7 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 __int64 CRDT::process(const Message& m)
 {
 	__int64 index = 0;
+
 
 	switch (m.getAction())
 	{
@@ -241,7 +243,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 			//mando il messaggio
 			Message m(s, INSERT_SYMBOL, this->_siteId);
 
-			QTextStream(stdout) << font.toString() << endl;
+			//QTextStream(stdout) << font.toString() << endl;
 
 			return m;
 
@@ -457,9 +459,9 @@ void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIE
 				pos.push_back(qj.toInt());
 			}
 
+			//QFont font(obj.value("font").toString());
 			QFont font;
 			font.fromString(obj.value("font").toString());
-
 
 			QString color_hex = obj.value("color").toString();
 

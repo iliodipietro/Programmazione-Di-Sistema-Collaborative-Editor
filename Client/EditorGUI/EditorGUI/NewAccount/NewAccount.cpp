@@ -2,7 +2,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 
-#define RUBBER_SIZE 150
+#define RUBBER_SIZE 225
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler),
 	m_timer(new QTimer(this))
@@ -69,25 +69,58 @@ void NewAccount::on_submit_clicked() {
 				areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
 				m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
 				ui.crop->setPixmap(*m_croppedImage);
+				
+
 			}
-			if (m_croppedImage != Q_NULLPTR) {
+			//ilio-------------------------------- immagine di default 
+			else {
+				ui.imageLabel->setFixedWidth(m_originalSize.width());
+				ui.imageLabel->setFixedHeight(m_originalSize.height());
+				QString url = QDir::currentPath().append("/").append("user.png");
+				m_selectedImage = new QPixmap(url);
+				m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
+				
+				QSize rubberSize(RUBBER_SIZE, RUBBER_SIZE);
+				QPoint point(ui.imageLabel->pos());
+				QRect size(point, rubberSize);
+				if (m_selectionArea == Q_NULLPTR)
+					m_selectionArea = new QRubberBand(QRubberBand::Rectangle, this);
+				m_selectionArea->setGeometry(size);
+				ui.imageLabel->setPixmap(*m_resizedImage);
+				ui.imageLabel->setFixedWidth(m_resizedImage->width());
+				ui.imageLabel->setFixedHeight(m_resizedImage->height());
+
+
+				QPoint areaPos = m_selectionArea->geometry().topLeft();
+				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+				areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+				m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
+				ui.crop->setPixmap(*m_croppedImage);
+
+			}
+			//ilio-----------------------------------
+
+			//if (m_croppedImage != Q_NULLPTR) { ilio
 				QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, email, REGISTER, m_croppedImage); //ilio
 				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 				if (result) {
 					m_timer->setSingleShot(true);
 					m_timer->setInterval(4000);
 					m_timer->start();
+				
 				}
 				else {
 					QMessageBox resultDialog(this);
 					resultDialog.setInformativeText("Errore di connessione");
 					resultDialog.exec();
 				}
+				
 				//QMessageBox::information(this, "NewAccount", "New Account Created");
-			}
-			else {
-				QMessageBox::warning(this, "NewAccount", "A picture is needed");
-			}
+
+			//} ilio
+			//else {
+				//QMessageBox::warning(this, "NewAccount", "A picture is needed");
+			//}
 		}
 		else {
 			QMessageBox::warning(this, "NewAccount", "The password is incorrect!");

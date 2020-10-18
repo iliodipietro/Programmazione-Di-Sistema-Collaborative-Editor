@@ -265,7 +265,7 @@ QString Serialize::sharedFileAcquisitionUnserialize(QJsonObject obj){
     return obj.value("URI").toString();
 }
 
-QJsonObject Serialize::changePasswordSerialize(QString oldPassword, QString newPassword){
+QJsonObject Serialize::changePasswordSerialize(QString oldPassword, QString newPassword, int type){
     /*
     Questa funzione serializza la vecchia e nuova password dell'utente che vuole cambiare password, in caso di una CHANGE_PASSWORD( cio e' discriminato dal valore di type)
     INPUT:
@@ -278,6 +278,7 @@ QJsonObject Serialize::changePasswordSerialize(QString oldPassword, QString newP
     QJsonObject obj;
     obj.insert("oldpassword", oldPassword);
     obj.insert("newpassword", newPassword);
+    obj.insert("type", QJsonValue(type));
 
     return obj;
 }
@@ -291,12 +292,13 @@ QStringList Serialize::changePasswordUnserialize(QJsonObject obj){
     return list;
 }
 
-QJsonObject Serialize::changeProfileSerialize(QString newname, QString newNick, QString newImage){
+QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QString newImage, int type){
 
     QJsonObject obj;
-    obj.insert("newname", newname);
-    obj.insert("newnick", newNick);
+    obj.insert("newusername", newUsername);
+    obj.insert("newemail", newEmail);
     obj.insert("newimage", newImage);
+    obj.insert("type", QJsonValue(type));
     return obj;
 
 }
@@ -304,8 +306,8 @@ QJsonObject Serialize::changeProfileSerialize(QString newname, QString newNick, 
 QStringList Serialize::changeProfileUnserialize(QJsonObject obj){
     QStringList list;
 
-    list.append(obj.value("newname").toString());
-    list.append(obj.value("newnick").toString());
+    list.append(obj.value("newusername").toString());
+    list.append(obj.value("newemail").toString());
     list.append(obj.value("newimage").toString());
 
     return list;
@@ -482,10 +484,9 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
         pos.push_back(qj.toInt());
     }
 
-    //QFont font;
-    //font.fromString(obj.value("font").toString());
-    QFont font(obj.value("font").toString());
-
+    QFont font;
+    font.fromString(obj.value("font").toString());
+    //QFont font(obj.value("font").toString());
     //int red = obj.value("red").toInt();
     //int green = obj.value("green").toInt();
     //int blue = obj.value("blue").toInt();
