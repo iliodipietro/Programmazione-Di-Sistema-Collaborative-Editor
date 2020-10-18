@@ -80,20 +80,6 @@ void SocketHandler::readyRead()
 	}
 }
 
-bool SocketHandler::writeData(SocketMessage& data) {
-	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
-	{
-		QByteArray bytes = data.serializeMessage();
-		m_tcpSocket->write(intToArray(bytes.size()));
-		m_tcpSocket->write(bytes);
-		return m_tcpSocket->waitForBytesWritten();
-
-	}
-	else {
-		return false;
-	}
-}
-
 bool SocketHandler::writeData(QByteArray& data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{
