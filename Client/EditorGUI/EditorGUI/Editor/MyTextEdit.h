@@ -67,6 +67,7 @@ signals:
 
 private slots:
     void showHideUsersIntervals();
+
 public slots:
     void updateUsersIntervals();
 };
