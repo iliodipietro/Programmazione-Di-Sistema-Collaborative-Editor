@@ -297,14 +297,14 @@ QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 	*/
 	QJsonObject obj;
 
-	obj.insert("type", QJsonValue(type));
+	obj.insert("type", type);
 	int action = message.getAction();//insert, delete ecc.
 
 	int senderId = message.getSenderId();//id del client o di chi manda
 
-	obj.insert("action", QJsonValue(action));
-	obj.insert("sender", QJsonValue(senderId));
-	obj.insert("fileId", QJsonValue(fileId));
+	obj.insert("action", action);
+	obj.insert("sender", senderId);
+	obj.insert("fileId", fileId);
 
 	/*-------------------------------------------------------------------------------------------------------------------------------
 	Nuovo elemento--> messagio che contine la posizione del cursore, se ciò accade il simbolo all'interno sarà vuoto e la posizione diversa da zero
@@ -327,14 +327,14 @@ QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 
 	char c = s.getChar();
 
-	obj.insert("character", QJsonValue(c));
+	obj.insert("character", c);
 
 	//include di vector e array sono gia in symbol includso in message
 	std::array<int, 2> id = s.getId();
 
 	QJsonArray  Qid = { id[0],id[1] };//id globale
 
-	obj.insert("globalCharacterId", QJsonValue(Qid));
+	obj.insert("globalCharacterId", Qid);
 
 	std::vector<int> v = s.getPos();
 
@@ -342,16 +342,16 @@ QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 
 	for (int i : v) {
 
-		Qvett.append(QJsonValue(i));
+		Qvett.append(i);
 	}
 
-	obj.insert("position", QJsonValue(Qvett));
+	obj.insert("position", Qvett);
 
 
 	//font e colore
 	QFont font = s.getFont();
 	QString serialFont = font.toString();
-	obj.insert("font", QJsonValue(serialFont));
+	obj.insert("font", serialFont);
 
 	QString color = s.getColor().name();//hex value
 	Qt::AlignmentFlag aligment = s.getAlignment();

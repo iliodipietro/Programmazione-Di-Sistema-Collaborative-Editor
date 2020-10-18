@@ -234,7 +234,7 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 			//mando il messaggio
 			Message m(s, INSERT, this->_siteId);
 
-			QTextStream(stdout) << font.toString() << endl;
+			//QTextStream(stdout) << font.toString() << endl;
 
 			return m;
 

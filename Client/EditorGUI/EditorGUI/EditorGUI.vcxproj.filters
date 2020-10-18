@@ -57,9 +57,6 @@
     <ClCompile Include="SocketHandler\SocketHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SocketHandler\SocketMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Serialization\Serialize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,9 +90,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="SocketHandler\SocketHandler.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="SocketHandler\SocketMessage.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="Serialization\Serialize.h">

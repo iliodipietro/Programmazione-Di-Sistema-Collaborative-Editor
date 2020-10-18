@@ -5,7 +5,6 @@
 #include <QNetworkSession>
 #include <QCloseEvent>
 #include <QSharedPointer>
-#include "SocketMessage.h"
 #include "Serialization/Serialize.h"
 
 class SocketHandler : public QObject
@@ -14,7 +13,6 @@ class SocketHandler : public QObject
 public:
     SocketHandler(QObject *parent = Q_NULLPTR);
 
-    bool writeData(SocketMessage& data);
     bool writeData(QByteArray& data);
 
     QAbstractSocket::SocketState getSocketState();

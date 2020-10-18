@@ -949,9 +949,9 @@ bool Editor::isAKeySequence(QKeyEvent* e)
 void Editor::maybeSleep(int dim)
 {
 	//mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
-	if ((dim % MAX_CHAR_TO_SEND) == 0) {
+	/*if ((dim % MAX_CHAR_TO_SEND) == 0) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME));//stop per 1/100 di sec
-	}
+	}*/
 }
 
 void Editor::updateViewAfterInsert(Message m, __int64 index)
