@@ -239,10 +239,12 @@ void CustomCursor::paintNow()
 			updateViewAfterDelete(m, index);
 			this->message_list.pop();
 			this->index_list.pop();
+			p->updateUsersIntervals();
 			break;
 		case CHANGE:
 			str = groupTogether();
 			updateViewAfterStyleChange(m, index,str);
+			p->updateUsersIntervals();
 			break;
 		case CURSOR_S:
 			setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
