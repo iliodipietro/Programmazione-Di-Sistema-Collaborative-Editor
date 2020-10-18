@@ -1037,11 +1037,14 @@ void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
     QString message;
     QString URI;
     if (!instance->isUserLogged(client)) {
+
         return;
     }
-    if (files.contains(fileid)) {
-        URI = files.value(fileid)->getPath();
-        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
+    if (instance->files.contains(fileid)) {
+
+        URI = instance->files.value(fileid)->getPath();
+
+        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SHARE));
 
         client->writeData(response);
     }
