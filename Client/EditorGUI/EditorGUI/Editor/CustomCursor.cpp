@@ -2,7 +2,7 @@
 #include <QPainter>
 #include <QWindow>
 #include <QDebug>
-
+#include "MyTextEdit.h"
 
 #define TIME_TO_SHOW 150 //number of millisecond before repaint
 
@@ -36,6 +36,7 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(
 	timer->setSingleShot(true);
 	timer->setInterval(TIME_TO_SHOW);
 	connect(timer, SIGNAL(timeout()), this, SLOT(paintNow()));
+
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
@@ -220,7 +221,7 @@ void CustomCursor::paintNow()
 		return;
 
 	QString str;
-
+	MyTextEdit* p = qobject_cast<MyTextEdit*>(this->parent());
 	while (! this->index_list.empty()) {
 
 		Message m = this->message_list.front();
@@ -231,6 +232,8 @@ void CustomCursor::paintNow()
 		case INSERT:
 			str = groupTogether();
 			updateViewAfterInsert(m, index,str);
+
+			p->updateUsersIntervals();
 			break;
 		case DELETE_S:
 			updateViewAfterDelete(m, index);
