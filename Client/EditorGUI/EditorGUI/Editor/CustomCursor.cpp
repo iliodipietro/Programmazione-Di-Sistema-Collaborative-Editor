@@ -44,9 +44,11 @@ m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor)
 void CustomCursor::messageHandler(Message& m, int index) {
 
 	if (m.getAction() == CURSOR_S) {
-		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition);
 		QTextCursor TC = m_editor->textCursor();
-		TC.setPosition(m_widgetEditor->getCursorPosition(), QTextCursor::MoveAnchor);
+		int pos = TC.position();
+		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition);
+		
+		TC.setPosition(pos, QTextCursor::MoveAnchor);
 		m_editor->setTextCursor(TC);
 		m_parentEditor->repaint();
 	}
@@ -173,8 +175,9 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString 
 	blockFormat.setAlignment(alignment);
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
+	int pos = m_TextCursor->position();
 	m_TextCursor->insertText(str, format);
-	setCursorPosition(index, ChangePosition);
+	setCursorPosition(pos, ChangePosition);
 }
 
 
@@ -216,9 +219,12 @@ QString CustomCursor::groupTogether()
 
 void CustomCursor::paintNow()
 {
+
 	if (this->index_list.size() <= 0)
 		return;
 
+	QTextCursor TC = m_editor->textCursor();
+	int pos = TC.position();
 	QString str;
 	//MyTextEdit* p = qobject_cast<MyTextEdit*>(this->parent());
 	while (!this->index_list.empty()) {
@@ -255,8 +261,8 @@ void CustomCursor::paintNow()
 		}
 	}
 	updateLabelPosition();
-	QTextCursor TC = m_editor->textCursor();
-	TC.setPosition(m_widgetEditor->getCursorPosition(), QTextCursor::MoveAnchor);
+
+	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_editor->setTextCursor(TC);
 	m_parentEditor->repaint();
 	//this->message_list.clear();

@@ -657,7 +657,7 @@ void Editor::localInsert() {
 
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
-	m_textEdit->moveForwardCursorsPosition(pos, offset);
+	m_textEdit->moveForwardCursorsPosition(pos, offset + 1);
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 }
@@ -1397,6 +1397,7 @@ void Editor::setSiteCounter(int siteCounter) {
 }
 
 int Editor::getCursorPosition() {
-	QTextCursor TC = m_textEdit->textCursor();
-	return TC.position();
+	//QTextCursor TC = m_textEdit->textCursor();
+	//return TC.position();
+	return this->lastCursor;
 }
