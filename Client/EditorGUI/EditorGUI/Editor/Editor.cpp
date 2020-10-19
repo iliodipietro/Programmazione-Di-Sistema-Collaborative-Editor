@@ -658,7 +658,7 @@ void Editor::localInsert() {
 
 	int offset = TC.position() - lastCursor;
 	int pos = TC.position();
-	m_textEdit->moveForwardCursorsPosition(pos, offset);
+	m_textEdit->moveForwardCursorsPosition(pos, offset + 1);
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 }
@@ -689,7 +689,7 @@ void Editor::localDelete() {
 	int dim = end - start;
 
 	for (int i = end; i > start; i--) {
-		
+
 		Message m = this->_CRDT->localErase(i - 1);
 		QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
 
@@ -778,7 +778,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		emit updateUsersIntervals();
+		//emit updateUsersIntervals();
 
 		break;
 	case DELETE_S:
@@ -787,20 +787,20 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		emit updateUsersIntervals();
+		//emit updateUsersIntervals();
 
 		break;
 
 	case CHANGE:
-		emit updateUsersIntervals();
+		//emit updateUsersIntervals();
 		break;
 
 	default:
 		break;
 	}
 
-	TC.setPosition(pos, QTextCursor::MoveAnchor);
-	m_textEdit->setTextCursor(TC);
+	//TC.setPosition(pos, QTextCursor::MoveAnchor);
+	//m_textEdit->setTextCursor(TC);
 
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
@@ -820,7 +820,7 @@ void Editor::insertCharBatch() {
 
 	for (int i = 0; i < this->list_of_msg.size(); i++) {
 
-		str.append( this->list_of_msg[i].getSymbol().getChar());
+		str.append(this->list_of_msg[i].getSymbol().getChar());
 	}
 
 	Message m = this->list_of_msg.back();
@@ -1142,7 +1142,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 
 			this->m_textEdit->refresh(e);
 
-			QString ss = this -> m_textEdit->toPlainText();
+			QString ss = this->m_textEdit->toPlainText();
 			this->lastCursor = lastCursor;
 
 			this->localInsert();
@@ -1174,7 +1174,7 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	case Qt::Key_Delete:
 	case Qt::Key_Cancel:
 		this->localDelete();
-		if(this->_CRDT->isEmpty())
+		if (this->_CRDT->isEmpty())
 			this->lastStart = this->lastEnd = 0;
 		break;
 	case Qt::Key_Alt:
@@ -1395,4 +1395,10 @@ void Editor::showHideUsersIntervals() {
 
 void Editor::setSiteCounter(int siteCounter) {
 	this->_CRDT->setSiteCounter(siteCounter);
+}
+
+int Editor::getCursorPosition() {
+	//QTextCursor TC = m_textEdit->textCursor();
+	//return TC.position();
+	return this->lastCursor;
 }

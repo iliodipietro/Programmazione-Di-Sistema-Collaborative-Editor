@@ -6,6 +6,9 @@
 #include "QTimer"
 #include <queue>
 
+class Editor;
+class MyTextEdit;
+
 class CustomCursor : public QObject
 {
 	Q_OBJECT
@@ -13,11 +16,11 @@ public:
 
 	enum CursorMovementMode { AfterDelete, AfterInsert, ChangePosition };
 
-	CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
+	CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
 	~CustomCursor();
 
 	void messageHandler(Message& message, int position);
-	void setCursorPosition(int pos, CursorMovementMode mode, bool isSelection = false);
+	void setCursorPosition(int pos, CursorMovementMode mode, int lenght = 0);
 	inline QColor getCursorColor() { return m_color; }
 	QRect getCursorPos();
 	int getCursorPosition();
@@ -26,6 +29,8 @@ public:
 	
 private:
 
+	Editor* m_widgetEditor;
+	MyTextEdit* m_parentEditor;
 	QTextEdit* m_editor;
 	QTextDocument* m_textDoc;
 	QTextCursor* m_TextCursor;
@@ -35,8 +40,6 @@ private:
 	QRect m_lastPosition;
 	CRDT* m_crdt;
 	int m_position;
-	int m_startSelection;
-	int m_endSelection;
 
 	void updateViewAfterInsert(Message m, __int64 index, QString str);
 	void updateViewAfterDelete(Message m, __int64 index);

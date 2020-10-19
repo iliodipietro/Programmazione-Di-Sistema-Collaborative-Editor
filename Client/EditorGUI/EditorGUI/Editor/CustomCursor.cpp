@@ -3,12 +3,13 @@
 #include <QWindow>
 #include <QDebug>
 #include "MyTextEdit.h"
+#include "Editor.h"
 
 #define TIME_TO_SHOW 150 //number of millisecond before repaint
 
-CustomCursor::CustomCursor(QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
+CustomCursor::CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
-m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(crdt)
+m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor)
 {
 	QTextCursor TCPrevious = m_editor->textCursor();
 	m_usernameLabel->setAutoFillBackground(true);
@@ -36,46 +37,45 @@ m_textDoc(editor->document()), m_endSelection(-1), m_startSelection(-1), m_crdt(
 	timer->setSingleShot(true);
 	timer->setInterval(TIME_TO_SHOW);
 	connect(timer, SIGNAL(timeout()), this, SLOT(paintNow()));
+	m_parentEditor = qobject_cast<MyTextEdit*>(this->parent());
 
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
 
-	this->message_list.push(m);
-	this->index_list.push(index);
-
-	if (this->message_list.size() >= 50) {
-		this->paintNow();
+	if (m.getAction() == CURSOR_S) {
+		QTextCursor TC = m_editor->textCursor();
+		int pos = TC.position();
+		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition);
+		
+		TC.setPosition(pos, QTextCursor::MoveAnchor);
+		m_editor->setTextCursor(TC);
+		m_parentEditor->repaint();
 	}
+	else {
+		this->message_list.push(m);
+		this->index_list.push(index);
 
-	if (!this->timer->isActive())
-		this->timer->start();
+		if (this->message_list.size() >= 50) {
+			this->paintNow();
+		}
 
+		if (!this->timer->isActive())
+			this->timer->start();
+	}
 }
 
-void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, bool isSelection) {
+void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lenght) {
 	switch (mode) {
 	case AfterDelete:
 		m_position = pos - 1;
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
-		m_position = pos + 1;
+		m_position = pos + lenght + 1;
 		m_TextCursor->setPosition(pos);
 		break;
 	case ChangePosition:
-		if (isSelection) {
-			if (m_startSelection == -1) {
-				m_startSelection = m_position;
-				m_endSelection = pos;
-			}
-			else {
-				m_endSelection = pos;
-			}
-		}
-		else {
-			m_startSelection = m_endSelection = -1;
-		}
 		m_position = pos;
 		m_TextCursor->setPosition(pos);
 		m_editor->setTextCursor(*m_TextCursor);
@@ -127,7 +127,7 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index, QString str)
 	//m_textEdit->setFont(r_font);
 	//m_textEdit->setTextColor(r_color);
 
-	setCursorPosition(index, AfterInsert);
+	setCursorPosition(index, AfterInsert, str.length());
 	m_TextCursor->insertText(str, format);
 
 	QTextBlockFormat blockFormat = m_TextCursor->blockFormat();
@@ -151,14 +151,14 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString 
 {
 	//QTextCursor TC = m_editor->textCursor();
 
-	for (int i = index ; i > index - str.size()   ; i--) {
+	for (int i = index; i > index - str.size(); i--) {
 
 		setCursorPosition(i, ChangePosition);
 		m_TextCursor->deleteChar();
 	}
-	
-	int i = index - str.size() + 1;
-	setCursorPosition(i , ChangePosition);
+
+	//int i = index - str.size() + 1;
+	//setCursorPosition(i, ChangePosition);
 	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
@@ -175,7 +175,9 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString 
 	blockFormat.setAlignment(alignment);
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
+	int pos = m_TextCursor->position();
 	m_TextCursor->insertText(str, format);
+	setCursorPosition(pos, ChangePosition);
 }
 
 
@@ -194,11 +196,11 @@ QString CustomCursor::groupTogether()
 	while (!this->message_list.empty())
 	{
 		Message m2 = this->message_list.front();
-		if (m2.getAction() == m.getAction() && 
-			(m2.getSymbol().getColor() == m.getSymbol().getColor()) && 
-			(m2.getSymbol().getFont() == m.getSymbol().getFont()) && 
+		if (m2.getAction() == m.getAction() &&
+			(m2.getSymbol().getColor() == m.getSymbol().getColor()) &&
+			(m2.getSymbol().getFont() == m.getSymbol().getFont()) &&
 			(m2.getSymbol().getAlignment() == m.getSymbol().getAlignment())) {
-			
+
 			s.append(QChar(m2.getSymbol().getChar()));
 			this->message_list.pop();
 			this->index_list.pop();
@@ -217,12 +219,15 @@ QString CustomCursor::groupTogether()
 
 void CustomCursor::paintNow()
 {
+
 	if (this->index_list.size() <= 0)
 		return;
 
+	QTextCursor TC = m_editor->textCursor();
+	int pos = TC.position();
 	QString str;
-	MyTextEdit* p = qobject_cast<MyTextEdit*>(this->parent());
-	while (! this->index_list.empty()) {
+	//MyTextEdit* p = qobject_cast<MyTextEdit*>(this->parent());
+	while (!this->index_list.empty()) {
 
 		Message m = this->message_list.front();
 		int index = this->index_list.front();
@@ -231,29 +236,35 @@ void CustomCursor::paintNow()
 		switch (m.getAction()) {
 		case INSERT:
 			str = groupTogether();
-			updateViewAfterInsert(m, index,str);
+			updateViewAfterInsert(m, index, str);
 
-			p->updateUsersIntervals();
+			m_parentEditor->updateUsersIntervals();
 			break;
 		case DELETE_S:
 			updateViewAfterDelete(m, index);
 			this->message_list.pop();
 			this->index_list.pop();
+			m_parentEditor->updateUsersIntervals();
 			break;
 		case CHANGE:
 			str = groupTogether();
-			updateViewAfterStyleChange(m, index,str);
+			updateViewAfterStyleChange(m, index, str);
+			m_parentEditor->updateUsersIntervals();
 			break;
-		case CURSOR_S:
-			setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
-			this->message_list.pop();
-			this->index_list.pop();
-			break;
+		//case CURSOR_S:
+		//	setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
+		//	this->message_list.pop();
+		//	this->index_list.pop();
+		//	break;
 		default:
 			break;
 		}
 	}
 	updateLabelPosition();
+
+	TC.setPosition(pos, QTextCursor::MoveAnchor);
+	m_editor->setTextCursor(TC);
+	m_parentEditor->repaint();
 	//this->message_list.clear();
 	//this->index_list.clear();
 }

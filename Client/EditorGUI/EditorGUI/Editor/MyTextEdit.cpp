@@ -45,7 +45,7 @@ void MyTextEdit::paintUsersIntervals() {
 }
 
 void MyTextEdit::addCursor(int id, QColor color, QString username, int position) {
-	CustomCursor* cursor = new CustomCursor(this, color, username, position, m_crdt, this);
+	CustomCursor* cursor = new CustomCursor(m_parentEditor, this, color, username, position, m_crdt, this);
 	m_cursorsToPrint.insert(std::pair<int, CustomCursor*>(id, cursor));
 	connect(this, &MyTextEdit::textSizeChanged, cursor, &CustomCursor::textSizeChanged);
 }
@@ -60,7 +60,6 @@ void MyTextEdit::removeCursor(int id) {
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
-	this->repaint();
 }
 
 void MyTextEdit::updateTextSize() {
