@@ -298,7 +298,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("CHANGE_PROFILE request\n");
         list = Serialize::changeProfileUnserialize(ObjData);
 
-        db->changeProfile(list.at(0), list.at(1), list.at(2), client);
+        db->changeProfile(list.at(0), list.at(1), list.at(2), list.at(3), list.at(4), client);
 
         break;
 

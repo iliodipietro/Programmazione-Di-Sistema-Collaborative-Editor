@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1111</width>
-    <height>717</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -57,7 +57,7 @@
 QPushButton:hover { background-color: #0080FF; }</string>
       </property>
       <property name="text">
-       <string>Aggiungi ai tuoi file</string>
+       <string>Aggiungi</string>
       </property>
      </widget>
     </item>
@@ -176,7 +176,14 @@ QPushButton:hover { background-color: #0080FF; }</string>
      </widget>
     </item>
     <item row="3" column="3" rowspan="10">
-     <widget class="QListWidget" name="fileList"/>
+     <widget class="QListWidget" name="fileList">
+      <property name="editTriggers">
+       <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+     </widget>
     </item>
     <item row="4" column="0">
      <widget class="QPushButton" name="logoutButton">
