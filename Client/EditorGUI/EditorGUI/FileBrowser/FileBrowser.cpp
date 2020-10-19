@@ -108,6 +108,11 @@ void FileBrowser::on_deleteFile_clicked()
 
 void FileBrowser::on_renameFile_clicked()
 {
+	//QList<QListWidgetItem*> item = ui.fileList->findItems("prova", Qt::MatchFixedString);
+
+	//item[0]->setText("prova_");
+	//return;
+
 	QListWidgetItem* current_item = ui.fileList->currentItem();
 	if (current_item == nullptr) {
 		QMessageBox resultDialog(this);
@@ -122,7 +127,7 @@ void FileBrowser::on_renameFile_clicked()
 
 	//prendo il nuovo nome
 	bool ok;
-	QString new_filename = QInputDialog::getText(this, tr("New Nmae"),
+	QString new_filename = QInputDialog::getText(this, tr("New Name"),
 		tr("New name:"), QLineEdit::Normal,
 		QDir::home().dirName(), &ok);
 	if (ok && !new_filename.isEmpty()) {

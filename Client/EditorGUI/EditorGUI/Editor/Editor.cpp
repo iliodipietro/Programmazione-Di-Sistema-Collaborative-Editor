@@ -19,6 +19,7 @@
 #define RADIUS ICONSIZE/2
 #define SLEEP_TIME 150
 #define MAX_CHAR_TO_SEND 25
+#define TIMER_TIME 100
 
 Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
 	QString path, QString username, int fileId, int clientID, QWidget* parent)
@@ -69,7 +70,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 
 	this->insert_timer = new QTimer(this);
 	this->insert_timer->setSingleShot(true);
-	this->insert_timer->setInterval(100);
+	this->insert_timer->setInterval(TIMER_TIME);
 	Q_ASSERT(connect(this->insert_timer, SIGNAL(timeout()), this, SLOT(insertCharBatch())));
 	//FINE----------------------------------------------------------------------------------
 
