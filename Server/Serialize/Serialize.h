@@ -49,19 +49,21 @@ public:
     static QJsonObject newFileSerialize(QString filename,int id, int type);// ilio
     static QString newFileUnserialize(QJsonObject obj);// ilio
 
-    static QJsonObject renameFileSerialize(int fileId, QString newName, int type);// ilio
+    static QJsonObject renameFileSerialize(QString oldName, QString newName, int type);// ilio
     static QPair<int, QString> renameFileUnserialize(QJsonObject obj); // ilio
 
     static QJsonObject sharedFileAcquisitionSerialize(QString URI, int type); // ilio
     static QString sharedFileAcquisitionUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword);// ilio
+    static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);// ilio
     static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
-    static QJsonObject changeProfileSerialize(QString newname, QString newNick, QString newImage); // ilio
+    static QJsonObject changeProfileSerialize(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QString newImage, int type); // ilio
     static QStringList changeProfileUnserialize(QJsonObject obj); //ilio
 
     static QJsonObject URISerialize(QString URI, int type);// ilio
+
+    static QJsonObject changeProfileResponseSerialize(bool res, QString username, QString email, QString image, QString message, int type);
 
     static QJsonObject siteCounterSerialize(int fileId, int siteCounter, int type);
 
@@ -78,7 +80,7 @@ public:
     static QJsonObject imageSerialize(QPixmap img, int type);
     static QPixmap imageUnserialize(QJsonObject obj);
 
-    static QJsonObject responseSerialize(bool res, QString message, int type, int userID = -1, QColor color = Qt::black);
+    static QJsonObject responseSerialize(bool res, QString message, int type, QString username = "", QString email = "", int userID = -1, QColor color = Qt::black);
     static QStringList responseUnserialize(QJsonObject obj);
 
     static QJsonObject ObjectFromString(QString& in);

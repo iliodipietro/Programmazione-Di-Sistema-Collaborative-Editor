@@ -26,6 +26,7 @@ public:
 	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
 		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
+	int getSiteCounter();
 	void loadFile(const QString& fileName);
 	void remoteAction(Message m);
 	int getFileId();
@@ -39,6 +40,7 @@ private:
 	MyTextEdit* m_textEdit;
 	QWidget *parent;
 	QString filePath, curFile;
+	QAction* shareAct;
 	QAction* italicAct;
 	QAction* openAct;
 	QAction* cutAct;
@@ -119,6 +121,11 @@ private:
 	void textAlign(QAction* a);
 	void alignmentChanged(Qt::Alignment a);
 	void colorChanged(const QColor& c);
+
+	//Lorenzo-----------------------------------------------
+	void styleChanged(QFont font);
+	void shareLink();
+	//Fine
 
 	//Mattia-----------------------------------------------------------------------------------------------------------
 

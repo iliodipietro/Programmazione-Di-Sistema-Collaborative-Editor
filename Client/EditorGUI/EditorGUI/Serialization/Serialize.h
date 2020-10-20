@@ -35,6 +35,10 @@ public:
 	//QJsonObject unserialize(QString str); // old
 	static int actionType(QJsonObject obj);
 
+	static QJsonObject changeProfileSerialize(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QPixmap* newImage, int type);
+
+	static QStringList changeProfileUnserialize(QJsonObject obj);
+
 
 	static QJsonObject userSerialize(QString user, QString password, QString email, int type, QPixmap* profileImage = Q_NULLPTR);//type usato per discriminare login o register
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
@@ -60,9 +64,12 @@ public:
 	static QPair<int, int> closeFileUnserialize(QJsonObject obj);
 
 	static QJsonObject renameFileSerialize(int fileId, QString newName, int type); // ilio
+	static QStringList renameFileUnserialize(QJsonObject obj);
 
 	static QJsonObject openSharedFileSerialize(QString URI, int type); // ilio
 	static QString openSharedFileUnserialize(QJsonObject obj); // ilio
+
+	static QStringList changeProfileResponseUnserialize(QJsonObject obj); //ilio
 
 	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static QPair<int, Message> messageUnserialize(QJsonObject obj);
@@ -75,8 +82,10 @@ public:
 	static QJsonObject imageSerialize(QPixmap img, int type);
 	static QPixmap imageUnserialize(QJsonObject obj);
 
-	static QJsonObject responseSerialize(bool res, QString message, int userID, int type);
+	static QJsonObject responseSerialize(bool res, QString message, int type, QString username = "", QString email = "", int userID = -1, QColor color = Qt::black);
 	static QStringList responseUnserialize(QJsonObject obj);
+
+	static QString URIUnserialize(QJsonObject uri);
 
 	static QJsonObject ObjectFromString(QString& in);
 
@@ -99,6 +108,8 @@ public:
 	static QJsonObject fromArrayToObject(QByteArray data);
 
 	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
+	//static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
+
 
 	//void setType(QString type);
 

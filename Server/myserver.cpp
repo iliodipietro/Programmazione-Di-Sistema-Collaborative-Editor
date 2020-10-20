@@ -264,9 +264,10 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         break;
 
     case (SENDURI):
-        qDebug("SENDURI request\n");
+        //qDebug("SENDURI request\n");
         fileId = Serialize::openDeleteFileUnserialize(ObjData); //uso questa funzione perche ritorna l'id del file
 
+        //qDebug("SENDURI dopo serialize request\n");
         db->getURIToShare(fileId, client);
 
         break;
@@ -297,7 +298,7 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("CHANGE_PROFILE request\n");
         list = Serialize::changeProfileUnserialize(ObjData);
 
-        db->changeProfile(list.at(0), list.at(1), list.at(2), client);
+        db->changeProfile(list.at(0), list.at(1), list.at(2), list.at(3), list.at(4), client);
 
         break;
 

@@ -9,6 +9,7 @@
 #include <QColorDialog>
 #include <QChar>
 #include <Qdebug>
+#include <QTextCharFormat>
 
 
 #include <chrono>
@@ -175,6 +176,8 @@ void Editor::createActions() {
 
 	ui.toolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
 
+	
+
 	const QIcon openIcon = QIcon::fromTheme("document-open", QIcon("./Icons/plus.png"));
 	this->openAct = new QAction(openIcon, tr("&Open..."), this);
 	this->openAct->setShortcuts(QKeySequence::Open);
@@ -215,6 +218,15 @@ void Editor::createActions() {
 
 	//menu->addSeparator();
 #endif
+
+
+	const QIcon shareIcon = QIcon::fromTheme("document-share", QIcon("./Icons/share.png")); //devo vedere dove trovare le icone eventualmente
+	this->shareAct = new QAction(shareIcon, tr("&Share..."), this);
+	this->shareAct->setShortcut(Qt::CTRL + Qt::Key_S);
+	ui.toolBar->addAction(this->shareAct);
+	ui.menuFile->addAction(this->shareAct);
+	connect(this->shareAct, &QAction::triggered, this, &Editor::shareLink);
+
 
 	//const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon("./Icons/058-undo.png"));
 	//this->actionUndo = ui.menuModifica->addAction(undoIcon, tr("&Undo"), m_textEdit, &QTextEdit::undo);
@@ -393,6 +405,8 @@ void Editor::makeUnderlined() {
 	emit styleChange();
 }
 
+
+
 void Editor::textStyle(int styleIndex)
 {
 	QTextCursor cursor = m_textEdit->textCursor();
@@ -537,6 +551,19 @@ void Editor::filePrintPdf() {
 	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 	//! [0]
 #endif
+}
+
+
+
+//funzione atta a creare un link per la condivisione di un file, da connettere al tasto share
+void Editor::shareLink() {
+	
+	QJsonObject obj = Serialize::openDeleteFileSerialize(m_fileId, SHARE);
+	QByteArray msg = Serialize::fromObjectToArray(obj);
+	if (m_socketHandler->writeData(msg) == false) {
+		return;
+	}
+
 }
 
 //MATTIA-----------------------------------------------------------------------------------------------------------
@@ -1262,9 +1289,42 @@ void Editor::alignmentChanged(Qt::Alignment a) {
 		this->actionAlignJustify->setChecked(true);
 }
 
+//funzione per cambiare la vista in caso cambi lo stile
+//devo fare cosa? come controllo lo stile? come setto l'azione?
+void Editor::styleChanged(QFont font){
+	if (font.bold()) {
+		this->boldAct->setChecked(true);
+	}
+	else {
+		this->boldAct->setChecked(false);
+	}
+
+	if (font.italic()) {
+		this->italicAct->setChecked(true);
+	}
+	else {
+		this->italicAct->setChecked(false);
+	}
+
+	if (font.underline()) {
+		this->underLineAct->setChecked(true);
+	}
+	else {
+		this->underLineAct->setChecked(false);
+	}
+}
+
+
 void Editor::on_textEdit_cursorPositionChanged() {
 	this->alignmentChanged(m_textEdit->alignment());
+	
+	/*this->styleChanged(m_textEdit->font());*/
+
 	QTextCursor TC = m_textEdit->textCursor();
+	QTextCharFormat fmt = TC.charFormat();
+	QFont font = fmt.font();
+
+	this->styleChanged(font);
 	QTextList* list = TC.currentList();
 	if (list) {
 		switch (list->format().style()) {
@@ -1319,6 +1379,8 @@ void Editor::colorChanged(const QColor& c) {
 	this->actionTextColor->setIcon(pix);
 
 }
+
+
 
 void Editor::textColor()
 {
