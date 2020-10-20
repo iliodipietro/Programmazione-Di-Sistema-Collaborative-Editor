@@ -267,7 +267,7 @@ void CustomCursor::paintNow()
 	m_parentEditor->repaint();
 	//this->message_list.clear();
 	//this->index_list.clear();
-}
+}zz
 
 
 

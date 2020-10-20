@@ -78,7 +78,7 @@ void FileBrowser::on_newFile_clicked() {
 	//viene aperto un dialog dove immettere il nome del nuovo file
 	QString filename = QInputDialog::getText(this, tr("New File"),
 		tr("File name:"), QLineEdit::Normal,
-		QDir::home().dirName(), &ok);
+		"New Text File", &ok);
 	if (ok && !filename.isEmpty()) {
 		//send to server
 		QByteArray data = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, NEWFILE));
@@ -139,12 +139,16 @@ void FileBrowser::on_renameFile_clicked()
 	bool ok;
 	QString new_filename = QInputDialog::getText(this, tr("New Name"),
 		tr("New name:"), QLineEdit::Normal,
-		QDir::home().dirName(), &ok);
+		filename, &ok);
+
 	if (ok && !new_filename.isEmpty()) {
 		//send to server
-		QByteArray data = Serialize::fromObjectToArray(Serialize::renameFileSerialize(id,new_filename,RENAME));
-		this->m_socketHandler->writeData(data);
-		current_item->setText(new_filename);
+		if (new_filename != filename) {
+			QByteArray data = Serialize::fromObjectToArray(Serialize::renameFileSerialize(id, new_filename, RENAME));
+			this->m_socketHandler->writeData(data);
+			current_item->setText(new_filename);
+		}
+
 	}
 	else {
 		QMessageBox resultDialog(this);
