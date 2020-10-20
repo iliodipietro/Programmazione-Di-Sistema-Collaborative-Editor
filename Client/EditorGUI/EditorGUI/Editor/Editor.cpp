@@ -774,7 +774,7 @@ void Editor::remoteAction(Message m)
 	case INSERT:
 		maybeincrement(index);
 
-		pos > index ? pos++ : pos = pos;
+		//pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
 		//emit updateUsersIntervals();
@@ -783,7 +783,7 @@ void Editor::remoteAction(Message m)
 	case DELETE_S:
 		maybedecrement(index);
 
-		pos > index ? pos-- : pos = pos;
+		//pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
 		//emit updateUsersIntervals();

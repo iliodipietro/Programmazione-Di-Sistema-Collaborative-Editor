@@ -444,7 +444,7 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                     incomingClient->writeData(response);
                     instance->db.close();
                     //mando la lista dei file
-                    this->sendFileList(incomingClient);
+                    //instance->sendFileList(incomingClient);
                 }
                 else {
                     //già ho notificato al client che la pwd è errata

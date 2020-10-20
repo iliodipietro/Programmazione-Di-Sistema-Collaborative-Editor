@@ -16,6 +16,8 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
 	connect(m_timer, &QTimer::timeout, this, &FileBrowser::showErrorMessage);
 
+	QByteArray message = Serialize::fromObjectToArray(Serialize::requestFileList(SEND_FILES));
+	m_socketHandler->writeData(message);
 }
 
 FileBrowser::~FileBrowser()

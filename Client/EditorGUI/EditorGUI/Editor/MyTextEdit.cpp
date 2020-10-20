@@ -149,7 +149,6 @@ void MyTextEdit::updateUsersIntervals() {
 	m_rowDimensions.clear();
 	QTextCursor TC = this->textCursor();
 	int initialPos = TC.position();
-
 	for (auto it = usersCharactersIntervals->begin(); it != usersCharactersIntervals->end(); it++) {
 		if (m_cursorsToPrint.find(it->getUserId()) != m_cursorsToPrint.end()) {
 			TC.setPosition(it->getStartPosition());

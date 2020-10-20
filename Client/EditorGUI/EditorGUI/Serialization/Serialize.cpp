@@ -739,6 +739,13 @@ QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj) {
 
 }
 
+QJsonObject Serialize::requestFileList(int type) {
+	QJsonObject obj;
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
 //QJsonObject Serialize::cursorSerialize(CustomCursor cursor, int type)
 //{
 //	QJsonObject obj;

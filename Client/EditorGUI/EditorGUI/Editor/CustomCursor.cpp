@@ -47,7 +47,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 		QTextCursor TC = m_editor->textCursor();
 		int pos = TC.position();
 		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition);
-		
+
 		TC.setPosition(pos, QTextCursor::MoveAnchor);
 		m_editor->setTextCursor(TC);
 		m_parentEditor->repaint();
@@ -72,7 +72,7 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lengh
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
-		m_position = pos + lenght + 1;
+		m_position = pos + lenght;
 		m_TextCursor->setPosition(pos);
 		break;
 	case ChangePosition:
@@ -239,23 +239,29 @@ void CustomCursor::paintNow()
 			updateViewAfterInsert(m, index, str);
 
 			m_parentEditor->updateUsersIntervals();
+
+			pos > index ? pos += str.length() : pos = pos;
+
 			break;
 		case DELETE_S:
 			updateViewAfterDelete(m, index);
 			this->message_list.pop();
 			this->index_list.pop();
 			m_parentEditor->updateUsersIntervals();
+
+			pos > index ? pos-- : pos = pos;
+
 			break;
 		case CHANGE:
 			str = groupTogether();
 			updateViewAfterStyleChange(m, index, str);
 			m_parentEditor->updateUsersIntervals();
 			break;
-		//case CURSOR_S:
-		//	setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
-		//	this->message_list.pop();
-		//	this->index_list.pop();
-		//	break;
+			//case CURSOR_S:
+			//	setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
+			//	this->message_list.pop();
+			//	this->index_list.pop();
+			//	break;
 		default:
 			break;
 		}

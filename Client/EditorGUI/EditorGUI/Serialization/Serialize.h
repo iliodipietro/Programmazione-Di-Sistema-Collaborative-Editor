@@ -92,6 +92,7 @@ public:
 	static QJsonObject removeEditingUserSerialize(int userId, int fileId, int type);//augusto
 	static QPair<int, int> removeEditingUserUnserialize(QJsonObject obj);//augusto
 
+	static QJsonObject requestFileList(int type); //augusto
 
 	static QJsonObject logoutUserSerialize(int type);//augusto
 
