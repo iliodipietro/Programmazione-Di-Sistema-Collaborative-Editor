@@ -805,7 +805,7 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		//zemit updateUsersIntervals();
+		emit updateUsersIntervals();
 
 		break;
 	case DELETE_S:
@@ -814,12 +814,12 @@ void Editor::remoteAction(Message m)
 		pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
-		//emit updateUsersIntervals();
+		emit updateUsersIntervals();
 
 		break;
 
 	case CHANGE:
-		//emit updateUsersIntervals();
+		emit updateUsersIntervals();
 		break;
 
 	default:
