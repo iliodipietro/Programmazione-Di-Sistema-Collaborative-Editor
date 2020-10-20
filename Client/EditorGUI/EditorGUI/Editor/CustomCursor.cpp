@@ -68,7 +68,7 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lengh
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
-		m_position = pos + lenght + 1;
+		m_position = pos + 1;
 		m_TextCursor->setPosition(pos);
 		break;
 	case ChangePosition:

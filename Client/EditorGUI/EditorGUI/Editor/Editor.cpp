@@ -802,7 +802,7 @@ void Editor::remoteAction(Message m)
 	case INSERT:
 		maybeincrement(index);
 
-		//pos > index ? pos++ : pos = pos;
+		pos > index ? pos++ : pos = pos;
 
 		this->_CRDT->updateUserInterval();
 		emit updateUsersIntervals();
@@ -811,7 +811,7 @@ void Editor::remoteAction(Message m)
 	case DELETE_S:
 		maybedecrement(index);
 
-		//pos > index ? pos-- : pos = pos;
+		pos > index ? pos-- : pos = pos;
 
 		this->_CRDT->updateUserInterval();
 		emit updateUsersIntervals();
@@ -826,8 +826,8 @@ void Editor::remoteAction(Message m)
 		break;
 	}
 
-	//TC.setPosition(pos, QTextCursor::MoveAnchor);
-	//m_textEdit->setTextCursor(TC);
+	TC.setPosition(pos, QTextCursor::MoveAnchor);
+	m_textEdit->setTextCursor(TC);
 
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
