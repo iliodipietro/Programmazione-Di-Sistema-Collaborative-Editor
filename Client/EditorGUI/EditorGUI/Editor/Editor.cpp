@@ -948,6 +948,15 @@ bool Editor::isAKeySequence(QKeyEvent* e)
 	if (e->matches(QKeySequence::Cut)) {
 		return true;
 	}
+	if (e->matches(QKeySequence::Redo)) {
+		return true;
+	}
+	if (e->matches(QKeySequence::Undo)) {
+		return true;
+	}
+	if (e->matches(QKeySequence::SelectAll)) {
+		return true;
+	}
 	//add more if needed
 
 	return false;
