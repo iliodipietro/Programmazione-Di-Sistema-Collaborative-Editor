@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Qt>
 #include <QMainWindow>
 #include <QDesktopWidget>
 #include <QApplication>
@@ -19,15 +20,16 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString username = "", int clientID = 0,
-		QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString email, QString username = "", int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
+
 
 private:
 	QSharedPointer<SocketHandler> m_socketHandler;
 	std::map<int, Editor*> m_textEditors;
 	QFileSystemModel model;
 	QString username;
+	QString email;
 	int clientID;
 	ModifyProfile* m_modifyProfile;
 	Ui::FileBrowser ui;
@@ -41,6 +43,8 @@ private:
 	void closeEvent(QCloseEvent* event);
 	void removeBlank();
 	void requestFiles();
+	
+	/*void showURI(QJsonObject msg);*/
 
 private slots:
 	void on_fileList_itemDoubleClicked(QListWidgetItem* item);
@@ -52,14 +56,20 @@ private slots:
 	void on_renameFile_clicked();
 	void on_addSharedFileButton_clicked();
 	void childWindowClosed();
+	void childWindowClosedAndUpdate(QString m_username, QString m_email, QSharedPointer<QPixmap> m_profileImage);
 	void addFiles(QJsonObject message);
 	void addFile(QJsonObject message);
 	void handleNewMessage(QJsonObject message);
 	void processEditorMessage(QJsonObject message);
 	void showErrorMessage();
+	void showURI(QJsonObject msg);
+	void on_file_clicked(); //ilio (quando clicco su un file appaiono i bottoni delete e rename)
+	void on_URI_set();//ilio (quando inserisco la URI appare il bottone share)
+	/*void copia();*/
 
 signals:
 	void showParent();
+	void fileClicked();
 
 protected:
 	void mousePressEvent(QMouseEvent* event);

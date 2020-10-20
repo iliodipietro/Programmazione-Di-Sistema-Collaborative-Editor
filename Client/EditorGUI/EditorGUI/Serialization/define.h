@@ -17,7 +17,7 @@ file che contiene tutte le define che vengono usate per capire che messaggi arri
 #define SERVER_ANSWER 12
 #define DELETE 13
 #define RENAME 14
-#define SENDURI 15
+#define SHARE 15
 #define OPENSHARE 16
 #define SEND_FILES 17
 #define CHANGE_PASSWORD 18

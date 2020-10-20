@@ -25,7 +25,7 @@ void Login::closeEvent(QCloseEvent* event)
 void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor) {
 	m_timer->stop();
 	resetWindows();
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor, m_username, this->clientID);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor,  m_email, m_username, clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
@@ -75,6 +75,7 @@ void Login::loginResult(QJsonObject response) {
 
 	if (result) {
 		this->clientID = serverMessage[2].toInt();
+		this->m_email = serverMessage[4];
 		QString profileImageBase64 = serverMessage[1];
 		QPixmap profileImage;
 		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));

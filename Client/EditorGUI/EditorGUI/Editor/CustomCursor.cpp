@@ -36,33 +36,29 @@ m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor)
 	timer = new QTimer();
 	timer->setSingleShot(true);
 	timer->setInterval(TIME_TO_SHOW);
-	connect(timer, SIGNAL(timeout()), this, SLOT(paintNow()));
+	//connect(timer, SIGNAL(timeout()), this, SLOT(paintNow()));
 	m_parentEditor = qobject_cast<MyTextEdit*>(this->parent());
 
 }
 
 void CustomCursor::messageHandler(Message& m, int index) {
-
-	if (m.getAction() == CURSOR_S) {
-		QTextCursor TC = m_editor->textCursor();
-		int pos = TC.position();
-		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition);
-
-		TC.setPosition(pos, QTextCursor::MoveAnchor);
-		m_editor->setTextCursor(TC);
-		m_parentEditor->repaint();
+	switch (m.getAction()) {
+	case INSERT:
+		updateViewAfterInsert(m, index,"");
+		break;
+	case DELETE_S:
+		updateViewAfterDelete(m, index);
+		break;
+	case CHANGE:
+		updateViewAfterStyleChange(m, index,"");
+		break;
+	case CURSOR_S:
+		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
+		break;
+	default:
+		break;
 	}
-	else {
-		this->message_list.push(m);
-		this->index_list.push(index);
-
-		if (this->message_list.size() >= 50) {
-			this->paintNow();
-		}
-
-		if (!this->timer->isActive())
-			this->timer->start();
-	}
+	updateLabelPosition();
 }
 
 void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lenght) {
@@ -72,7 +68,7 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lengh
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
-		m_position = pos + lenght;
+		m_position = pos + lenght + 1;
 		m_TextCursor->setPosition(pos);
 		break;
 	case ChangePosition:
@@ -107,6 +103,7 @@ void CustomCursor::updateLabelPosition() {
 void CustomCursor::updateViewAfterInsert(Message m, __int64 index, QString str)
 {
 	//retrieving remote state
+	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
@@ -127,8 +124,8 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index, QString str)
 	//m_textEdit->setFont(r_font);
 	//m_textEdit->setTextColor(r_color);
 
-	setCursorPosition(index, AfterInsert, str.length());
-	m_TextCursor->insertText(str, format);
+	setCursorPosition(index, AfterInsert);
+	m_TextCursor->insertText(chr, format);
 
 	QTextBlockFormat blockFormat = m_TextCursor->blockFormat();
 	blockFormat.setAlignment(alignment);
@@ -151,14 +148,9 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString 
 {
 	//QTextCursor TC = m_editor->textCursor();
 
-	for (int i = index; i > index - str.size(); i--) {
+	setCursorPosition(index, ChangePosition);
+	m_TextCursor->deleteChar();
 
-		setCursorPosition(i, ChangePosition);
-		m_TextCursor->deleteChar();
-	}
-
-	//int i = index - str.size() + 1;
-	//setCursorPosition(i, ChangePosition);
 	QChar chr(m.getSymbol().getChar());
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
@@ -175,9 +167,7 @@ void CustomCursor::updateViewAfterStyleChange(Message m, __int64 index, QString 
 	blockFormat.setAlignment(alignment);
 
 	m_TextCursor->mergeBlockFormat(blockFormat);
-	int pos = m_TextCursor->position();
-	m_TextCursor->insertText(str, format);
-	setCursorPosition(pos, ChangePosition);
+	m_TextCursor->insertText(chr, format);
 }
 
 
