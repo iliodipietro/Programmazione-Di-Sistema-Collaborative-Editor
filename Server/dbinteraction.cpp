@@ -958,13 +958,13 @@ QString DBInteraction::changeFileName(QString oldPath, QString newName, int file
         newPath.append(oldPathList.at(i)).append("/");
     }
     QString oldName = oldPathList.at(i);
-    qDebug() << "old filename: " << oldName << "\n";
+    //qDebug() << "old filename: " << oldName << "\n";
 
     QStringList parts = newName.split('.');
     newName = parts.at(0);
     newPath.append(newName).append(".txt");
-    qDebug() << "new filename: " << newName << "\n";
-    qDebug() << "new path: " << newPath << "\n";
+    //qDebug() << "new filename: " << newName << "\n";
+    //qDebug() << "new path: " << newPath << "\n";
 
     QFile::rename(oldPath, newPath);
 
@@ -1008,20 +1008,63 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         return;
     }
 
-    if (!instance->files.contains(fileId) /*|| (instance->files.value(fileId)->getUsers().contains(client) && instance->files.value(fileId)->getUsers().size() == 1)*/) {
-        //nessuno sta lavorando sul file oppure solo l'utente in questione lo sta usando, lo posso rinominare senza problemi 
-        QSqlQuery query;
+    if (!instance->files.contains(fileId)){ ///*|| (instance->files.value(fileId)->getUsers().contains(client) && instance->files.value(fileId)->getUsers().size() == 1)*/) {
+        //nessuno sta lavorando sul file (non vuol dire che sia l'unico a possederlo!!)
+        QSqlQuery query, query2;
         int userid = client->getId();
+
 
         if (instance->db.open()) {
             query.prepare("SELECT path FROM files WHERE fileid = (:fileid) AND userid = (:userid)");
             query.bindValue(":fileid", fileId);
             query.bindValue(":userid", userid);
 
-            if (query.exec()) {
+            if (query.exec() ) {
                 if (query.next()) {
                     QString oldPath = QString(query.value("path").toString());
-                    instance->changeFileName(oldPath, newName, fileId, client);
+
+                    //lista di utenti che possiedono il file ma che non lo stanno usando
+                    query2.prepare("SELECT UserId FROM files WHERE FileId = (:fileid)");
+                    query2.bindValue(":fileid", fileId);
+
+                    if (query2.exec()) {
+                        int i;
+                        ClientManager* user;
+                        QString oldName;
+                        QList<int> users;
+
+                        qDebug() << "fileId da rinominare: " << fileId << "\n";
+
+                        while (query2.next()) {
+
+                            qDebug() << "size activeUsers: " << instance->activeusers.size() << "\n";
+                            qDebug() << "query result: " << query2.value("UserId").toInt() << "\n";
+                            users.append(query2.value("UserId").toInt());
+
+                        }
+                        instance->db.close();
+                        for (int userid : users) {
+                            for (i = 0; i < instance->activeusers.size(); i++) {
+
+                                if (instance->activeusers.at(i)->getId() == userid) {
+
+                                    user = instance->activeusers.at(i);
+                                    oldName = instance->changeFileName(oldPath, newName, fileId, user);
+                                    response = Serialize::fromObjectToArray(Serialize::renameFileSerialize(oldName, newName, RENAME));
+                                    user->writeData(response);
+
+                                }
+                            }
+                        }
+
+                    }
+                    else {
+                        qDebug() << "SELECT userid failed: " << query2.lastError() << "\n";
+                        sendError(client);
+                        instance->db.close();
+                        return;
+                    
+                    }
                 }
             }
             else {
@@ -1045,10 +1088,8 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         if (f->getUsers().size() > 1) f->setSharedFile();
         f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarÃ  l'ultima)
         f->addRUser(client);
+        sendSuccess(client);
     }
-
-
-    sendSuccess(client);
 }
 
 void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
@@ -1443,7 +1484,7 @@ File* DBInteraction::getFile(int fileid) {
 
 bool DBInteraction::isUserLogged(ClientManager* client) {
 
-    if (!activeusers.contains(client)) {
+    if (!instance->activeusers.contains(client)) {
         qDebug() << "user not authorized!\n";
         //anche se non Ã¨ attivo, l'utente ha comunque un socket
         sendError(client);

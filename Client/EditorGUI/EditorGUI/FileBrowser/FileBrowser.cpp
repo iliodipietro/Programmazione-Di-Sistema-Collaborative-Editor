@@ -108,11 +108,15 @@ void FileBrowser::on_deleteFile_clicked()
 	int id = current_item->data(Qt::UserRole).toInt();
 	QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, DELETE));
 	this->m_socketHandler->writeData(data);
-	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
-	if (item != nullptr) {
-		delete item;
-		item = nullptr;
+	//QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
+	if (current_item != nullptr) {
+
+		disconnect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
+		delete current_item;
 		current_item = nullptr;
+		connect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
+		ui.renameFile->setVisible(false);
+		ui.deleteFile->setVisible(false);
 	}
 }
 
