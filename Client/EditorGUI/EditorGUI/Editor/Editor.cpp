@@ -875,44 +875,32 @@ void Editor::insertCharBatch() {
 
 	TC.mergeBlockFormat(blockFormat);
 
-	TC.setPosition(0);
-	m_textEdit->setTextCursor(TC);
+	//TC.setPosition(0);
+	//m_textEdit->setTextCursor(TC);
 }
 
 
 void Editor::initialFileLoad(Message m_, __int64 index_) {
 	//retrieving remote state
 
-	if (this->list_of_msg.empty()) {
+	QChar chr(m_.getSymbol().getChar());
+	QFont r_font = m_.getSymbol().getFont();
+	QColor r_color = m_.getSymbol().getColor();
+	Qt::AlignmentFlag alignment = m_.getSymbol().getAlignment();
 
-		this->list_of_msg.push_back(m_);
-		this->list_of_idx.push_back(index_);
-		this->insert_timer->start();//parte solo se c'è almeno un carattere
-		//allo scadere del timer inserisce tutti i caratteri e svuoto la lista così al prossimo messaggio sarà vuota ed il timer riparte
+	QTextCharFormat format;
+	format.setFont(r_font);
+	format.setForeground(r_color);
 
-	}
-	else {
-		if ((this->list_of_msg[0].getSymbol().getColor() == m_.getSymbol().getColor()) && (this->list_of_msg[0].getSymbol().getFont() == m_.getSymbol().getFont())) {
+	QTextCursor TC = m_textEdit->textCursor();
+	TC.setPosition(index_);
+	m_textEdit->setTextCursor(TC);
+	TC.insertText(chr, format);
 
-			this->list_of_msg.push_back(m_);
-			this->list_of_idx.push_back(index_);
-		}
-		else {
-			//inserisco quando c'e un cambio di stile
-			insertCharBatch();
-			this->list_of_msg.push_back(m_);
-			this->list_of_idx.push_back(index_);
-			this->insert_timer->start();//parte solo se c'è almeno un carattere
-		}
+	QTextBlockFormat blockFormat = TC.blockFormat();
+	blockFormat.setAlignment(alignment);
 
-
-		if (this->list_of_msg.size() >= 50) {//se ho almeno 50 caratteri uguali inserisco e fermo il timer fino al prossimo messaggio 
-			insertCharBatch();
-		}
-
-	}
-
-
+	TC.mergeBlockFormat(blockFormat);
 }
 
 int Editor::getFileId()

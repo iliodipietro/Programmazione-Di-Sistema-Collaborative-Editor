@@ -60,69 +60,7 @@ void SocketHandler::bytesWritten(qint64 bytes)
 
 void SocketHandler::readyRead()
 {
-
 	m_readBufferCV.notify_one();
-
-	//std::vector<QByteArray*> packetsInQueue;
-	//while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
-	//	qint64 numBytes = m_tcpSocket->bytesAvailable();
-	//	QByteArray data = m_tcpSocket->readAll();
-	//	m_previousPacket->append(data);
-	//	while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
-
-	//		if (m_previousSize == 0 && m_previousPacket->size() >= 8) {
-	//			m_previousSize = arrayToInt(m_previousPacket->mid(0, 8));
-	//			m_previousPacket->remove(0, 8);
-	//		}
-
-	//		if (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize) {
-	//			QByteArray* message = new QByteArray(m_previousPacket->mid(0, m_previousSize));
-	//			packetsInQueue.push_back(message);
-	//			m_previousPacket->remove(0, m_previousSize);
-	//			m_previousSize = 0;
-	//			//QJsonParseError parseError;
-	//			//QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
-	//			//emit dataReceived(doc.object());
-	//		}
-
-	//		if (packetsInQueue.size() == 5) {
-	//			{
-	//				std::unique_lock<std::mutex> ul(m_readBufferMutex);
-	//				for (int i = 0; i < 5; i++)
-	//					m_previousPackets.push(packetsInQueue[i]);
-	//				m_readBufferCV.notify_one();
-	//			}
-	//			packetsInQueue.clear();
-	//		}
-	//	}
-
-	//	if (packetsInQueue.size() > 1) {
-	//		{
-	//			std::unique_lock<std::mutex> ul(m_readBufferMutex);
-	//			for (int i = 0; i < packetsInQueue.size(); i++)
-	//				m_previousPackets.push(packetsInQueue[i]);
-	//			m_readBufferCV.notify_one();
-	//		}
-	//		packetsInQueue.clear();
-	//	}
-
-	//	if (m_previousPacket->size() < 8 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
-
-	//	/*qDebug() << "Reading...";
-	//	qDebug() << m_tcpSocket->readAll();*/
-	//}
-
-	//if (packetsInQueue.size() == 1) {
-	//	/*parseEmitMessages(packetsInQueue[0]);
-	//	packetsInQueue.clear();*/
-	//	{
-	//		std::unique_lock<std::mutex> ul(m_readBufferMutex);
-	//		for (int i = 0; i < packetsInQueue.size(); i++)
-	//			m_previousPackets.push(packetsInQueue[i]);
-	//		m_readBufferCV.notify_one();
-	//	}
-	//	packetsInQueue.clear();
-	//}
 }
 
 bool SocketHandler::writeData(QByteArray& data) {
@@ -170,30 +108,6 @@ void SocketHandler::readConfigFile() {
 }
 
 void SocketHandler::readThreadFunction() {
-	//int count = 0;
-	//while (m_readThreadRun) {
-	//	std::unique_lock<std::mutex> ul(m_readBufferMutex);
-	//	m_readBufferCV.wait(ul, [this] {return !m_previousPackets.empty() || !m_readThreadRun; });
-
-	//	while (m_previousPackets.size() > 0) {
-	//		QByteArray* m = m_previousPackets.front();
-	//		m_previousPackets.pop();
-	//		if (count < 5) {
-	//			parseEmitMessages(m);
-	//			count++;
-	//		}
-	//		else {
-	//			ul.unlock();
-	//			parseEmitMessages(m);
-	//			count = 0;
-	//			std::this_thread::sleep_for(std::chrono::milliseconds(5));
-	//			ul.lock();
-	//		}
-	//	}
-
-	//	count = 0;
-	//}
-
 	while (m_readThreadRun) {
 
 		std::unique_lock<std::mutex> ul(m_readBufferMutex);
@@ -219,17 +133,18 @@ void SocketHandler::readThreadFunction() {
 					m_packetsInQueue.push_back(doc.object());
 				}
 
-				if (m_packetsInQueue.size() == 6) {
-					for (int i = 0; i < 6; i++)
+				if (m_packetsInQueue.size() == 7) {
+					for (int i = 0; i < 7; i++)
 						emit dataReceived(m_packetsInQueue[i]);
 					m_packetsInQueue.clear();
-					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+					std::this_thread::sleep_for(std::chrono::milliseconds(40));
 				}
 			}
 
 			if (m_packetsInQueue.size() > 1) {
 				for (int i = 0; i < m_packetsInQueue.size(); i++)
 					emit dataReceived(m_packetsInQueue[i]);
+				std::this_thread::sleep_for(std::chrono::milliseconds(m_packetsInQueue.size() * 5));
 				m_packetsInQueue.clear();
 			}
 
