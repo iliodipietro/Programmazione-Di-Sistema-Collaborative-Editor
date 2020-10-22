@@ -565,23 +565,16 @@ void CRDT::saveOnFile()
     //}
 	if (this->_symbols.size() > 0) {
 
-		QString serialized_text = this->crdt_serialize();
 
-        std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
-		if (oFile.is_open())
-		{
-
-			//std::string text = this->to_string();
-			{
-				//oFile << text;
-				oFile << serialized_text.toStdString();
-			}
-			oFile.close();
+		QFile file(this->path);
+		if (file.open(QIODevice::WriteOnly | QFile::Truncate)) {
+			QTextStream stream(&file);
+			QString serialized_text = this->crdt_serialize();
+			stream << serialized_text;
 		}
 		else {
-			std::cout << "Errore apertura file";
+			qDebug() << "Errore apertura file nella save";
 		}
-
 	}
 
 	//this->timer->start(TIMEOUT);
