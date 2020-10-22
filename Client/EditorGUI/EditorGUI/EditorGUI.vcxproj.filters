@@ -78,6 +78,12 @@
     <ClCompile Include="Editor\UserInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Modify Password\ModifyPassword.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialog\Dialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -113,6 +119,12 @@
     <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="Modify Password\ModifyPassword.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Dialog\Dialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Login\Login.qrc">
@@ -133,6 +145,12 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="Modify Profile\ModifyProfile.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Modify Password\ModifyPassword.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Dialog\Dialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

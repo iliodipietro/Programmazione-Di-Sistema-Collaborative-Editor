@@ -816,3 +816,30 @@ QStringList Serialize::changeProfileUnserialize(QJsonObject obj) {
 	return list;
 
 }
+
+QJsonObject Serialize::changePasswordSerialize(QString oldPassword, QString newPassword, int type) {
+	/*
+	Questa funzione serializza la vecchia e nuova password dell'utente che vuole cambiare password, in caso di una CHANGE_PASSWORD( cio e' discriminato dal valore di type)
+	INPUT:
+	- oldPassword: stringa che contiene la vecchia password
+	- newPassword: nuova password
+	- type: intero che basandomi sul file define.h mi dice cosa devo fare, il tipo che può esere passato qui è SHARE
+	RETURN:
+	- una Qstring che contiene il tutto serializzano come QJson
+	*/
+	QJsonObject obj;
+	obj.insert("oldpassword", oldPassword);
+	obj.insert("newpassword", newPassword);
+	obj.insert("type", QJsonValue(type));
+
+	return obj;
+}
+
+QStringList Serialize::changePasswordUnserialize(QJsonObject obj) {
+	QStringList list;
+
+	list.append(obj.value("oldpassword").toString());
+	list.append(obj.value("newpassword").toString());
+
+	return list;
+}

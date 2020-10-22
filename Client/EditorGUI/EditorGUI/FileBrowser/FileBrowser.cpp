@@ -297,9 +297,9 @@ void FileBrowser::processEditorMessage(QJsonObject message)
 
 void FileBrowser::showURI(QJsonObject msg) {
 	QString serverMessage = Serialize::URIUnserialize(msg);
-	QInputDialog resultDialog(this);
+	/*QInputDialog resultDialog(this);
 	resultDialog.setLabelText("File Link");
-	resultDialog.setTextValue(serverMessage);
+	resultDialog.setTextValue(serverMessage);*/
 
 	/*QDialog* dial = new QDialog(this);
 	QLabel label(serverMessage);
@@ -309,11 +309,27 @@ void FileBrowser::showURI(QJsonObject msg) {
 	
 	/*dial->exec();*/
 
-	resultDialog.exec();
+	//resultDialog.exec();
 	
 
 	/*QClipBoard *clipboard = QApplication::clipboard();*/
+
+
+	Dialog* linkDialog = new Dialog(serverMessage, this);
+	if (linkDialog->exec() == QDialog::Accepted) {
+
+	}
+	else {
+
+	}
 }
+
+//void FileBrowser::on_modifyPassword_clicked(){
+//	this->m_modifyPassword = new ModifyPassword(m_socketHandler); 
+//	m_modifyPassword->show();
+//	//connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
+//	//this->hide();
+//}
 
 void FileBrowser::on_addSharedFileButton_clicked() {
 	QString uri = ui.uriLineEdit->text();

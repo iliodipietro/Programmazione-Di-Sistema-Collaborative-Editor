@@ -58,3 +58,4 @@ private slots:
 signals:
 	void showParent();
 };
+

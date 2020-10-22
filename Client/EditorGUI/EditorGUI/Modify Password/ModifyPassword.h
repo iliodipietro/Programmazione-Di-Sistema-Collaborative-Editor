@@ -1,59 +1,68 @@
+//#pragma once
+//
+//#include <QWidget>
+//#include "ui_ModifyPassword.h"
+//
+//class ModifyPassword : public QWidget
+//{
+//	Q_OBJECT
+//
+//public:
+//	ModifyPassword(QWidget *parent = Q_NULLPTR);
+//	~ModifyPassword();
+//
+//private:
+//	Ui::ModifyPassword ui;
+//};
+
+
 #pragma once
 
 #include <QWidget>
-#include <QDialog>
-#include "ui_ModifyProfile.h"
 #include <QMainWindow>
+#include <QDialog>
 #include <QFileDialog>
 #include <QRubberBand>
 #include <QProcess>
 #include <QSharedPointer>
 #include <QTimer>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include "ui_ModifyPassword.h"
 #include "SocketHandler/SocketHandler.h"
-#include "Serialization/Serialize.h"
-#include "Modify Password/ModifyPassword.h"
 
-class ModifyProfile : public QMainWindow
+class ModifyPassword : public QDialog
 {
 	Q_OBJECT
 
 public:
-	ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username,QString email, QSharedPointer<QPixmap> profileImage, QMainWindow* parent = Q_NULLPTR);
-	~ModifyProfile();
+	ModifyPassword(QSharedPointer<SocketHandler> socketHandler, QWidget* parent = Q_NULLPTR);
+	~ModifyPassword();
 
 private:
-	Ui::ModifyProfile ui;
 	QSharedPointer<SocketHandler> m_socketHandler;
 	QTimer* m_timer;
-	QPixmap* m_croppedImage;
-	QPixmap* m_selectedImage;
-	QPixmap* m_resizedImage;
+	Ui::ModifyPassword ui;
 	QRubberBand* m_selectionArea;
 	bool move_rubberband;
 	QPoint rubberband_offset;
 	QPoint myPoint;
 	QRect newSelection;
 	QSize m_originalSize;
-	QString username;
-	QString email;
 
 	void closeEvent(QCloseEvent* event);
 
 protected:
 	void mousePressEvent(QMouseEvent* e);
-	void mouseMoveEvent(QMouseEvent* e);
+	//void mouseMoveEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);
 
 private slots:
-	void on_selectImageButton_clicked();
-	void on_modifyPasswordButton_clicked();
-	void on_submit_clicked();
+	void on_okButton_clicked();
 	void on_cancel_clicked();
-	void registrationResult(QJsonObject);
+	void changeResult(QJsonObject);
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
 
-signals:
-	void showParent();
 };

@@ -33,7 +33,7 @@ public:
 	void addEditingUser(QStringList userInfo);
 	void removeEditingUser(int id);
 	void setSiteCounter(int siteCounter);
-	int getSiteCounter();
+	//int getSiteCounter();
 
 private:
 	Ui::Editor ui;
