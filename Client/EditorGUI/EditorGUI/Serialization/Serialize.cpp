@@ -596,19 +596,19 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	list.append(obj.value("email").toString());
 	list.append(obj.value("username").toString());
 
-	QJsonDocument doc(obj);
-	QString strJson(doc.toJson(QJsonDocument::Compact));
-	std::ofstream oFile("C:/Users/Mattia Proietto/Desktop/NONFUNZIONA.txt", std::ios_base::out | std::ios_base::trunc);
-	if (oFile.is_open())
-	{
+	//QJsonDocument doc(obj);
+	//QString strJson(doc.toJson(QJsonDocument::Compact));
+	//std::ofstream oFile("C:/Users/Mattia Proietto/Desktop/NONFUNZIONA.txt", std::ios_base::out | std::ios_base::trunc);
+	//if (oFile.is_open())
+	//{
 
-		//std::string text = this->to_string();
-		{
-			//oFile << text;
-			oFile << strJson.toStdString();
-		}
-		oFile.close();
-	}
+	//	//std::string text = this->to_string();
+	//	{
+	//		//oFile << text;
+	//		oFile << strJson.toStdString();
+	//	}
+	//	oFile.close();
+	//}
 
 	return list;
 }

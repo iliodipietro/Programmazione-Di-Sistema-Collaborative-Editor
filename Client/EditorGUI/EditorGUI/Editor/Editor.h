@@ -152,8 +152,6 @@ protected:
 		void mousePressEvent(QMouseEvent* event);
 
 public slots:
-	void keyPressEvent(int e);
-	void keyRelaseEvent(QKeyEvent* e);
 	void tastoPremuto(QKeyEvent* e);
 	void insertCharBatch();
 private slots:

@@ -962,7 +962,6 @@ void Editor::updateLastPosition()
 	int in = TC.position();
 	int l = lastCursor;
 	this->lastCursor = TC.position();
-	//emit per dire che mi sono spostato-->aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 }
 
@@ -1005,10 +1004,7 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
-	/// 
-	/// la parte qui sotto potrbbe essere inutile per poter scrivere sul text editor 
-	/// conviene usare la Qchartextedit--> vedi nota vocale su telegram a me stesso
-	//o vedere changeViewAfterInsert in mainwindow.cpp debora
+
 
 	QTextCursor TC = m_textEdit->textCursor();
 	// saving current state
@@ -1041,7 +1037,7 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 void Editor::updateViewAfterDelete(Message m, __int64 index)
 {
 	if (index == -1)
-		return;//non devo fare niente in questo caso ho provato ad eliminare ma non ho trovato il carattere-->MADARE ERROR, ECCEZIONE??????
+		return;//non devo fare niente in questo caso ho provato ad eliminare ma non ho trovato il carattere
 
 	disconnect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 	QTextCursor TC = m_textEdit->textCursor();
@@ -1127,37 +1123,6 @@ void Editor::localStyleChange()
 
 //FINE-------------------------------------------------------------------------------------------------------------
 
-void Editor::keyPressEvent(int e) {
-	//NON SO FARLO FUNZIONARE
-	//switch (e->key())
-	//{
-	//case Qt::Key_Backspace:
-	//	this->Edelete(0);
-	//	break;
-	//case Qt::Key_Delete:
-	//case Qt::Key_Cancel:
-	//	//EditorDelete
-	//	this->Edelete(1);
-	//	break;
-
-	//default:
-	//	//editor insert-->crea una funzione che fa quello che per ora è in texchanged
-	//	this->Einsert();
-	//	break;
-	//	
-	//}
-	//au
-//	ui.label->setText(e->text());
-	if (e == Qt::Key_A) {
-		int i = 0;
-	}
-
-}
-
-void Editor::keyRelaseEvent(QKeyEvent* e)
-{
-	int i = 0;
-}
 
 void Editor::tastoPremuto(QKeyEvent* e)
 {
