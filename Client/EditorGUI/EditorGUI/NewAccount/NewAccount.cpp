@@ -75,10 +75,6 @@ void NewAccount::on_selectImageButton_clicked() {
 
 void NewAccount::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
-	if (m_croppedImage != Q_NULLPTR) {
-		delete m_croppedImage;
-		m_croppedImage = Q_NULLPTR;
-	}
 
 	QString username = ui.nickNameLine->text();
 	QString password = ui.passwordLine->text();
