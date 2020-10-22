@@ -20,6 +20,7 @@ m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0
 	readConfigFile();
 	connectToServer();
 	m_readThread = new std::thread(&SocketHandler::readThreadFunction, this);
+	m_continueReading.store(false);
 }
 
 SocketHandler::~SocketHandler() {
@@ -60,6 +61,7 @@ void SocketHandler::bytesWritten(qint64 bytes)
 
 void SocketHandler::readyRead()
 {
+
 	m_readBufferCV.notify_one();
 }
 
@@ -115,6 +117,7 @@ void SocketHandler::readThreadFunction() {
 
 		while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
 			qint64 numBytes = m_tcpSocket->bytesAvailable();
+			qDebug()  << endl;
 			QByteArray data = m_tcpSocket->readAll();
 			m_previousPacket->append(data);
 			while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
