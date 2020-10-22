@@ -154,8 +154,6 @@ bool DBInteraction::is_email_valid(QString email) {
                         return false;
                     }
                 }
-                instance->db.close();
-                return true;
             }
             else {
                 qDebug() << "SELECT COUNT2 query failed!" << query.lastError() << "\n";
@@ -172,6 +170,7 @@ bool DBInteraction::is_email_valid(QString email) {
     else {
         return false;
     }
+    return true;
 
 }
 
@@ -437,16 +436,15 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
                     }
 
                     QColor userColor = instance->generateRandomColor(userid);
-                    QString email = query.value("email").toString();
                     incomingClient->setColor(userColor);
                     instance->activeusers.push_back(incomingClient);
                     // instance->users.insert(username, new ClientManager(userid,socket));
-                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, username, email, userid, userColor)); // ho dovuto modificare la funzione per includere anche l'username per poterla usare nel changeProfile. Per non cambiare tutto mando anche qui l'username anche se inutile
+                    response = Serialize::fromObjectToArray(Serialize::responseSerialize(true, profileImage, SERVER_ANSWER, userid, userColor));
 
                     incomingClient->writeData(response);
                     instance->db.close();
                     //mando la lista dei file
-                    //instance->sendFileList(incomingClient);
+                    this->sendFileList(incomingClient);
                 }
                 else {
                     //già ho notificato al client che la pwd è errata
@@ -740,14 +738,11 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
                     f = new File(fileId, path);
                     //f->addUser(client);
                     instance->files.insert(fileId, f);
-
-                    //sendSuccess(client);
-                    //il site counter deve essere mandato prima dei messaggi e questo viene fatto in add user
-                    response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(fileId, siteCounter, SITECOUNTER));
-                    client->writeData(response);
                     instance->files.value(fileId)->addUser(client);
                     qDebug() << "user added!\n";
-
+                    //sendSuccess(client);
+                    response = Serialize::fromObjectToArray(Serialize::siteCounterSerialize(fileId, siteCounter, SITECOUNTER));
+                    client->writeData(response);
                     instance->db.close();
 
 
@@ -801,11 +796,6 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
     if (instance->files.value(fileId)->getUsers().contains(client)) {
         //se il file risulta aperto dall'utente allora lo puÃ² chiudere
 
-        if (instance->files.value(fileId)->is_file_shared() && !instance->files.value(fileId)->getRUsers().contains(client) && f->isModifiedName()) {
-            instance->files.value(fileId)->addRUser(client); //serve per la rinomina 
-            qDebug() << "client aggiunto alla lista di utenti che avranno un file da rinominare\n";
-        }
-
         //aggiornamento del siteCounter
         if (instance->db.open()) {
             QSqlQuery query;
@@ -840,21 +830,10 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
 
             if (f->isModifiedName()) {
                 QString username = client->getUsername();
-                QString oldName;
                 QString newName = f->getNewName();
                 QString oldPath = f->getPath();
-                int i;
 
-                oldName = instance->changeFileName(oldPath, newName, fileId, client);
-
-                if (oldName != nullptr) {
-                    response = Serialize::fromObjectToArray(Serialize::renameFileSerialize(oldName, newName, RENAME));
-                    for (i = 0; i < instance->files.value(fileId)->getRUsers().size(); i++) {
-                        f->getRUsers().at(i)->writeData(response);
-                        //non rimuovo tutti questi client perche tanto tra poco f verrà eliminato 
-                    }
-                    //client->writeData(response);
-                }
+                instance->changeFileName(oldPath, newName, fileId, client);
             }
             instance->files.remove(fileId);//nessuno sta più usando il file
         }
@@ -952,7 +931,7 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
     return;
 }
 
-QString DBInteraction::changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client){
+void DBInteraction::changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client){
     QString newPath;
     int i;
     QStringList oldPathList = oldPath.split("/");
@@ -965,7 +944,8 @@ QString DBInteraction::changeFileName(QString oldPath, QString newName, int file
 
     QStringList parts = newName.split('.');
     newName = parts.at(0);
-    newPath.append(newName).append(".txt");
+    newName.append(".txt");
+    newPath.append(newName);
     qDebug() << "new filename: " << newName << "\n";
     qDebug() << "new path: " << newPath << "\n";
 
@@ -980,20 +960,21 @@ QString DBInteraction::changeFileName(QString oldPath, QString newName, int file
 
         if (query.exec()) {
             
-            return oldName.split(".").at(0);
+
+            sendSuccess(client);//utile?
         }
         else {
             qDebug() << "UPDATE failed: " << query.lastError() << "\n";
             sendError(client);
             instance->db.close();
-            return nullptr;
+            return;
         }
         instance->db.close();
     }
     else {
         qDebug() << "DB not opened!!\n";
         sendError(client);
-        return nullptr;
+        return;
     }
 
 
@@ -1045,9 +1026,7 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         // nel caso in cui il file sia condiviso tra piÃ¹ utenti, uno di questi vuole cambiare il nome mentre gli altri hanno ancora il file aperto e lo stanno modificando, come faccio?? risposta in closeFile!!
         qDebug() << "il file è ancora aperto prima del cambio nome\n";
         f = instance->files.value(fileId);
-        if (f->getUsers().size() > 1) f->setSharedFile();
         f->modifyName(newName); //tengo traccia dell'ultimo client che ha richiesto un cambio nome(ogni utente aggiorna la stringa newName contenuta nel file, quindi quella che trovo alla fine sarÃ  l'ultima)
-        f->addRUser(client);
     }
 
 
@@ -1059,11 +1038,15 @@ void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
     QString message;
     QString URI;
     if (!instance->isUserLogged(client)) {
+
         return;
     }
     if (instance->files.contains(fileid)) {
+
         URI = instance->files.value(fileid)->getPath();
-        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
+
+        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SHARE));
+
         client->writeData(response);
     }
     else {
@@ -1336,7 +1319,7 @@ void DBInteraction::changeProfilePic(QString profileImage, ClientManager* client
 
 */
 
-void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QString newImage, ClientManager* client) {
+void DBInteraction::changeProfile(QString newUsername, QString newEmail, QString newImage, ClientManager* client) {
     if (!instance->isUserLogged(client)) {
         return;
     }
@@ -1352,14 +1335,7 @@ void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QStr
         QFile::remove(path);
     }
 
-    qDebug() << oldUsername << "-->" << newUsername<< "\n";
-    qDebug() << oldEmail << "-->" << newEmail << "\n";
-
-
-    if ( (is_email_valid(newEmail) && is_username_unique(newUsername)) ||  // vengono cambiati sia email che username
-         (is_email_valid(newEmail) && oldUsername.compare(newUsername) == 0) || // viene cambiata solo l'email
-         (oldEmail.compare(newEmail) == 0 && is_username_unique(newUsername)) || //viene cambiato solo l'username
-         (oldEmail.compare(newEmail) == 0 && oldUsername.compare(newUsername) == 0 ) ) { //viene cambiata solamente l'immagine del profilo
+    if (is_email_valid(newEmail) && is_username_unique(newUsername)) {
 
         QFile file(path);
 
@@ -1394,11 +1370,7 @@ void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QStr
                 qDebug("Profile updated!\n");
                 client->setUsername(newUsername);
                 client->setEmail(newEmail);
-                QColor userColor = client->getColor();
-                response = Serialize::fromObjectToArray(Serialize::changeProfileResponseSerialize(true, newUsername, newEmail, newImage, "", SERVER_ANSWER));
-
-                client->writeData(response);
-                //sendSuccess(client);
+                sendSuccess(client);
                 instance->db.close();
             }
             else {
@@ -1417,7 +1389,7 @@ void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QStr
     }
     else {
         message = "username or email (or both) is/are not valid\n";
-        response = Serialize::fromObjectToArray(Serialize::changeProfileResponseSerialize(false, "", "", "", message, SERVER_ANSWER));
+        response = Serialize::fromObjectToArray(Serialize::responseSerialize(false, message, SERVER_ANSWER));
         client->writeData(response);
         return;
     }
