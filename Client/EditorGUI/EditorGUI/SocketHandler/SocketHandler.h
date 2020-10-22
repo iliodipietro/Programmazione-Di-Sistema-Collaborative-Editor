@@ -32,8 +32,6 @@ private:
     bool m_readThreadRun;
     std::atomic_bool m_continueReading;
     std::thread* m_readThread;
-    std::mutex m_readBufferMutex;
-    std::condition_variable m_readBufferCV;
     std::vector<QJsonObject> m_packetsInQueue;
 
     void readConfigFile();

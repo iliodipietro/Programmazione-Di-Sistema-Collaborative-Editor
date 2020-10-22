@@ -78,6 +78,7 @@ void Login::loginResult(QJsonObject response) {
 		this->m_email = serverMessage[4];
 		QString profileImageBase64 = serverMessage[1];
 		QPixmap profileImage;
+		QByteArray latin = profileImageBase64.toLatin1();
 		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
 		QPixmap resizedProfileImage = profileImage.scaled(QSize(60,60), Qt::KeepAspectRatio);
 		QPixmap target(QSize(60, 60));
