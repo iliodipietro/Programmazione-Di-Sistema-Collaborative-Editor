@@ -53,6 +53,8 @@ public:
 	static QJsonObject FileListSerialize(QMap<int, QString> files, int type);// ilio
 	static QMap<int, QString> fileListUnserialize(QJsonObject obj);// ilio
 
+	static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);// ilio
+	static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
 	static QJsonObject newFileSerialize(QString filename, int type);// ilio
 	static QPair<int,QString> newFileUnserialize(QJsonObject obj);// ilio
