@@ -186,12 +186,14 @@ void Editor::createActions() {
 	ui.menuFile->addAction(this->openAct);
 	ui.toolBar->addAction(this->openAct);
 
-	const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon("./Icons/013-cut.png"));
-	this->cutAct = new QAction(cutIcon, tr("&Cut..."), this);
-	this->cutAct->setShortcuts(QKeySequence::Cut);
-	this->cutAct->setStatusTip(tr("Cut text"));
+	const QIcon pasteIcon = QIcon::fromTheme("edit-paste", QIcon("./Icons/008-clipboard.png"));
+	this->cutAct = new QAction(pasteIcon, tr("&Paste..."), this);
+	this->cutAct->setShortcuts(QKeySequence::Paste);
+	this->cutAct->setStatusTip(tr("Paste text"));
 	ui.menuModifica->addAction(this->cutAct);
 	ui.toolBar->addAction(this->cutAct);
+	connect(this->cutAct, &QAction::triggered, this, &Editor::paste);
+
 
 	const QIcon copyIcon = QIcon::fromTheme("edit-copy", QIcon("./Icons/011-copy.png"));
 	this->copyAct = new QAction(copyIcon, tr("&Copy..."), this);
@@ -199,6 +201,7 @@ void Editor::createActions() {
 	this->copyAct->setStatusTip(tr("Copy text"));
 	ui.menuModifica->addAction(this->copyAct);
 	ui.toolBar->addAction(this->copyAct);
+	connect(this->copyAct, &QAction::triggered, this, &Editor::copy);
 
 #ifndef QT_NO_PRINTER
 	//const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
@@ -315,9 +318,9 @@ void Editor::createActions() {
 	ui.toolBar->addAction(actionTextColor);
 
 #ifndef QT_NO_CLIPBOARD
-	cutAct->setEnabled(false);
+	//cutAct->setEnabled(false);
 	copyAct->setEnabled(false);
-	connect(m_textEdit, &QTextEdit::copyAvailable, cutAct, &QAction::setEnabled);
+	//connect(m_textEdit, &QTextEdit::canPaste, cutAct, &QAction::setEnabled);
 	connect(m_textEdit, &QTextEdit::copyAvailable, copyAct, &QAction::setEnabled);
 #endif // !QT_NO_CLIPBOARD
 
@@ -1450,6 +1453,69 @@ void Editor::updateCursorPosition(bool isSelection) {
 
 void Editor::showHideUsersIntervals() {
 	emit showHideUsersIntervalsSignal();
+}
+
+void Editor::paste()
+{
+	QTextCursor TC = m_textEdit->textCursor();
+	int end, start;
+	start = end = 0;
+
+	if (this->lastStart != this->lastEnd && !this->_CRDT->isEmpty()) {
+		//
+
+		start = this->lastStart;
+		end = this->lastEnd;
+
+		this->localDelete();
+
+		int lastCursor = start < end ? start : end;
+
+		this->m_textEdit->paste();
+
+		QString ss = this->m_textEdit->toPlainText();
+		this->lastCursor = lastCursor;
+
+		this->localInsert();
+
+
+		this->lastText = m_textEdit->toPlainText();
+		this->lastCursor = this->m_textEdit->textCursor().position();
+		return;
+	}
+		else {
+		this->lastCursor = TC.position();
+	}
+
+
+
+
+	start = this->lastStart;
+	end = this->lastEnd;
+	this->m_textEdit->paste();
+
+
+	if (start != end && !this->_CRDT->isEmpty()) {
+		this->lastStart = start;
+		this->lastEnd = end;
+
+		this->localDelete();
+		this->lastCursor = start < end ? start : end;
+		this->lastStart = this->lastEnd = 0;
+	}
+	localInsert();
+	
+
+	//qDebug()<< e;
+	m_textEdit->setTextCursor(TC);
+	this->lastText = m_textEdit->toPlainText();
+	this->lastCursor = this->m_textEdit->textCursor().position();
+	this->_CRDT->printPositions();
+}
+
+void Editor::copy()
+{
+	this->m_textEdit->copy();
 }
 
 void Editor::setSiteCounter(int siteCounter) {

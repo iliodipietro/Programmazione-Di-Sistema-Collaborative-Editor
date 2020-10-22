@@ -163,7 +163,8 @@ private slots:
 	void showEditingUsers();
 	void updateCursorPosition(bool isSelection);
 	void showHideUsersIntervals();
-
+	void paste();
+	void copy();
 //---------------------------------------------------------------------------------------------------
 signals:
 	void editorClosed(int, int);
