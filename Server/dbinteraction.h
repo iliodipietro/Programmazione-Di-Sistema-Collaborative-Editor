@@ -49,7 +49,7 @@ public:
     void openFile(int fileId, ClientManager* client);
     void closeFile(int fileId, int siteCounter, ClientManager* client);
     void deleteFile(int fileId, ClientManager* client);
-    void changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client);
+    QString changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client);
     void renameFile(int fileId, QString newname, ClientManager* client);
     void getURIToShare(int fileid, ClientManager* client);
     void SharedFileAcquisition(QString URI, ClientManager* client);
@@ -61,7 +61,7 @@ public:
     void changeProfilePic(QString profileImage, ClientManager* client);
     */
 
-    void changeProfile(QString newUsername, QString newNick, QString newImagePath, ClientManager *client);
+    void changeProfile(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QString newImage, ClientManager* client);
 
 
     void forwardMessage(ClientManager* user, QJsonObject obj, QByteArray data);

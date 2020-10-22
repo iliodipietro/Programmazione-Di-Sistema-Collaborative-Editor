@@ -147,6 +147,24 @@ QList<ClientManager*> File::getUsers()
 	
 }
 
+QList<ClientManager*> File::getRUsers()
+{
+    return this->r_users;
+}
+
+void File::setSharedFile(){
+    this->shared = true;
+}
+
+bool File::is_file_shared()
+{
+    return this->shared;
+}
+
+void File::addRUser(ClientManager* client){
+    this->r_users.append(client);
+}
+
 bool File::thereAreUsers()
 {
 	//mi dice se qualcuno sta ancora lavorando o meno sul file

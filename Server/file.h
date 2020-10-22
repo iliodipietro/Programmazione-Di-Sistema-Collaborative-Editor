@@ -26,6 +26,10 @@ public:
     void removeUser(ClientManager* user);
 
     QList<ClientManager*> getUsers();
+    QList<ClientManager*> getRUsers();
+    void setSharedFile();
+    bool is_file_shared();
+    void addRUser(ClientManager* client);
     bool thereAreUsers();
     void sendNewFile(ClientManager* socket);
     bool isModifiedName();
@@ -38,11 +42,13 @@ private:
     CRDT *handler = nullptr;
     int id;
     bool modifiedName;
+    bool shared = false;
     QString newName;
     //QMap<int,QTcpSocket*> owners;
     QString path;
     //QVector<ClientManager*> users;
     QMap <int, ClientManager*> users;
+    QList<ClientManager*> r_users; //lista di utenti che lavorano su un file che deve essere rinominato
     QMap <ClientManager*, CursorPosition> m_usersCursorPosition;
 
 };

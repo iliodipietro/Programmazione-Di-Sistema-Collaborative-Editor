@@ -263,6 +263,16 @@ QJsonObject Serialize::renameFileSerialize(int fileId, QString newName, int type
 
 }
 
+QStringList Serialize::renameFileUnserialize(QJsonObject obj){
+	
+	QStringList res;
+
+	res.append(QString(obj.value("oldname").toString()));
+	res.append(QString(obj.value("newname").toString()));
+
+	return res;
+}
+
 QJsonObject Serialize::openSharedFileSerialize(QString URI, int type) {
 	/*
 	Questa funzione serializza l'URI del file e l'utente che l'ha ricevuto e lo sta provando ad aprire, in caso di una SHARE( cio e' discriminato dal valore di type)
@@ -281,6 +291,19 @@ QJsonObject Serialize::openSharedFileSerialize(QString URI, int type) {
 QString Serialize::openSharedFileUnserialize(QJsonObject obj) {
 
 	return obj.value("URI").toString();
+}
+
+QStringList Serialize::changeProfileResponseUnserialize(QJsonObject obj){
+	QStringList list;
+
+	bool res = obj.value("res").toBool();
+	list.append(res ? "true" : "false");
+	list.append(obj.value("username").toString());
+	list.append(obj.value("email").toString());
+	list.append(obj.value("image").toString());
+	list.append(obj.value("message").toString());
+
+	return list;
 }
 
 QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
@@ -521,7 +544,7 @@ QPixmap Serialize::imageUnserialize(QJsonObject obj)
 //-------------------------------------------------------------------------------
 
 
-QJsonObject Serialize::responseSerialize(bool res, QString message, int userID, int type)
+QJsonObject Serialize::responseSerialize(bool res, QString message, int type, QString username, QString email, int userID, QColor color )
 {
 	/*
 	res: da fare insieme a chi fa il server dato che sono i messaggi di rispost tipo ok/denied ecc codificati come intero
@@ -543,6 +566,9 @@ QJsonObject Serialize::responseSerialize(bool res, QString message, int userID, 
 
 	obj.insert("message", QJsonValue(message));
 
+
+	obj.insert("email", QJsonValue(email));
+
 	return obj;
 }
 
@@ -558,6 +584,7 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	list[1]: stringa eventuale mandata dal server per messaggi piu complessi
 	list[2]: userID
 	list[3]: userColor
+	list[4]: email
 	*/
 	QStringList list;
 	bool res = obj.value("res").toBool();
@@ -566,6 +593,8 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	int i = obj.value("userID").toInt();
 	list.append(QString::number(obj.value("userID").toInt()));
 	list.append(obj.value("color").toString());
+	list.append(obj.value("email").toString());
+	list.append(obj.value("username").toString());
 
 	QJsonDocument doc(obj);
 	QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -794,26 +823,32 @@ int Serialize::actionType(QJsonObject obj)
 //	this->type = type;
 //}
 
-QJsonObject Serialize::changeProfileSerialize(QString newUsername, QString newEmail, QPixmap* newImage, int type) {
+QJsonObject Serialize::changeProfileSerialize(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QPixmap* newImage, int type) {
 
 	QJsonObject obj;
-	obj.insert("newname", newUsername);
-	obj.insert("newnick", newEmail);
+	obj.insert("oldusername", oldUsername);
+	obj.insert("newusername", newUsername);
+
+	obj.insert("oldemail", oldEmail);
+	obj.insert("newemail", newEmail);
+
 	obj.insert("newimage", Serialize::jsonValFromPixmap(*newImage));
 	obj.insert("type", QJsonValue(type));
-	
 	return obj;
 
 }
 
-QStringList Serialize::changeProfileUnserialize(QJsonObject obj) {
-	QStringList list;
+QStringList Serialize::changeProfileUnserialize(QJsonObject obj){
+    QStringList list;
 
-	list.append(obj.value("newUsername").toString());
-	list.append(obj.value("newEmail").toString());
-	list.append(obj.value("newimage").toString());
+    list.append(obj.value("oldusername").toString());
+    list.append(obj.value("newusername").toString());
 
-	return list;
+    list.append(obj.value("oldemail").toString());
+    list.append(obj.value("newemail").toString());
+    list.append(obj.value("newimage").toString());
+
+    return list;
 
 }
 

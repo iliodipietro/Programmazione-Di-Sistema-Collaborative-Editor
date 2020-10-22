@@ -4,16 +4,17 @@
 #define RUBBER_SIZE 150
 
 ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QString email, QSharedPointer<QPixmap> profileImage, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
-m_timer(new QTimer(this))
-{
+m_timer(new QTimer(this)){
+
+
 	ui.setupUi(this);
 	this->move_rubberband = false;
 	m_selectionArea = Q_NULLPTR;
 	//m_croppedImage = Q_NULLPTR;
 	m_resizedImage = Q_NULLPTR;;
 	m_selectedImage = Q_NULLPTR;
-	this->username = username;
-	this->email = email;
+	this->m_username = username;
+	this->m_email = email;
 	m_croppedImage = profileImage.get();
 	qDebug() << username;   //l'username non viene preso
 	ui.usernameLine_3->setText(username);
@@ -21,8 +22,13 @@ m_timer(new QTimer(this))
 	ui.imageLabel->setPixmap(*profileImage);
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
-	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(registrationResult(QJsonObject)));
+	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(ModifyProfileResult(QJsonObject)));
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
+	//ilio
+	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
+	ui.emailLine_3->setValidator(new QRegularExpressionValidator(rx, this));
+	connect(ui.emailLine_3, &QLineEdit::textChanged, this, &ModifyProfile::adjustTextColor);
 }
 
 ModifyProfile::~ModifyProfile()
@@ -76,11 +82,11 @@ void ModifyProfile::on_submit_clicked() {
 		//m_croppedImage = 
 	//}
 
-	QString email = ui.emailLine_3->text();
-	QString user = ui.usernameLine_3->text();
+	QString newEmail = ui.emailLine_3->text();
+	QString newUser = ui.usernameLine_3->text();
 	
-	if (email != "") {
-		if (user != "") { 
+	if (newEmail != "") {
+		if (newUser != "") {
 			if (m_selectionArea != Q_NULLPTR) {
 				QPoint areaPos = m_selectionArea->geometry().topLeft();
 				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
@@ -89,7 +95,7 @@ void ModifyProfile::on_submit_clicked() {
 				ui.crop->setPixmap(*m_croppedImage);
 			}
 			if (m_croppedImage != Q_NULLPTR) {
-				QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(user, email,  m_croppedImage, CHANGE_PROFILE);//type da definire in define.h  devo usare changeProfileSerialize
+				QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(this->m_username, newUser, this->m_email, newEmail,  m_croppedImage, CHANGE_PROFILE);//type da definire in define.h  devo usare changeProfileSerialize
 				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
 				if (result) {
 					m_timer->setSingleShot(true);
@@ -177,19 +183,38 @@ void ModifyProfile::on_cancel_clicked() {
 	this->hide();
 }
 
-void ModifyProfile::registrationResult(QJsonObject response) {
-	QStringList l = Serialize::responseUnserialize(response);
-	int result = l[0].toInt();
+void ModifyProfile::ModifyProfileResult(QJsonObject response) {
+	QStringList serverMessage = Serialize::changeProfileResponseUnserialize(response);
+	bool result = serverMessage[0] == "true" ? true : false;
 
-	if (true) {
+	if (result) {
+
+		this->m_email = serverMessage[2];
+		this->m_username = serverMessage[1];
+		QString profileImageBase64 = serverMessage[3];
+		QPixmap profileImage;
+		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
+		QPixmap target(QSize(50, 50));
+		target.fill(Qt::transparent);
+		QPainter painter(&target);
+		painter.setRenderHint(QPainter::Antialiasing, true);
+		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+		QPainterPath path;
+		path.addRoundedRect(0, 0, 50, 50, 25, 25);
+		painter.setClipPath(path);
+		painter.drawPixmap(0, 0, profileImage);
+		this->m_image = QSharedPointer<QPixmap>(new QPixmap(target));
+		QColor userColor(serverMessage[3]);
+		
 		QMessageBox resultDialog(this);
 		connect(&resultDialog, &QMessageBox::buttonClicked, this, &ModifyProfile::dialogClosed);
 		resultDialog.setInformativeText("Success");
 		resultDialog.exec();
+
 	}
 	else {
 		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText(l[1]); //mettere il messaggio di errore contenuto nel Json di risposta
+		resultDialog.setInformativeText(serverMessage[4]); //mettere il messaggio di errore contenuto nel Json di risposta
 		resultDialog.exec();
 	}
 }
@@ -200,6 +225,14 @@ void ModifyProfile::showErrorMessage() {
 }
 
 void ModifyProfile::dialogClosed(QAbstractButton* button) {
-	emit showParent();
+	emit showParentUpdated(this->m_username, this->m_email, this->m_image);
 	this->hide();
 }
+
+void ModifyProfile::adjustTextColor() {
+	if (!ui.emailLine_3->hasAcceptableInput())
+		ui.emailLine_3->setStyleSheet("QLineEdit { color: red;}");
+	else
+		ui.emailLine_3->setStyleSheet("QLineEdit { color: black;}");
+}
+
