@@ -12,6 +12,7 @@
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
 #include "MyTextEdit.h"
+#include "UserInterval.h"
 
 class QFontComboBox;
 class QPrinter;
@@ -22,15 +23,24 @@ class Editor : public QMainWindow, public Ui::Editor
 	Q_OBJECT
 
 public:
-	Editor(QString path = "", QString username = "", QWidget* parent = Q_NULLPTR);
+	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
+		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
+	int getSiteCounter();
 	void loadFile(const QString& fileName);
+	void remoteAction(Message m);
+	int getFileId();
+	void addEditingUser(QStringList userInfo);
+	void removeEditingUser(int id);
+	void setSiteCounter(int siteCounter);
+	int getCursorPosition();
 
 private:
 	Ui::Editor ui;
 	MyTextEdit* m_textEdit;
 	QWidget *parent;
 	QString filePath, curFile;
+	QAction* shareAct;
 	QAction* italicAct;
 	QAction* openAct;
 	QAction* cutAct;
@@ -48,17 +58,21 @@ private:
 	QAction* actionAlignJustify;
 	QAction* actionTextColor;
 	QAction* m_actionShowEditingUsers;
+	QAction* m_showUsersIntervals;
 	QFontComboBox* comboFont;
 	QComboBox* comboStyle;
 	QComboBox* comboSize;
 	QListWidget* m_editingUsersList;
 	QSharedPointer<SocketHandler> m_socketHandler;
+	QSharedPointer<QPixmap> m_profileImage;
 	QTimer* m_timer;
 	QLabel* m_usernameLabel;
 	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
-	std::vector<QString> m_editingUsers;
+	int m_fileId;
+	QMap<int, QString> m_editingUsers;
 	bool m_showingEditingUsers;
+	QColor m_userColor;
 
 	//MATTIA---------------------------------------------------------------------------------
 	CRDT* _CRDT;
@@ -78,9 +92,14 @@ private:
 	int lastStart;
 	int lastEnd;
 
-	QString username;
+	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
+	bool styleBounce = false;
 
+	std::vector<Message> list_of_msg;
+	std::vector<int> list_of_idx;
+	QTimer* insert_timer;
 	//FINE-------------------------------------------------------------------------------------------------------
+
 
 	void closeEvent(QCloseEvent* event);
 	void createActions();
@@ -105,6 +124,7 @@ private:
 
 	//Lorenzo-----------------------------------------------
 	void styleChanged(QFont font);
+	void shareLink();
 	//Fine
 
 	//Mattia-----------------------------------------------------------------------------------------------------------
@@ -113,9 +133,10 @@ private:
 	void localDelete();//Editor local delete
 	void localStyleChange();//Editor local style change
 	void updateLastPosition();
+	bool isAKeySequence(QKeyEvent*e);
 	//void deleteDxSx();//caso particolare per la delete con selezione--> sfrutto last start e last end-->solved
+	void maybeSleep(int dim);
 
-	void remoteAction(Message m);
 	void maybeincrement(__int64 index);
 	void maybedecrement(__int64 index);
 	Qt::AlignmentFlag getAlignementFlag(Qt::Alignment a);
@@ -124,24 +145,29 @@ private:
 	void updateViewAfterStyleChange(Message m, __int64 index);
 
 	//FINE----------------------------------------------------------------------
-
-	void addEditingUser(int id, QString username, QColor userColor);
-	void removeEditingUser(int id, QString username);
+	
+	void initialFileLoad(Message m, __int64 index);
 
 protected:
-	void keyPressEvent(QKeyEvent *e);
-	void mousePressEvent(QMouseEvent* e);
+		void mousePressEvent(QMouseEvent* event);
 
+public slots:
+	void keyPressEvent(int e);
+	void keyRelaseEvent(QKeyEvent* e);
+	void tastoPremuto(QKeyEvent* e);
+	void insertCharBatch();
 private slots:
 	void on_textEdit_textChanged();
 	void on_textEdit_cursorPositionChanged();
 	void textColor();
-	void messageReceived(QJsonObject);
-	void writeText();
 	void showEditingUsers();
-	void clickOnTextEdit();
+	void updateCursorPosition(bool isSelection);
+	void showHideUsersIntervals();
 
 //---------------------------------------------------------------------------------------------------
 signals:
-	void editorClosed(QString);
+	void editorClosed(int, int);
+	void styleChange();
+	void showHideUsersIntervalsSignal();
+	void updateUsersIntervals();
 };

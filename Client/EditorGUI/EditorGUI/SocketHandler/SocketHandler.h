@@ -5,29 +5,42 @@
 #include <QNetworkSession>
 #include <QCloseEvent>
 #include <QSharedPointer>
-#include "SocketMessage.h"
+#include <thread>
+#include <condition_variable>
+#include <mutex>
 #include "Serialization/Serialize.h"
 
 class SocketHandler : public QObject
 {
     Q_OBJECT
 public:
-    SocketHandler(QObject *parent = Q_NULLPTR);
+    SocketHandler(QObject* parent = Q_NULLPTR);
 
-    bool connectToServer();
-    bool writeData(SocketMessage& data);
     bool writeData(QByteArray& data);
-    QString writeDataAndWaitForResponse(QString data);
 
     QAbstractSocket::SocketState getSocketState();
+
+    ~SocketHandler();
 
 private:
     QSharedPointer<QByteArray> m_previousPacket;
     QSharedPointer<QTcpSocket> m_tcpSocket;
+    QString m_serverIp;
+    int m_serverPort;
+    qint64 m_previousSize;
+    bool m_readThreadRun;
+    std::thread* m_readThread;
+    std::mutex m_readBufferMutex;
+    std::condition_variable m_readBufferCV;
+    std::vector<QJsonObject> m_packetsInQueue;
 
+    void readConfigFile();
+    bool connectToServer();
     void closeEvent(QCloseEvent* event);
-    QByteArray intToArray(qint32 source);
+    QByteArray intToArray(qint64 source);
     qint64 arrayToInt(QByteArray source);
+    void readThreadFunction();
+    void parseEmitMessages(QByteArray* message);
 
 signals:
     void dataReceived(QJsonObject);

@@ -7,8 +7,11 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include "ui_NewAccount.h"
 #include "SocketHandler/SocketHandler.h"
+
 
 class NewAccount : public QMainWindow
 {
@@ -25,6 +28,7 @@ private:
 	QPixmap* m_croppedImage;
 	QPixmap* m_selectedImage;
 	QPixmap* m_resizedImage;
+	QPixmap* m_roundedImage;
 	QRubberBand* m_selectionArea;
 	bool move_rubberband;
 	QPoint rubberband_offset;
@@ -32,12 +36,12 @@ private:
 	QRect newSelection;
 	QSize m_originalSize;
 
-	void closeEvent(QCloseEvent* event);
-
 protected:
 	void mousePressEvent(QMouseEvent* e);
 	void mouseMoveEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);
+	void closeEvent(QCloseEvent* event);
+	
 
 private slots:
 	void on_selectImageButton_clicked();
@@ -46,7 +50,10 @@ private slots:
 	void registrationResult(QJsonObject);
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
+	void adjustTextColor();//ilio
+	
 
 signals:
 	void showParent();
 };
+

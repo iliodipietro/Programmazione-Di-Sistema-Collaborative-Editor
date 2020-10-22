@@ -3,22 +3,34 @@
 #include <QTextEdit>
 #include <QLabel>
 #include "CRDT/CRDT.h"
+#include "QTimer"
+#include <queue>
+
+class Editor;
+class MyTextEdit;
 
 class CustomCursor : public QObject
 {
 	Q_OBJECT
 public:
-	CustomCursor(QTextEdit* editor, QColor color, QString username, int position, QObject *parent = Q_NULLPTR);
 
-	void messageHandler(Message &message, int position);
-	void setCursorPosition(int pos);
+	enum CursorMovementMode { AfterDelete, AfterInsert, ChangePosition };
+
+	CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
+	~CustomCursor();
+
+	void messageHandler(Message& message, int position);
+	void setCursorPosition(int pos, CursorMovementMode mode, int lenght = 0);
 	inline QColor getCursorColor() { return m_color; }
 	QRect getCursorPos();
+	int getCursorPosition();
 	void setActiveCursor();
-	void insertText(QString &text);
 	void updateLabelPosition();
-
+	
 private:
+
+	Editor* m_widgetEditor;
+	MyTextEdit* m_parentEditor;
 	QTextEdit* m_editor;
 	QTextDocument* m_textDoc;
 	QTextCursor* m_TextCursor;
@@ -26,13 +38,21 @@ private:
 	QString m_username;
 	QColor m_color;
 	QRect m_lastPosition;
+	CRDT* m_crdt;
 	int m_position;
 
-	void updateViewAfterInsert(Message m, __int64 index);
+	void updateViewAfterInsert(Message m, __int64 index, QString str);
 	void updateViewAfterDelete(Message m, __int64 index);
-	void updateViewAfterStyleChange(Message m, __int64 index);
+	void updateViewAfterStyleChange(Message m, __int64 index, QString str);
+
+	QTimer* timer;
+	std::queue<Message> message_list;
+	std::queue<int> index_list;
+	QString groupTogether();
+
 
 public slots:
 	void textSizeChanged();
+	void paintNow();
 };
 

@@ -1,18 +1,35 @@
 #include "myserver.h"
 
-
-
-
-MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)){
+MyServer::MyServer(QObject *parent) : QObject (parent), _server(new QTcpServer(this)), m_lastId(0)
+{
     //supporto al file system da implementare
     db->startDBConnection();
-    connect(_server, SIGNAL(newConnection()), SLOT(onNewConnection()));
-    connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
+    QString images_directory_path(QDir::currentPath() + "/files/");
+    if(!QDir(images_directory_path).exists()){
+        //creo la cartella files
+        QDir().mkdir(images_directory_path);
+    }
+    connect(_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    //listen(QHostAddress("192.168.0.6"), 44322);
+    listen(QHostAddress::Any, 44322); //la liste va chiamata altrimenti il server non sa che indirizzo e porta ascoltare
+    //connect(this, SIGNAL(bufferReady(QTcpSocket*, QByteArray)), SLOT(MessageHandler(QTcpSocket*,QByteArray)));
 
-    //this->addFile(0, "C:/Users/Mattia Proietto/Desktop/prova_save_Copia.txt");
+
+
+    // solo per fare prove
+    //db->funzionedaeliminare();
+
+    QString path(QDir::currentPath() + "/log.txt");
+     m_logFile = new QFile(path);
+    if(m_logFile->open(QIODevice::WriteOnly)){
+        m_logFileStream = new QTextStream(m_logFile);
+        *m_logFileStream << "prova";
+        m_logFileStream->flush();
+    }
+
 }
 
-bool MyServer:: listen(QHostAddress &addr, quint16 port){
+bool MyServer:: listen(QHostAddress addr, quint16 port){
 
     if(!_server->listen(addr, port)){
         qCritical("Cannot connect server: %s", qPrintable(_server->errorString()));
@@ -22,178 +39,351 @@ bool MyServer:: listen(QHostAddress &addr, quint16 port){
     return true;
 }
 
+//ad ogni nuova connessione il server usa l'istanza del socket per creare una classe ClientManager si occuperÃ  di leggere e scrivere i messaggi
 void MyServer::onNewConnection(){
-    QTcpSocket *newConnection = _server->nextPendingConnection();
-    if(newConnection == nullptr) return;
+    while(_server->hasPendingConnections()){
+        QTcpSocket *newConnection = _server->nextPendingConnection();
+        if(newConnection == nullptr) return;
 
-    qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
-
-    connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
-    connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
+        qDebug("New connection from %s:%d.", qPrintable(newConnection->peerAddress().toString()), newConnection->peerPort());
+        ClientManager* client = new ClientManager(newConnection, this);
+        m_connectedClients.push_back(client); //ogni client viene inserito in una lista per tenere traccia di quelli connessi
+        //connect(newConnection, SIGNAL(readyRead()), this, SLOT(readFromSocket())); //This signal is emitted once every time new data is available for reading from the device's current read channel
+        //connect(newConnection, SIGNAL(disconnected()), this, SLOT(onDisconnect())); //This signal is emitted when the socket has been disconnected.
+        connect(client, &ClientManager::messageReceived, this, &MyServer::MessageHandler);
+        connect(client, &ClientManager::disconnected, this, &MyServer::onDisconnect);
+    }
 }
 
-void MyServer::readFromSocket(){
-    QTcpSocket *sender = static_cast<QTcpSocket*>(QObject::sender()); //sender() returns a pointer to the object that sent the signal, if called in a slot activated by a signal; otherwise it returns nullptr.
-    qint64 num_byte = sender->bytesAvailable();
-    QByteArray buffer;
+/*void MyServer::readFromSocket(){
+    //usando TCP, abbiamo un FLUSSO CONTINUO di dati e per questo motivo Ã¨ necessario un meccanismo per capire dove inizia e dove finisce un singolo dato inviato dal client.
+    //In questa soluzione abbiamo scelto di inviare per prima cosa la dimensione "dim" del dato da leggere, per poi leggere tutti i restandi "dim" byte che rappresentano il dato completo
 
+    QTcpSocket *sender = static_cast<QTcpSocket*>(QObject::sender()); //sender() returns a pointer to the object that sent the signal, if called in a slot activated by a signal; otherwise it returns nullptr.
+    QByteArray *buffer;
+    QByteArray dataToHandle;
+    //quint64 dim = 0;
+    quint32 dim = 0;
     auto buffer_socket = socket_buffer.find(sender);
 
     if(buffer_socket == socket_buffer.end()){
-        socket_buffer.insert(sender, buffer);
+        socket_buffer.insert(sender, {buffer, dim});
     }
     else {
-        buffer = buffer_socket.value();
+        buffer = buffer_socket.value().first;
+        dim    = buffer_socket.value().second;
     }
 
+    while(sender->bytesAvailable() || buffer->size() != 0){
 
+        buffer->append(sender->readAll());
+        qDebug()<<"data read: "<< buffer<<"\n";
 
-    if(num_byte > 0){
+        while((dim == 0 && buffer->size() >= 8) || (dim > 0 && static_cast<quint64>(buffer->size()) >= dim)){
 
+            if(dim == 0 && buffer->size() >= 8){ // Ã¨ stata ricevuta la dimensione del buffer (primo parametro)
+                //dim = buffer->mid(0,8).toULongLong(); //prendo i primi 8 byte che rappresentano la dimensione
+
+                dim = atoi(buffer->mid(0,8).data());
+                qDebug()<< "size of data: "<< dim<< "\n";
+                buffer->remove(0,8); //rimuovo dal buffer i primi 8 byte, cosi da poter leggere i veri e propri dati
+            }
+            if(dim > 0 && static_cast<quint64>(buffer->size()) >= dim){ // ho precedentemente ricevuto la dimensione del dato, quindi adesso lo leggo tutto ed emetto il segnale per
+
+                /*if(dim <= std::numeric_limits<quint32>::max()){ //la dimensione del dato da leggere Ã¨ piÃ¹ piccola di un int: posso usare tranquillamente la funzione mid
+                    dataToHandle = buffer->mid(0, static_cast<quint32>(dim));
+                    buffer->remove(0, static_cast<quint32>(dim));
+                    dim = 0;
+                }
+                else{ // la dimensione Ã¨ piÃ¹ grande di un intero (32 bit)
+                    while(dim != 0){
+                        if(dim >= std::numeric_limits<quint32>::max()){
+                            dataToHandle = buffer->mid(0, std::numeric_limits<quint32>::max());
+                            buffer->remove(0, std::numeric_limits<quint32>::max());
+                            dim -= std::numeric_limits<quint32>::max();
+                        }
+                        else{
+                            //ora la dimensione (dim) Ã¨ sicuramente su 32 bit, allora posso fare tranquillamente il cast senza il rischio di perdere informazioni
+                            dataToHandle = buffer->mid(0, static_cast<quint32>((dim)));
+                            buffer->remove(0, static_cast<quint32>((dim)));
+                            dim = 0;
+                        }
+                    }
+                }*/
+                /*dataToHandle = buffer->mid(0, dim);
+                buffer->remove(0, dim);
+                dim = 0;
+
+                emit dataReady(sender, dataToHandle);
+            }
+        }
     }
-}
+}*/
 
-void MyServer::MessageHandler(QTcpSocket *socket, QByteArray socketData){
+void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
 
     /*
-    LOGIN 1
-    REGISTER 2
-    FILENAME 3
-    MESSAGE 4
-    TEXT 5
-    IMAGE 6
-    OPEN 7
-    CLOSE 8
-    CURSOR 9
-    SERVER_ANSWER 10
+
+#define LOGIN 1
+#define LOGOUT 2
+#define REGISTER 3
+#define FILENAME 4
+#define MESSAGE 5
+#define TEXT 6
+#define IMAGE 7
+#define NEWFILE 8
+#define OPEN 9
+#define CLOSE 10
+#define CURSOR 11
+#define SERVER_ANSWER 12
+#define DELETE 13
+#define RENAME 14
+#define SHARE 15
+#define SEND_FILES 16
+#define CHANGE_PASSWORD 17
+#define CHANGE_USERNAME 18
+#define CHANGE_NICK 19
+#define CHANGE_PROPIC 20
 
     */
+
     QJsonObject ObjData = Serialize::fromArrayToObject(socketData);
     QStringList list;
+    int fileId;
+    QString username, filename, newName, URI;
+    QPair<int, QString> rename;
+    QPair<int, int> close;
+    //QPair<int, Message> fileid_message;
 
     int type = Serialize::actionType(ObjData);
+    qDebug()<<"request: "<<type<<"\n";
+
 
     switch (type) {
     case (LOGIN):
-        qDebug("LOGIN request");
+        qDebug("LOGIN request\n");
 
          list = Serialize::userUnserialize(ObjData);
-         db->login(list.at(0), list.at(1), socket);
+         db->login(list.at(0), list.at(1), client);
+
+         list.clear();
 
         break;
-    case (REGISTER):
-        qDebug("REGISTER request");
+    case (LOGOUT):
+        qDebug("LOGOUT request\n");
+        //il messaggio di logout contiene solo il type LOGOUT
+        db->logout(client);
 
+        break;
+    case (REGISTER): {
+        /*
+        list[0]: username
+        list[1]: password
+        list[2]: email
+        list[3]: img
+         */
+        qDebug("REGISTER request\n");
         list = Serialize::userUnserialize(ObjData);
-        db->registration(list.at(0), list.at(1), socket);
+        db->registration(list.at(0), list.at(2), list.at(1), list.at(3), client);
+
+        list.clear();
 
         break;
+    }
     case (FILENAME):
-        qDebug("FILENAME request");
+        qDebug("FILENAME request\n");
 
         break;
     case (MESSAGE):
         qDebug("MESSAGE request");
+        db->forwardMessage(client, ObjData, socketData);
+
+        //fileid_message = Serialize::messageUnserialize(ObjData);
+
+        //f = db->getFile(fileid_message.first);
+        //f->messageHandler(socket, fileid_message.second, socketData);
 
         break;
     case (TEXT):
-        qDebug("TEXT request");
+        qDebug("TEXT request\n");
 
         break;
     case (IMAGE):
-        qDebug("IMAGE request");
+        qDebug("IMAGE request\n");
 
         break;
-    case (OPEN):
-        qDebug("OPEN request");
+    case (NEWFILE):
+        qDebug("NEWFILE request\n");
+        filename = Serialize::newFileUnserialize(ObjData);
+
+        db->createFile(filename, client);
 
         break;
+    case (OPEN):{
+        qDebug("OPEN request\n");
+        fileId = Serialize::openDeleteFileUnserialize(ObjData);
+
+        db->openFile(fileId, client);
+
+        break;
+    }
     case (CLOSE):
-        qDebug("CLOSE request");
+        qDebug("CLOSE request\n");
+        close = Serialize::closeFileUnserialize(ObjData);
+
+        qDebug() << "Fileid in myserver.cpp da eliminare: " << close.first << "\n";
+
+        db->closeFile(close.first, close.second, client);
 
         break;
-    case (CURSOR):
+    case (CURSOR):{
         qDebug("CURSOR request");
+        QPair<int, Message> m = Serialize::messageUnserialize(ObjData);
+        File* f = db->getFile(m.first);
+        //f->messageHandler(client, m.second, socketData); //Augusto - cursori disabilitati perchè non ancora funzionanti
 
         break;
+    }
     case (SERVER_ANSWER):
-        qDebug("SERVER_ANSWER request");
+        qDebug("SERVER_ANSWER request\n");
+
+        break;
+    case (DELETE):
+        qDebug("DELETE request\n");
+        fileId = Serialize::openDeleteFileUnserialize(ObjData);
+
+        db->deleteFile(fileId, client);
+
+        break;
+    case (RENAME):
+        qDebug("RENAME request\n");
+        rename = Serialize::renameFileUnserialize(ObjData);
+
+        db->renameFile(rename.first, rename.second, client);
 
         break;
 
+    case (SHARE):
+        qDebug("SHARE request\n");
+        fileId = Serialize::openDeleteFileUnserialize(ObjData); //uso questa funzione perche ritorna l'id del file
 
+        qDebug("SENDURI dopo serialize request\n");
+        db->getURIToShare(fileId, client);
 
+        break;
+    case (ACQUIRE_SHARED_FILE):
+        qDebug("ACQUIRE_SHARED_FILE request\n");
+
+        URI = Serialize::sharedFileAcquisitionUnserialize(ObjData);
+
+        db->SharedFileAcquisition(URI, client);
+
+        break;
+    case (SEND_FILES):
+        qDebug("SEND_FILES request\n");
+
+        db->sendFileList(client);
+
+        break;
+    case (CHANGE_PASSWORD):
+        qDebug("CHANGE_PASSWORD request\n");
+        list = Serialize::changePasswordUnserialize(ObjData);
+
+        db->changePassword(list.at(0), list.at(1), client);
+
+        list.clear();
+
+        break;
+    case (CHANGE_PROFILE):
+        qDebug("CHANGE_PROFILE request\n");
+        list = Serialize::changeProfileUnserialize(ObjData);
+
+        db->changeProfile(list.at(0), list.at(1), list.at(2), list.at(3), list.at(4), client);
+
+        break;
+
+    default:
+        QString str = QString::fromUtf8(socketData);
+        qDebug()<<str<<"\n";
+        break;
     }
 
 
 }
 
+//quando un client si disconnette viene rimosso dalla lista di quelli connessi
 void MyServer::onDisconnect(){
-
-}
-
-
-
-void MyServer::handleMessage(int fileID, Message m)
-{
-    int senderId = m.getSenderId();
-
-    this->fileId_CRDT.at(fileID)->process(m);
-
-    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
-}
-
-std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
-{
-    auto it = this->fileId_CRDT.find(fileID);
-
-    if (this->addFile(fileID,path)) {//true se � andato a buon fine
-        
-
-        //@TODO--> vedere se � la prima volta che il file viene creato o meno--> se � nuovo non faccio read
-        auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
-
-        sendNewFile(vett, fileID);
+    ClientManager* client = static_cast<ClientManager*>(sender());
+    //db->logout(client);
+    for(auto it = m_connectedClients.begin(); it != m_connectedClients.end(); it++){
+        if((*it) == client){
+            m_connectedClients.erase(it);
+            break;
+        }
     }
-    else {
-        return std::vector<Message>();
-    }
-    
-    return std::vector<Message>();
+    client->deleteLater();
 }
 
-void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
-{
-    for (auto m : messages) {
-        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file 
-    }
-}
+//void MyServer::handleMessage(int fileID, Message m)
+//{
+//    int senderId = m.getSenderId();
+//
+//    this->fileId_CRDT.at(fileID)->process(m);
+//
+//    //@TODO fare for per mandare a tutti gli utenti che lavorano su quel file tranne a chi ha inviato
+//}
 
-bool MyServer::addFile(int fileID, std::string path)
-{
-    auto it = this->fileId_CRDT.find(fileID);
+//std::vector<Message> MyServer::readFileFromDisk(std::string path, int fileID)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (this->addFile(fileID,path)) {//true se Ã¨ andato a buon fine
+//
+//
+//        //@TODO--> vedere se Ã¨ la prima volta che il file viene creato o meno--> se Ã¨ nuovo non faccio read
+//        auto vett = this->fileId_CRDT.at(fileID)->readFromFile();
+//
+//        sendNewFile(vett, fileID);
+//    }
+//    else {
+//        return std::vector<Message>();
+//    }
+//
+//    return std::vector<Message>();
+//}
 
-    if (it != fileId_CRDT.end())
-        return false;//gia presente qull'ID
+//void MyServer::sendNewFile(std::vector<Message> messages, int fileId)
+//{
+//    for (auto m : messages) {
+//        //@TODO altro for per madare a tutti quelli chevogliono lavorare sul file
+//    }
+//}
 
-    CRDT* file = new CRDT(fileID,path);
-
-    this->fileId_CRDT.insert(std::pair<int, CRDT*>(fileID, file));//non presente aggiungo
-
-    return true;
-}
-
-void MyServer::removeFile(int fileID)
-{
-    auto it = this->fileId_CRDT.find(fileID);
-
-    if (it != fileId_CRDT.end()) {
-
-        this->fileId_CRDT.erase(it);
-    }
-}
+//bool MyServer::addFile(int fileID, std::string path)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (it != fileId_CRDT.end())
+//        return false;//gia presente qull'ID
+//
+//    CRDT* file = new CRDT(fileID,path);
+//
+//    this->fileId_CRDT.insert(std::pair<int, CRDT*>(fileID, file));//non presente aggiungo
+//
+//    return true;
+//}
+//
+//void MyServer::removeFile(int fileID)
+//{
+//    auto it = this->fileId_CRDT.find(fileID);
+//
+//    if (it != fileId_CRDT.end()) {
+//
+//        this->fileId_CRDT.erase(it);
+//    }
+//}
 
 MyServer::~MyServer()
 {
-
+    m_logFile->close();
 }

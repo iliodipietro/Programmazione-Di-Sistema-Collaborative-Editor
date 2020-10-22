@@ -20,6 +20,7 @@ private:
 
 public:
     Symbol(char character, std::array<int, 2> id, std::vector<int> vett, QFont font, QColor color, Qt::AlignmentFlag alignment);
+	Symbol(std::vector<int> vett);
 	Symbol();
 	~Symbol();
 	char getChar();

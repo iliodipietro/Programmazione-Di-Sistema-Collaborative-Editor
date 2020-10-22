@@ -52,9 +52,17 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 			});
 
 		if (it != _symbols.end()) {
+
+			if (it == _symbols.begin()) {
+				index = 0;
+			}
+			else {
+
+				index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+			   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+			   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+			}
 			_symbols.insert(it, symbol);
-			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
-													//all'inizio della Qstring che rappresenta il testo
 
 		}
 	}
@@ -219,13 +227,14 @@ Message CRDT::localInsert(int index, char value, QFont font, QColor color, Qt::A
 	else {
 		if ((unsigned)index == _symbols.size()) {
 			//inserisco in coda
-			pos.push_back(index);
+			int new_index = _symbols.back().getPos().at(0) + 1;
+			pos.push_back(new_index);
 			Symbol s(value, a = { this->_siteId,_counter++ }, pos, font, color, alignment);
 			_symbols.push_back(s);
 			//mando il messaggio
 			Message m(s, INSERT, this->_siteId);
 
-			QTextStream(stdout) << font.toString() << endl;
+			//QTextStream(stdout) << font.toString() << endl;
 
 			return m;
 
@@ -283,7 +292,15 @@ int CRDT::getId()
 
 Symbol CRDT::getSymbol(int index)
 {
-	return this->_symbols.at(index);
+	if (index < this->_symbols.size())
+		return this->_symbols.at(index);
+	//caso in cui viene mandata la posizione del cursore agli altri client senza alcun carattere inserito,
+	//oppure viene mandata agli altri client la posizione del cursore quando si trova dopo l'ultimo carattere inserito
+	else {
+		std::vector<int> pos;
+		pos.push_back(INT_MAX);
+		return Symbol(pos);
+	}
 }
 
 
@@ -293,7 +310,7 @@ std::vector<Message> CRDT::getMessageArray()
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
-		Message m(s, INSERT, 0);//il server ha id 0
+		Message m(s, INSERT, -1);//il server ha id -1
 		msgs.push_back(m);
 	}
 
@@ -479,4 +496,88 @@ void CRDT::saveOnFile(std::string filename)
 
 }
 
+bool CRDT::isEmpty()
+{
+	return this->_symbols.size() == 0;
+}
 
+__int64 CRDT::getCursorPosition(std::vector<int> crdtPos) {
+	__int64 index = -1;
+
+
+	if (this->_symbols.empty()) {
+		//inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
+		//quando carico dal server
+		index = 0;
+	}
+	else if (crdtPos > this->_symbols.back().getPos()) {
+		index = this->_symbols.size();
+	}
+	else {
+
+		//trovo l'iteratore che punta alla posizione in cui inserire basandomi sulle pos frazionarie
+		auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(), [crdtPos](Symbol s) {
+
+			if (s.getPos() >= crdtPos)
+				return true;
+			/*else if (s.getPos() == crdtPos) {
+
+				if (symbol.getId()[0] < s.getId()[0])//vince chi ha il site id minore
+					return true;
+				else
+					return false;
+			}*/
+
+			return false;
+			});
+
+		if (it != _symbols.end()) {
+
+			index = std::distance(_symbols.begin(), it);//mi dice la posizione del carattere nel crdt ossia dove sono in relazione 
+		   //all'inizio della Qstring che rappresenta il testo qui al contarario di prima ritorno solo se ho trovato 
+		   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
+
+
+		}
+	}
+
+	if ((unsigned)index <= _symbols.size())
+		return index;
+	else
+		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 
+}
+
+void CRDT::updateUserInterval() {
+	m_usersInterval.clear();
+	int start = 0;
+	int end = 0;
+	int userId = -1;
+	for (auto it = _symbols.begin(); it != _symbols.end(); it++) {
+		if (it->getId()[0] != this->_siteId) {
+			userId = it->getId()[0];
+			end++;
+			if ((it + 1) != _symbols.end() && userId != (it + 1)->getId()[0]) {
+				m_usersInterval.emplace_back(userId, start, end);
+				start = end;
+			}
+		}
+		else {
+			start++;
+			end = start;
+		}
+
+		//start = end;
+		//do {
+		//	userId = it->getId()[0];
+		//	end++;
+		//	it++;
+		//	if (it == _symbols.end()) break;
+		//} while (it->getId()[0] == userId);
+		//m_usersInterval.emplace_back(userId, start, end);
+	}
+	m_usersInterval.emplace_back(userId, start, end);
+}
+
+void CRDT::setSiteCounter(int siteCounter) {
+	this->_counter = siteCounter;
+}
