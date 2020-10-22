@@ -113,8 +113,8 @@ void FileBrowser::on_deleteFile_clicked()
 		delete current_item;
 		current_item = nullptr;
 		connect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
-		ui.renameFile->setVisible(false);
-		ui.deleteFile->setVisible(false);
+		ui.renameFile->setEnabled(false);
+		ui.deleteFile->setEnabled(false);
 	}
 }
 

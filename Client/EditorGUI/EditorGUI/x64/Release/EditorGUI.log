@@ -1,0 +1,55 @@
+﻿  Moc'ing SocketHandler\SocketHandler.h...
+  CustomCursor.cpp
+  Editor.cpp
+  MyTextEdit.cpp
+  FileBrowser.cpp
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine Editor\Editor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine Editor\Editor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine Editor\Editor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine Editor\Editor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine FileBrowser\FileBrowser.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine FileBrowser\FileBrowser.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine FileBrowser\FileBrowser.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine FileBrowser\FileBrowser.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine Editor\CustomCursor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine Editor\CustomCursor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine Editor\CustomCursor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine Editor\CustomCursor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine Editor\MyTextEdit.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine Editor\MyTextEdit.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine Editor\MyTextEdit.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine Editor\MyTextEdit.cpp)
+  Login.cpp
+  ModifyPassword.cpp
+  ModifyProfile.cpp
+  NewAccount.cpp
+  SocketHandler.cpp
+  main.cpp
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine Login\Login.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine Login\Login.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine Login\Login.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine Login\Login.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine main.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine main.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine main.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine main.cpp)
+  moc_Editor.cpp
+  moc_FileBrowser.cpp
+  moc_Login.cpp
+  moc_ModifyPassword.cpp
+  moc_ModifyProfile.cpp
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_FileBrowser.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine GeneratedFiles\Release\moc_FileBrowser.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_FileBrowser.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine GeneratedFiles\Release\moc_FileBrowser.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_Editor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine GeneratedFiles\Release\moc_Editor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_Editor.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine GeneratedFiles\Release\moc_Editor.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(11,1): warning C4005: 'TEXT': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_Login.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(603): message : vedere la precedente definizione di 'TEXT' (compilazione del file di origine GeneratedFiles\Release\moc_Login.cpp)
+F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\EditorGUI\Serialization\define.h(18,1): warning C4005: 'DELETE': ridefinizione macro (compilazione del file di origine GeneratedFiles\Release\moc_Login.cpp)
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\um\winnt.h(8943): message : vedere la precedente definizione di 'DELETE' (compilazione del file di origine GeneratedFiles\Release\moc_Login.cpp)
+  moc_NewAccount.cpp
+  moc_SocketHandler.cpp
+  EditorGUI.vcxproj -> F:\Augusto\Università\Progetto PDS\Programmazione-Di-Sistema-Collaborative-Editor\Client\EditorGUI\x64\Release\EditorGUI.exe

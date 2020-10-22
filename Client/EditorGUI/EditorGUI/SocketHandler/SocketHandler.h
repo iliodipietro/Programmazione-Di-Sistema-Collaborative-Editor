@@ -8,6 +8,7 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <atomic>
 #include "Serialization/Serialize.h"
 
 class SocketHandler : public QObject
@@ -29,6 +30,7 @@ private:
     int m_serverPort;
     qint64 m_previousSize;
     bool m_readThreadRun;
+    std::atomic_bool m_continueReading;
     std::thread* m_readThread;
     std::mutex m_readBufferMutex;
     std::condition_variable m_readBufferCV;
