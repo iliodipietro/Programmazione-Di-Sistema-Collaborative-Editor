@@ -75,6 +75,9 @@
     <ClCompile Include="Editor\UserInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CropDialog\CropDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Login\Login.h">
@@ -107,6 +110,9 @@
     <QtMoc Include="Editor\MyTextEdit.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="CropDialog\CropDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Login\Login.qrc">
@@ -127,6 +133,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="Modify Profile\ModifyProfile.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="CropDialog\CropDialog.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

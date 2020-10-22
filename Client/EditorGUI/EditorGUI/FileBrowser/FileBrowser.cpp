@@ -9,9 +9,6 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	ui.setupUi(this);
 	ui.username->setText(username);
 	ui.profileImage->setPixmap(*m_profileImage);
-	
-
-	
 
 	//this->username = username;
 	this->clientID = clientID;
@@ -19,12 +16,11 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	connect(m_timer, &QTimer::timeout, this, &FileBrowser::showErrorMessage);
 
 	//ilio
-	ui.renameFile->setVisible(false);
-	ui.deleteFile->setVisible(false);
-	ui.addSharedFileButton->setVisible(false);
+	ui.renameFile->setEnabled(false);
+	ui.deleteFile->setEnabled(false);
+	ui.addSharedFileButton->setEnabled(false);
 	connect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
 	connect(ui.uriLineEdit, &QLineEdit::textChanged, this, &FileBrowser::on_URI_set);
-
 
 	QByteArray message = Serialize::fromObjectToArray(Serialize::requestFileList(SEND_FILES));
 	m_socketHandler->writeData(message);
@@ -190,7 +186,7 @@ void FileBrowser::on_logoutButton_clicked() {
 //viene aperta la finestra per la modifica dei dati dell'utente
 void FileBrowser::on_modifyProfile_clicked()
 {
-	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email , this->m_profileImage); //devo passargli l'email devo capire dove prenderla l'immagine è uno shared pointer
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email, this->m_profileImage); //devo passargli l'email devo capire dove prenderla l'immagine è uno shared pointer
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParentUpdated, this, &FileBrowser::childWindowClosedAndUpdate);
 	this->hide();
@@ -200,7 +196,7 @@ void FileBrowser::childWindowClosed() {
 	this->show();
 }
 
-void FileBrowser::childWindowClosedAndUpdate(QString m_username, QString m_email, QSharedPointer<QPixmap> m_profileImage){
+void FileBrowser::childWindowClosedAndUpdate(QString m_username, QString m_email, QSharedPointer<QPixmap> m_profileImage) {
 	this->username = m_username;
 	this->email = email;
 	this->m_profileImage = m_profileImage;
@@ -222,12 +218,11 @@ void FileBrowser::editorClosed(int fileId, int siteCounter) {
 }
 
 void FileBrowser::mousePressEvent(QMouseEvent* event) {
-	
-		if (ui.fileList->currentItem() == nullptr) {
-			ui.renameFile->setVisible(false);
-			ui.deleteFile->setVisible(false);
+
+	if (ui.fileList->currentItem() == nullptr) {
+		ui.renameFile->setEnabled(false);
+		ui.deleteFile->setEnabled(false);
 	}
-	
 
 	show();
 }
@@ -244,7 +239,7 @@ void FileBrowser::addFiles(QJsonObject filesList) {
 	QMap<int, QString> map = Serialize::fileListUnserialize(filesList);
 
 	for (auto id : map.keys()) {
-		QListWidgetItem *item = new QListWidgetItem(map.value(id), ui.fileList);
+		QListWidgetItem* item = new QListWidgetItem(map.value(id), ui.fileList);
 		item->setData(Qt::UserRole, id);
 		this->filename_id.insert(id, map.value(id));
 	}
@@ -256,7 +251,7 @@ void FileBrowser::addFile(QJsonObject file) {
 	this->filename_id.insert(pair.first, pair.second);
 	QListWidgetItem* item = new QListWidgetItem(pair.second, ui.fileList);
 	item->setData(Qt::UserRole, pair.first);
-	
+
 	removeBlank();
 }
 
@@ -363,35 +358,35 @@ void FileBrowser::showURI(QJsonObject msg) {
 	QPushButton button("copia", dial);
 	connect(&button, &QPushButton::clicked, this, &FileBrowser::copia);*/
 
-	
+
 	/*dial->exec();*/
 
 	resultDialog.exec();
-	
+
 
 	/*QClipBoard *clipboard = QApplication::clipboard();*/
 }
 
-void FileBrowser::on_file_clicked(){
+void FileBrowser::on_file_clicked() {
 	bool current_item = false;
 	current_item = ui.fileList->currentItem()->isSelected();
 	if (current_item) {
-		ui.renameFile->setVisible(true);
-		ui.deleteFile->setVisible(true);
+		ui.renameFile->setEnabled(true);
+		ui.deleteFile->setEnabled(true);
 		//connect(ui.centralWidget, &QListWidget::item, this, &FileBrowser::on_file_clicked);
 	}
 	else {
-		ui.renameFile->setVisible(false);
-		ui.deleteFile->setVisible(false);
+		ui.renameFile->setEnabled(false);
+		ui.deleteFile->setEnabled(false);
 	}
 }
 
-void FileBrowser::on_URI_set(){
+void FileBrowser::on_URI_set() {
 	if (ui.uriLineEdit->text() != "") {
-		ui.addSharedFileButton->setVisible(true);
+		ui.addSharedFileButton->setEnabled(true);
 	}
 	else {
-		ui.addSharedFileButton->setVisible(false);
+		ui.addSharedFileButton->setEnabled(false);
 	}
 }
 

@@ -79,15 +79,16 @@ void Login::loginResult(QJsonObject response) {
 		QString profileImageBase64 = serverMessage[1];
 		QPixmap profileImage;
 		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
-		QPixmap target(QSize(50, 50));
+		QPixmap resizedProfileImage = profileImage.scaled(QSize(60,60), Qt::KeepAspectRatio);
+		QPixmap target(QSize(60, 60));
 		target.fill(Qt::transparent);
 		QPainter painter(&target);
 		painter.setRenderHint(QPainter::Antialiasing, true);
 		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 		QPainterPath path;
-		path.addRoundedRect(0, 0, 50, 50, 25, 25);
+		path.addRoundedRect(0, 0, 60, 60, 30, 30);
 		painter.setClipPath(path);
-		painter.drawPixmap(0, 0, profileImage);
+		painter.drawPixmap(0, 0, resizedProfileImage);
 		QSharedPointer<QPixmap> roundedProfileImage = QSharedPointer<QPixmap>(new QPixmap(target));
 		QColor userColor(serverMessage[3]);
 		//dato che ho successo elimino username e password dalla gui

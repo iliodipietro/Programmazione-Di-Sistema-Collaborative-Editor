@@ -28,6 +28,7 @@ private:
 	QPixmap* m_croppedImage;
 	QPixmap* m_selectedImage;
 	QPixmap* m_resizedImage;
+	QPixmap* m_roundedImage;
 	QRubberBand* m_selectionArea;
 	bool move_rubberband;
 	QPoint rubberband_offset;
@@ -35,14 +36,11 @@ private:
 	QRect newSelection;
 	QSize m_originalSize;
 
-
-
-	void closeEvent(QCloseEvent* event);
-
 protected:
 	void mousePressEvent(QMouseEvent* e);
 	void mouseMoveEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);
+	void closeEvent(QCloseEvent* event);
 	
 
 private slots:

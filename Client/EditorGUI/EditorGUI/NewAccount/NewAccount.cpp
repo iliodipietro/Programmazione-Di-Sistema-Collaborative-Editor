@@ -1,6 +1,8 @@
 #include "NewAccount.h"
+#include "CropDialog/CropDialog.h"
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <QPainter>
 
 #define RUBBER_SIZE 225
 NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent)
@@ -19,6 +21,21 @@ NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* par
 	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
 	ui.emailLine->setValidator(new QRegularExpressionValidator(rx, this));
 	connect(ui.emailLine, &QLineEdit::textChanged, this, &NewAccount::adjustTextColor);
+
+	QString url = QDir::currentPath().append("/").append("user.png");
+	m_selectedImage = new QPixmap(url);
+	m_croppedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
+	QPixmap target(QSize(RUBBER_SIZE, RUBBER_SIZE));
+	target.fill(Qt::transparent);
+	QPainter painter(&target);
+	painter.setRenderHint(QPainter::Antialiasing, true);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+	QPainterPath path;
+	path.addRoundedRect(0, 0, RUBBER_SIZE, RUBBER_SIZE, RUBBER_SIZE / 2, RUBBER_SIZE / 2);
+	painter.setClipPath(path);
+	painter.drawPixmap(0, 0, *m_croppedImage);
+	QPixmap roundedImage(target);
+	ui.imageLabel->setPixmap(target);
 }
 
 NewAccount::~NewAccount()
@@ -36,17 +53,23 @@ void NewAccount::on_selectImageButton_clicked() {
 	QString url = QFileDialog::getOpenFileName(this, tr("Scegli immagine"), QDir::homePath(), "Immagini (*.jpg *.png *.jpeg)");
 	if (url.compare("") != 0) {
 		m_selectedImage = new QPixmap(url);
-		m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-		QSize rubberSize(RUBBER_SIZE, RUBBER_SIZE);
-		QPoint point(ui.imageLabel->pos());
-		QRect size(point, rubberSize);
-		if (m_selectionArea == Q_NULLPTR)
-			m_selectionArea = new QRubberBand(QRubberBand::Rectangle, this);
-		m_selectionArea->setGeometry(size);
-		m_selectionArea->show();
-		ui.imageLabel->setPixmap(*m_resizedImage);
-		ui.imageLabel->setFixedWidth(m_resizedImage->width());
-		ui.imageLabel->setFixedHeight(m_resizedImage->height());
+		CropDialog* dialog = new CropDialog(m_selectedImage, this);
+		dialog->setModal(true);
+		if (dialog->exec() == QDialog::Accepted) {
+			m_croppedImage = dialog->getCroppedImage();
+			QPixmap* resizedImage = new QPixmap(m_croppedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
+			QPixmap target(QSize(RUBBER_SIZE, RUBBER_SIZE));
+			target.fill(Qt::transparent);
+			QPainter painter(&target);
+			painter.setRenderHint(QPainter::Antialiasing, true);
+			painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+			QPainterPath path;
+			path.addRoundedRect(0, 0, RUBBER_SIZE, RUBBER_SIZE, RUBBER_SIZE /2, RUBBER_SIZE /2);
+			painter.setClipPath(path);
+			painter.drawPixmap(0, 0, *resizedImage);
+			QPixmap roundedImage(target);
+			ui.imageLabel->setPixmap(target);
+		}
 	}
 }
 
@@ -63,57 +86,58 @@ void NewAccount::on_submit_clicked() {
 	QString email = ui.emailLine->text();
 	if (username != "" && email != "") {
 		if (password.compare(password_re) == 0) {
-			if (m_selectionArea != Q_NULLPTR) {
-				QPoint areaPos = m_selectionArea->geometry().topLeft();
-				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
-				areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-				m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
-				ui.crop->setPixmap(*m_croppedImage);
-				
+			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, email, REGISTER, m_croppedImage); //ilio
+			bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
+			if (result) {
+				m_timer->setSingleShot(true);
+				m_timer->setInterval(4000);
+				m_timer->start();
 
 			}
-			//ilio-------------------------------- immagine di default 
 			else {
-				ui.imageLabel->setFixedWidth(m_originalSize.width());
-				ui.imageLabel->setFixedHeight(m_originalSize.height());
-				QString url = QDir::currentPath().append("/").append("user.png");
-				m_selectedImage = new QPixmap(url);
-				m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-				
-				QSize rubberSize(RUBBER_SIZE, RUBBER_SIZE);
-				QPoint point(ui.imageLabel->pos());
-				QRect size(point, rubberSize);
-				if (m_selectionArea == Q_NULLPTR)
-					m_selectionArea = new QRubberBand(QRubberBand::Rectangle, this);
-				m_selectionArea->setGeometry(size);
-				ui.imageLabel->setPixmap(*m_resizedImage);
-				ui.imageLabel->setFixedWidth(m_resizedImage->width());
-				ui.imageLabel->setFixedHeight(m_resizedImage->height());
-
-
-				QPoint areaPos = m_selectionArea->geometry().topLeft();
-				areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
-				areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
-				m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
-				ui.crop->setPixmap(*m_croppedImage);
-
+				QMessageBox resultDialog(this);
+				resultDialog.setInformativeText("Errore di connessione");
+				resultDialog.exec();
 			}
+			//if (m_croppedImage != Q_NULLPTR) {
+			//	QPoint areaPos = m_selectionArea->geometry().topLeft();
+			//	areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+			//	areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+			//	m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
+			//	//ui.crop->setPixmap(*m_croppedImage);
+			//	
+
+			//}
+			//ilio-------------------------------- immagine di default 
+			//else {
+			//	//ui.imageLabel->setFixedWidth(m_originalSize.width());
+			//	//ui.imageLabel->setFixedHeight(m_originalSize.height());
+			//	QString url = QDir::currentPath().append("/").append("user.png");
+			//	m_selectedImage = new QPixmap(url);
+			//	m_resizedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
+			//	
+			//	QSize rubberSize(RUBBER_SIZE, RUBBER_SIZE);
+			//	QPoint point(ui.imageLabel->pos());
+			//	QRect size(point, rubberSize);
+			//	if (m_selectionArea == Q_NULLPTR)
+			//		m_selectionArea = new QRubberBand(QRubberBand::Rectangle, this);
+			//	m_selectionArea->setGeometry(size);
+			//	ui.imageLabel->setPixmap(*m_resizedImage);
+			//	ui.imageLabel->setFixedWidth(m_resizedImage->width());
+			//	ui.imageLabel->setFixedHeight(m_resizedImage->height());
+
+
+			//	QPoint areaPos = m_selectionArea->geometry().topLeft();
+			//	areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());
+			//	areaPos.setY(areaPos.y() - ui.imageLabel->pos().y());
+			//	m_croppedImage = new QPixmap(m_resizedImage->copy(areaPos.x(), areaPos.y(), RUBBER_SIZE, RUBBER_SIZE));
+			//	//ui.crop->setPixmap(*m_croppedImage);
+
+			//}
 			//ilio-----------------------------------
 
 			//if (m_croppedImage != Q_NULLPTR) { ilio
-				QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, email, REGISTER, m_croppedImage); //ilio
-				bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
-				if (result) {
-					m_timer->setSingleShot(true);
-					m_timer->setInterval(4000);
-					m_timer->start();
 				
-				}
-				else {
-					QMessageBox resultDialog(this);
-					resultDialog.setInformativeText("Errore di connessione");
-					resultDialog.exec();
-				}
 				
 				//QMessageBox::information(this, "NewAccount", "New Account Created");
 
@@ -188,6 +212,7 @@ void NewAccount::mouseReleaseEvent(QMouseEvent* e)
 }
 
 void NewAccount::on_cancel_clicked() {
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &NewAccount::registrationResult);
 	emit showParent();
 	this->hide();
 }
@@ -199,7 +224,7 @@ void NewAccount::registrationResult(QJsonObject response) {
 	if (result) {
 		QMessageBox resultDialog(this);
 		connect(&resultDialog, &QMessageBox::buttonClicked, this, &NewAccount::dialogClosed);
-		resultDialog.setInformativeText("Success");
+		resultDialog.setInformativeText("Registazione effettuata con successo");
 		resultDialog.exec();
 	}
 	else {
