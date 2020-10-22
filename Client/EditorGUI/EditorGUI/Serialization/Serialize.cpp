@@ -590,10 +590,25 @@ QStringList Serialize::responseUnserialize(QJsonObject obj)
 	bool res = obj.value("res").toBool();
 	list.append(res ? "true" : "false");
 	list.append(obj.value("message").toString());
+	int i = obj.value("userID").toInt();
 	list.append(QString::number(obj.value("userID").toInt()));
 	list.append(obj.value("color").toString());
 	list.append(obj.value("email").toString());
 	list.append(obj.value("username").toString());
+
+	QJsonDocument doc(obj);
+	QString strJson(doc.toJson(QJsonDocument::Compact));
+	std::ofstream oFile("C:/Users/Mattia Proietto/Desktop/NONFUNZIONA.txt", std::ios_base::out | std::ios_base::trunc);
+	if (oFile.is_open())
+	{
+
+		//std::string text = this->to_string();
+		{
+			//oFile << text;
+			oFile << strJson.toStdString();
+		}
+		oFile.close();
+	}
 
 	return list;
 }

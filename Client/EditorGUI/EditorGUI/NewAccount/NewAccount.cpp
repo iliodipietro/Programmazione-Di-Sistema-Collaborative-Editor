@@ -236,7 +236,6 @@ void NewAccount::showErrorMessage() {
 }
 
 void NewAccount::dialogClosed(QAbstractButton* button) {
-	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &NewAccount::registrationResult);
 	emit showParent();
 	this->hide();
 }
