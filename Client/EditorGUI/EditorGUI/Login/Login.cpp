@@ -43,33 +43,33 @@ void Login::on_loginButton_clicked()
 		//SocketMessage m(MessageTypes::LoginMessage, loginInfo.toUtf8());
 		QJsonObject message = Serialize::userSerialize(m_username, password, m_username, LOGIN);
 		bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(message));
-		if (result) {
-			m_timer->setSingleShot(true);
-			m_timer->setInterval(3000);
-			m_timer->start();
-			//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
-		}
-		else {
-			qDebug() << m_socketHandler->getSocketState();
-		}
+		//if (result) {
+		//	m_timer->setSingleShot(true);
+		//	m_timer->setInterval(3000);
+		//	m_timer->start();
+		//	//openFileBrowser(); //da commentare in seguito ed aggiustare le condizioni degli if
+		//}
+		//else {
+		//	qDebug() << m_socketHandler->getSocketState();
+		//}
 	}
 	else {
-		QMessageBox errorDialog(this);
-		errorDialog.setInformativeText("L'username e la password non possono essere vuoti");
-		errorDialog.exec();
+		//QMessageBox errorDialog(this);
+		//errorDialog.setInformativeText("L'username e la password non possono essere vuoti");
+		//errorDialog.exec();
 	}
 }
 
 //dialog per mostrare un errore di connessione se la risposta dal server non arriva in tempo
 void Login::showErrorMessage() {
-	QMessageBox errorDialog(this);
-	errorDialog.setInformativeText("errore di connessione");
-	errorDialog.exec();
-	qDebug() << "messaggio di errore per il login";
+	//QMessageBox errorDialog(this);
+	//errorDialog.setInformativeText("errore di connessione");
+	//errorDialog.exec();
+	//qDebug() << "messaggio di errore per il login";
 }
 
 void Login::loginResult(QJsonObject response) {
-	m_timer->stop();
+	//m_timer->stop();
 	QStringList serverMessage = Serialize::responseUnserialize(response);
 	bool result = serverMessage[0] == "true" ? true : false;
 
@@ -96,9 +96,9 @@ void Login::loginResult(QJsonObject response) {
 	}
 	else {
 		//dialog per mostrare il messaggio di errore ricevuto dal server
-		QMessageBox resultDialog(this);
-		resultDialog.setInformativeText(serverMessage[1]);
-		resultDialog.exec();
+		//QMessageBox resultDialog(this);
+		//resultDialog.setInformativeText(serverMessage[1]);
+		//resultDialog.exec();
 	}
 }
 

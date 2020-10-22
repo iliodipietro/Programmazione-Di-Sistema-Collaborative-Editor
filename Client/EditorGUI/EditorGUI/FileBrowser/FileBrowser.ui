@@ -54,7 +54,11 @@
   border-width: 0px;
   border-radius: 5px;
 }
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
       </property>
       <property name="text">
        <string>Aggiungi</string>
@@ -83,7 +87,11 @@ QPushButton:hover { background-color: #0080FF; }</string>
   border-width: 0px;
   border-radius: 5px;
 }
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
       </property>
       <property name="text">
        <string>Elimina</string>
@@ -112,7 +120,11 @@ QPushButton:hover { background-color: #0080FF; }</string>
   border-width: 0px;
   border-radius: 5px;
 }
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
       </property>
       <property name="text">
        <string> Modifica Profilo </string>
@@ -242,7 +254,11 @@ QPushButton:hover { background-color: #0080FF; }</string>
   border-width: 0px;
   border-radius: 5px;
 }
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}9</string>
       </property>
       <property name="text">
        <string>Rinomina</string>
