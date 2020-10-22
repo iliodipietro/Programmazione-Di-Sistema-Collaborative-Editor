@@ -62,6 +62,18 @@ void ModifyProfile::on_selectImageButton_clicked() {
 	}
 }
 
+void ModifyProfile::on_modifyPasswordButton_clicked()
+{
+	//aprire il dialog modifica password
+	ModifyPassword* m_modifyPassword = new ModifyPassword(m_socketHandler, this);
+	if (m_modifyPassword->exec() == QDialog::Accepted) {
+
+	}
+	else {
+
+	}
+}
+
 void ModifyProfile::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
 	//if (m_croppedImage != Q_NULLPTR) {

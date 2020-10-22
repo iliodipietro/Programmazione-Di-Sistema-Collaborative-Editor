@@ -13,6 +13,7 @@
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
 #include "Modify Profile/ModifyProfile.h"
+#include "Dialog/Dialog.h"
 #include "ui_FileBrowser.h"
 
 class FileBrowser : public QMainWindow
@@ -32,6 +33,7 @@ private:
 	QString email;
 	int clientID;
 	ModifyProfile* m_modifyProfile;
+	//ModifyPassword* m_modifyPassword;
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
 	QSharedPointer<QPixmap> m_profileImage;
@@ -66,6 +68,7 @@ private slots:
 	void on_file_clicked(); //ilio (quando clicco su un file appaiono i bottoni delete e rename)
 	void on_URI_set();//ilio (quando inserisco la URI appare il bottone share)
 	/*void copia();*/
+	//void on_modifyPassword_clicked();
 
 signals:
 	void showParent();

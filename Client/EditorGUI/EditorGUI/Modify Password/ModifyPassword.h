@@ -1,6 +1,26 @@
+//#pragma once
+//
+//#include <QWidget>
+//#include "ui_ModifyPassword.h"
+//
+//class ModifyPassword : public QWidget
+//{
+//	Q_OBJECT
+//
+//public:
+//	ModifyPassword(QWidget *parent = Q_NULLPTR);
+//	~ModifyPassword();
+//
+//private:
+//	Ui::ModifyPassword ui;
+//};
+
+
 #pragma once
 
+#include <QWidget>
 #include <QMainWindow>
+#include <QDialog>
 #include <QFileDialog>
 #include <QRubberBand>
 #include <QProcess>
@@ -9,26 +29,21 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
-#include "ui_NewAccount.h"
+#include "ui_ModifyPassword.h"
 #include "SocketHandler/SocketHandler.h"
 
-
-class NewAccount : public QMainWindow
+class ModifyPassword : public QDialog
 {
 	Q_OBJECT
 
 public:
-	NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* parent = Q_NULLPTR);
-	~NewAccount();
+	ModifyPassword(QSharedPointer<SocketHandler> socketHandler, QWidget* parent = Q_NULLPTR);
+	~ModifyPassword();
 
 private:
 	QSharedPointer<SocketHandler> m_socketHandler;
 	QTimer* m_timer;
-	Ui::NewAccount ui;
-	QPixmap* m_croppedImage;
-	QPixmap* m_selectedImage;
-	QPixmap* m_resizedImage;
-	QPixmap* m_roundedImage;
+	Ui::ModifyPassword ui;
 	QRubberBand* m_selectionArea;
 	bool move_rubberband;
 	QPoint rubberband_offset;
@@ -36,24 +51,18 @@ private:
 	QRect newSelection;
 	QSize m_originalSize;
 
+	void closeEvent(QCloseEvent* event);
+
 protected:
 	void mousePressEvent(QMouseEvent* e);
-	void mouseMoveEvent(QMouseEvent* e);
+	//void mouseMoveEvent(QMouseEvent* e);
 	void mouseReleaseEvent(QMouseEvent* e);
-	void closeEvent(QCloseEvent* event);
-	
 
 private slots:
-	void on_selectImageButton_clicked();
-	void on_submit_clicked();
+	void on_okButton_clicked();
 	void on_cancel_clicked();
-	void registrationResult(QJsonObject);
+	void changeResult(QJsonObject);
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
-	void adjustTextColor();//ilio
-	
 
-signals:
-	void showParent();
 };
-

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QDialog>
 #include "ui_ModifyProfile.h"
 #include <QMainWindow>
 #include <QFileDialog>
@@ -14,6 +15,7 @@
 #include <QPainter>
 #include "SocketHandler/SocketHandler.h"
 #include "Serialization/Serialize.h"
+#include "Modify Password/ModifyPassword.h"
 
 
 class ModifyProfile : public QMainWindow
@@ -51,6 +53,7 @@ protected:
 
 private slots:
 	void on_selectImageButton_clicked();
+	void on_modifyPasswordButton_clicked();
 	void on_submit_clicked();
 	void on_cancel_clicked();
 	void ModifyProfileResult(QJsonObject);

@@ -74,7 +74,8 @@ public:
 	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static QPair<int, Message> messageUnserialize(QJsonObject obj);
 
-
+	static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type); //lorenzo
+	static QStringList changePasswordUnserialize(QJsonObject obj); //lorenzo
 
 	static QJsonObject textMessageSerialize(QString str, int type);
 	static QString textMessageUnserialize(QJsonObject obj);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1064</width>
-    <height>712</height>
+    <height>702</height>
    </rect>
   </property>
   <property name="font">
@@ -288,6 +288,19 @@ QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="text">
     <string>Inserisci solo i campi che vuoi modificare</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="modifyPasswordButton">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>450</y>
+     <width>161</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Modifica password</string>
    </property>
   </widget>
  </widget>

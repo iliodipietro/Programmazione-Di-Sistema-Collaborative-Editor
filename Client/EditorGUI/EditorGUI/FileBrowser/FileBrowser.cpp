@@ -106,11 +106,15 @@ void FileBrowser::on_deleteFile_clicked()
 	int id = current_item->data(Qt::UserRole).toInt();
 	QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, DELETE));
 	this->m_socketHandler->writeData(data);
-	QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
-	if (item != nullptr) {
-		delete item;
-		item = nullptr;
+	//QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
+	if (current_item != nullptr) {
+
+		disconnect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
+		delete current_item;
 		current_item = nullptr;
+		connect(ui.fileList, &QListWidget::itemSelectionChanged, this, &FileBrowser::on_file_clicked);
+		ui.renameFile->setVisible(false);
+		ui.deleteFile->setVisible(false);
 	}
 }
 
@@ -349,9 +353,9 @@ void FileBrowser::processEditorMessage(QJsonObject message)
 
 void FileBrowser::showURI(QJsonObject msg) {
 	QString serverMessage = Serialize::URIUnserialize(msg);
-	QInputDialog resultDialog(this);
+	/*QInputDialog resultDialog(this);
 	resultDialog.setLabelText("File Link");
-	resultDialog.setTextValue(serverMessage);
+	resultDialog.setTextValue(serverMessage);*/
 
 	/*QDialog* dial = new QDialog(this);
 	QLabel label(serverMessage);
@@ -361,13 +365,29 @@ void FileBrowser::showURI(QJsonObject msg) {
 
 	/*dial->exec();*/
 
-	resultDialog.exec();
-
+	//resultDialog.exec();
+	
 
 	/*QClipBoard *clipboard = QApplication::clipboard();*/
+
+
+	Dialog* linkDialog = new Dialog(serverMessage, this);
+	if (linkDialog->exec() == QDialog::Accepted) {
+
+	}
+	else {
+
+	}
 }
 
-void FileBrowser::on_file_clicked() {
+//void FileBrowser::on_modifyPassword_clicked(){
+//	this->m_modifyPassword = new ModifyPassword(m_socketHandler); 
+//	m_modifyPassword->show();
+//	//connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
+//	//this->hide();
+//}
+
+void FileBrowser::on_file_clicked(){
 	bool current_item = false;
 	current_item = ui.fileList->currentItem()->isSelected();
 	if (current_item) {
