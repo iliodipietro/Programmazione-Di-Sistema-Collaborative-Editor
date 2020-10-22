@@ -23,7 +23,6 @@ m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0
 	readConfigFile();
 	connectToServer();
 	m_readThread = new std::thread(&SocketHandler::readThreadFunction, this);
-	m_continueReading.store(false);
 }
 
 SocketHandler::~SocketHandler() {
