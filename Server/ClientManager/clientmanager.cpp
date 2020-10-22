@@ -7,7 +7,7 @@ m_clientSocket(socket), m_socketBuffer(new QByteArray()), m_previousSize(0)
     m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     m_clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     //m_clientSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-    m_clientSocket->setReadBufferSize(0);
+    m_clientSocket->setReadBufferSize(2*1024*1024);
     //connect(m_clientSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
     connect(m_clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnect()));
     connect(m_clientSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
