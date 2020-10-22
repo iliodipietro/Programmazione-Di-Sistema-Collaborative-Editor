@@ -18,3 +18,6 @@
 /build-Server-Clone_of_Desktop_Qt_5_12_3_MSVC2017_64bit-Debug/debug
 /build-Server-Clone_of_Desktop_Qt_5_12_3_MSVC2017_64bit-Debug
 /Client/EditorGUI/EditorGUI/CRDT/MessageType.h
+/Client/EditorGUI/EditorGUI/release/qmake
+/Server/.vs/Server/v15
+/Client/.vs/EditorGUI/v16
