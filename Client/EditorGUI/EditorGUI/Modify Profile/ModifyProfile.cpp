@@ -65,6 +65,7 @@ void ModifyProfile::on_selectImageButton_clicked() {
 void ModifyProfile::on_modifyPasswordButton_clicked()
 {
 	//aprire il dialog modifica password
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	ModifyPassword* m_modifyPassword = new ModifyPassword(m_socketHandler, this);
 	if (m_modifyPassword->exec() == QDialog::Accepted) {
 
@@ -72,6 +73,7 @@ void ModifyProfile::on_modifyPasswordButton_clicked()
 	else {
 
 	}
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 }
 
 void ModifyProfile::on_submit_clicked() {

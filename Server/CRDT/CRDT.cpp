@@ -557,12 +557,12 @@ QString CRDT::crdt_serialize()
 }
 void CRDT::saveOnFile()
 {
-    QFile file(this->path);
-    if(file.open(QIODevice::WriteOnly)){
-        QTextStream stream(&file);
-        stream << "";
-        file.close();
-    }
+    //QFile file(this->path);
+    //if(file.open(QIODevice::WriteOnly)){
+        //QTextStream stream(&file);
+        //stream << "";
+        //file.close();
+    //}
 	if (this->_symbols.size() > 0) {
 
 		QString serialized_text = this->crdt_serialize();

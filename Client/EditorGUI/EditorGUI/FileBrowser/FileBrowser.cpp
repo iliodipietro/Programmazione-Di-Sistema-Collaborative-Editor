@@ -186,6 +186,7 @@ void FileBrowser::on_modifyProfile_clicked()
 	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email , this->m_profileImage); //devo passargli l'email devo capire dove prenderla l'immagine è uno shared pointer
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParentUpdated, this, &FileBrowser::childWindowClosedAndUpdate);
+	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);	
 	this->hide();
 }
 
