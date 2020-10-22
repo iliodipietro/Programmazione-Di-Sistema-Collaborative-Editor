@@ -1102,7 +1102,7 @@ void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
     }
     if (instance->files.contains(fileid)) {
         URI = instance->files.value(fileid)->getPath();
-        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SENDURI));
+        response = Serialize::fromObjectToArray(Serialize::URISerialize(URI, SHARE));
         client->writeData(response);
     }
     else {
