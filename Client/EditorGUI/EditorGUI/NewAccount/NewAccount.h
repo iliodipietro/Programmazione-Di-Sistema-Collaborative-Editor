@@ -55,5 +55,6 @@ private slots:
 
 signals:
 	void showParent();
+	void dataToSend(QByteArray);
 };
 

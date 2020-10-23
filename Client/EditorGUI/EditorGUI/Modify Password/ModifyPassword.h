@@ -65,4 +65,7 @@ private slots:
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
 
+signals:
+	void dataToSend(QByteArray);
+
 };

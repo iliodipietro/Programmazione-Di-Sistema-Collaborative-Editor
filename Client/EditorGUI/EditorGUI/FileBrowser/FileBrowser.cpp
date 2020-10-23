@@ -13,6 +13,7 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	//this->username = username;
 	this->clientID = clientID;
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
+	connect(this, &FileBrowser::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, &QTimer::timeout, this, &FileBrowser::showErrorMessage);
 
 	//ilio
@@ -23,7 +24,8 @@ FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPoi
 	connect(ui.uriLineEdit, &QLineEdit::textChanged, this, &FileBrowser::on_URI_set);
 
 	QByteArray message = Serialize::fromObjectToArray(Serialize::requestFileList(SEND_FILES));
-	m_socketHandler->writeData(message);
+	//m_socketHandler->writeData(message);
+	emit dataToSend(message);
 }
 
 FileBrowser::~FileBrowser()
@@ -52,7 +54,8 @@ void FileBrowser::on_fileList_itemDoubleClicked(QListWidgetItem* item) {
 			editor = new Editor(m_socketHandler, m_profileImage, m_userColor, filename, username, id, clientID);
 			m_textEditors.insert(std::pair<int, Editor*>(id, editor));
 			QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, OPEN));
-			this->m_socketHandler->writeData(data);
+			//this->m_socketHandler->writeData(data);
+			emit dataToSend(data);
 		}
 		connect(editor, &Editor::editorClosed, this, &FileBrowser::editorClosed);
 		editor->show();
@@ -80,7 +83,8 @@ void FileBrowser::on_newFile_clicked() {
 	if (ok && !filename.isEmpty()) {
 		//send to server
 		QByteArray data = Serialize::fromObjectToArray(Serialize::newFileSerialize(filename, NEWFILE));
-		this->m_socketHandler->writeData(data);
+		//this->m_socketHandler->writeData(data);
+		emit dataToSend(data);
 	}
 	else {
 		QMessageBox resultDialog(this);
@@ -105,7 +109,8 @@ void FileBrowser::on_deleteFile_clicked()
 	QString filename = current_item->text();
 	int id = current_item->data(Qt::UserRole).toInt();
 	QByteArray data = Serialize::fromObjectToArray(Serialize::openDeleteFileSerialize(id, DELETE));
-	this->m_socketHandler->writeData(data);
+	//this->m_socketHandler->writeData(data);
+	emit dataToSend(data);
 	//QListWidgetItem* item = ui.fileList->takeItem(ui.fileList->row(current_item));
 	if (current_item != nullptr) {
 
@@ -147,7 +152,8 @@ void FileBrowser::on_renameFile_clicked()
 		//send to server
 		if (new_filename != filename) {
 			QByteArray data = Serialize::fromObjectToArray(Serialize::renameFileSerialize(id, new_filename, RENAME));
-			this->m_socketHandler->writeData(data);
+			//this->m_socketHandler->writeData(data);
+			emit dataToSend(data);
 			current_item->setText(new_filename);
 		}
 
@@ -164,7 +170,8 @@ void FileBrowser::on_renameFile_clicked()
 
 void FileBrowser::closeEvent(QCloseEvent* event) {
 	QByteArray message = Serialize::fromObjectToArray(Serialize::logoutUserSerialize(LOGOUT));
-	m_socketHandler->writeData(message);
+	//m_socketHandler->writeData(message);
+	emit dataToSend(message);
 	qApp->quit();
 }
 
@@ -182,7 +189,8 @@ void FileBrowser::removeBlank()
 void FileBrowser::on_logoutButton_clicked() {
 	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
 	QByteArray message = Serialize::fromObjectToArray(Serialize::logoutUserSerialize(LOGOUT));
-	m_socketHandler->writeData(message);
+	//m_socketHandler->writeData(message);
+	emit dataToSend(message);
 	emit showParent();
 	this->hide();
 }
@@ -214,9 +222,11 @@ void FileBrowser::editorClosed(int fileId, int siteCounter) {
 	Editor* editor = m_textEditors.at(fileId);
 	editor->deleteLater();
 	QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(this->clientID, fileId, REMOVEEDITINGUSER));
-	m_socketHandler->writeData(message);
+	//m_socketHandler->writeData(message);
+	emit dataToSend(message);
 	QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(fileId, siteCounter, CLOSE));
-	this->m_socketHandler->writeData(data);
+	//this->m_socketHandler->writeData(data);
+	emit dataToSend(data);
 	filename_id.remove(fileId);
 	m_textEditors.erase(fileId);
 	this->raise();
@@ -415,15 +425,16 @@ void FileBrowser::on_addSharedFileButton_clicked() {
 	QString uri = ui.uriLineEdit->text();
 	if (uri != "") {
 		QByteArray message = Serialize::fromObjectToArray(Serialize::openSharedFileSerialize(uri, OPENSHARE));
-		bool result = m_socketHandler->writeData(message);
-		if (result) {
-			m_timer->setInterval(2000);
-			m_timer->setSingleShot(true);
-			m_timer->start();
-		}
-		else {
-			qDebug() << m_socketHandler->getSocketState();
-		}
+		//bool result = m_socketHandler->writeData(message);
+		emit dataToSend(message);
+		//if (result) {
+		//	m_timer->setInterval(2000);
+		//	m_timer->setSingleShot(true);
+		//	m_timer->start();
+		//}
+		//else {
+		//	qDebug() << m_socketHandler->getSocketState();
+		//}
 	}
 }
 

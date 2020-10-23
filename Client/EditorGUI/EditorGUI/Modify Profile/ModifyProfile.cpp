@@ -25,6 +25,7 @@ m_timer(new QTimer(this)) {
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(ModifyProfileResult(QJsonObject)));
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
+	connect(this, &ModifyProfile::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 	//ilio
 	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
@@ -97,17 +98,18 @@ void ModifyProfile::on_submit_clicked() {
 	if (newEmail != "") {
 		if (newUser != "") {
 			QJsonObject userInfoSerialized = Serialize::changeProfileSerialize(this->m_username, newUser, this->m_email, newEmail, m_croppedImage, CHANGE_PROFILE);//type da definire in define.h  devo usare changeProfileSerialize
-			bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
-			if (result) {
-				m_timer->setSingleShot(true);
-				m_timer->setInterval(4000);
-				m_timer->start();
-			}
-			else {
-				QMessageBox resultDialog(this);
-				resultDialog.setInformativeText("Errore di connessione");
-				resultDialog.exec();
-			}
+			//bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
+			//if (result) {
+			//	m_timer->setSingleShot(true);
+			//	m_timer->setInterval(4000);
+			//	m_timer->start();
+			//}
+			//else {
+			//	QMessageBox resultDialog(this);
+			//	resultDialog.setInformativeText("Errore di connessione");
+			//	resultDialog.exec();
+			//}
+			emit dataToSend(Serialize::fromObjectToArray(userInfoSerialized));
 			//QMessageBox::information(this, "NewAccount", "New Account Created");
 		}
 		else {

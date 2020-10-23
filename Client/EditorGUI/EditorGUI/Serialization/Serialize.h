@@ -44,7 +44,8 @@ public:
 	static QStringList userUnserialize(QJsonObject obj);//in particolare la lista contiene 2 elementi se uso login oppure 3 se uso
 	//la register l'immagine viene serializzata a parte per ora
 
-
+	static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);// ilio
+	static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
 	static QJsonObject fileNameSerialize(QString fileName, int type);
 
@@ -72,9 +73,6 @@ public:
 
 	static QJsonObject messageSerialize(Message message, int fileId, int type);//qui abbiamo sia il messaggio con all'interno un simbolo
 	static QPair<int, Message> messageUnserialize(QJsonObject obj);
-
-	static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);// ilio
-	static QStringList changePasswordUnserialize(QJsonObject obj); // ilio
 
 	static QJsonObject textMessageSerialize(QString str, int type);
 	static QString textMessageUnserialize(QJsonObject obj);
@@ -110,7 +108,6 @@ public:
 
 	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
 	//static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
-
 
 	//void setType(QString type);
 

@@ -3,6 +3,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QThread>
 #include "ui_Login.h"
 #include "FileBrowser/FileBrowser.h"
 #include "NewAccount/NewAccount.h"
@@ -20,6 +21,7 @@ public:
 private:
 	bool newWindow = false;
 	int clientID;
+	QThread* m_thread;
 	QString m_username;
 	QString m_email;
 	Ui::LoginClass ui;
@@ -44,4 +46,7 @@ private slots:
 
 protected:
 	void hideEvent(QHideEvent* event);
+
+signals:
+	void dataToSend(QByteArray);
 };
