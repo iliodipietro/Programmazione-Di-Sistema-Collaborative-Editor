@@ -108,7 +108,8 @@ public:
 	static QPair<int, int> Serialize::siteCounterUnserialize(QJsonObject obj);
 	//static QJsonObject openDeleteFileSerialize(int fileId, int type); //lorenzo, per la condivisione file
 
-
+	static QJsonObject changePasswordSerialize(QString oldPassword, QString newPassword, int type);
+	static QStringList changePasswordUnserialize(QJsonObject obj);
 	//void setType(QString type);
 
 

@@ -414,7 +414,6 @@ QJsonObject ObjectFromString(const QString& in)
 //}
 
 
-
 void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
 	if (!QFile::exists(QString(this->path))) {
@@ -426,22 +425,20 @@ void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIE
 	
 	std::ifstream iFile(this->path.toStdString());
 	std::vector<Symbol> local_symbols;
-	if (iFile.is_open())// se non riesco ad aprire il file vuol dire che è un file nuovo e che quindi ancpra va creato--> cio viene fatto nel primo save
-	{
-		
-		if (iFile.peek() == std::ifstream::traits_type::eof()) {
-			//se il file esiste ma è vuoto non carico nulla e ritorno dopo aver chiuso il file
-			iFile.close();
+
+	QFile file(path);
+
+	if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		// error message here
+		if (file.size() == 0) {
 			return;
 		}
 
-		std::string line;
+		while (!file.atEnd()) {
 
 
-		while (getline(iFile, line))
-		{
-			QString str = QString::fromStdString(line);
-			QJsonObject  obj = ObjectFromString(str);
+			QString line = file.readLine();
+			QJsonObject  obj = ObjectFromString(line);
 
 			char c = obj.value("character").toInt();
 
