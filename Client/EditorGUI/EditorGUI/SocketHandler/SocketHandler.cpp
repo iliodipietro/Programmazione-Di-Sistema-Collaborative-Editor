@@ -2,6 +2,7 @@
 #include <QtCore\qjsondocument.h>
 #include <QDebug>
 #include <QDir>
+#include <QIODevice>
 
 //#define SERVER_IP "127.0.0.1"
 //#define PORT 44322
@@ -12,6 +13,8 @@ m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0
 	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 	m_tcpSocket->setReadBufferSize(2*1024*1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * 1024 * 1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, 2 * 1024 * 1024);
 	connect(m_tcpSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
 	connect(m_tcpSocket.get(), SIGNAL(disconnected()), this, SLOT(disconnected()));
 	connect(m_tcpSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
@@ -20,12 +23,10 @@ m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0
 	readConfigFile();
 	connectToServer();
 	m_readThread = new std::thread(&SocketHandler::readThreadFunction, this);
-	m_continueReading.store(false);
 }
 
 SocketHandler::~SocketHandler() {
 	m_readThreadRun = false;
-	m_readBufferCV.notify_one();
 	m_readThread->join();
 	delete m_readThread;
 }
@@ -62,7 +63,7 @@ void SocketHandler::bytesWritten(qint64 bytes)
 void SocketHandler::readyRead()
 {
 
-	m_readBufferCV.notify_one();
+	//m_readBufferCV.notify_one();
 }
 
 bool SocketHandler::writeData(QByteArray& data) {
@@ -112,12 +113,10 @@ void SocketHandler::readConfigFile() {
 void SocketHandler::readThreadFunction() {
 	while (m_readThreadRun) {
 
-		std::unique_lock<std::mutex> ul(m_readBufferMutex);
-		m_readBufferCV.wait(ul, [this] {return m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0 || !m_readThreadRun; });
+		m_tcpSocket->waitForReadyRead(1000);
 
 		while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
 			qint64 numBytes = m_tcpSocket->bytesAvailable();
-			qDebug()  << endl;
 			QByteArray data = m_tcpSocket->readAll();
 			m_previousPacket->append(data);
 			while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
