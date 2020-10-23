@@ -173,7 +173,6 @@ void MyServer::MessageHandler(ClientManager *client, QByteArray socketData){
         qDebug("LOGOUT request\n");
         //il messaggio di logout contiene solo il type LOGOUT
         db->logout(client);
-
         break;
     case (REGISTER): {
         /*

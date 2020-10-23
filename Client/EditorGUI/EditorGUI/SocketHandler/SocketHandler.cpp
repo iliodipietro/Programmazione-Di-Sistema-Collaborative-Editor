@@ -13,8 +13,21 @@ m_previousPacket(new QByteArray()), m_previousSize(0)
 	readConfigFile();
 }
 
+void SocketHandler::run() {
+	m_tcpSocket = new QTcpSocket();
+	//m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+	m_tcpSocket->setReadBufferSize(2 * 1024 * 1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * 1024 * 1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, 2 * 1024 * 1024);
+	connect(m_tcpSocket, SIGNAL(connected()), this, SLOT(connected()), Qt::QueuedConnection);
+	connect(m_tcpSocket, SIGNAL(disconnected()), this, SLOT(QAbstractSocket::disconnected()), Qt::QueuedConnection);
+	connect(m_tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::QueuedConnection);
+	connect(m_tcpSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
+	connectToServer();
+}
+
 SocketHandler::~SocketHandler() {
-	m_tcpSocket->deleteLater();
 }
 
 bool SocketHandler::connectToServer() {
@@ -136,19 +149,4 @@ void SocketHandler::readConfigFile() {
 		m_serverPort = line.section(":", 1, 1).toInt();
 		file.close();
 	}
-}
-
-void SocketHandler::run() {
-	m_tcpSocket = new QTcpSocket();
-	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-	m_tcpSocket->setReadBufferSize(2 * 1024 * 1024);
-	m_tcpSocket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * 1024 * 1024);
-	m_tcpSocket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, 2 * 1024 * 1024);
-	connect(m_tcpSocket, SIGNAL(connected()), this, SLOT(connected()), Qt::QueuedConnection);
-	connect(m_tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
-	connect(m_tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::QueuedConnection);
-	connect(m_tcpSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
-	connectToServer();
-
 }
