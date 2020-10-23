@@ -73,6 +73,7 @@ private slots:
 signals:
 	void showParent();
 	void fileClicked();
+	void dataToSend(QByteArray);
 
 protected:
 	void mousePressEvent(QMouseEvent* event);

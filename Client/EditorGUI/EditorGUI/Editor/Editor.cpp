@@ -51,6 +51,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
+	connect(this, &Editor::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	this->setFocusPolicy(Qt::StrongFocus);
 
 	(connect(m_textEdit, SIGNAL(propaga(QKeyEvent*)), this, SLOT(tastoPremuto(QKeyEvent*))));
@@ -563,9 +564,10 @@ void Editor::shareLink() {
 	
 	QJsonObject obj = Serialize::openDeleteFileSerialize(m_fileId, SHARE);
 	QByteArray msg = Serialize::fromObjectToArray(obj);
-	if (m_socketHandler->writeData(msg) == false) {
-		return;
-	}
+	//if (m_socketHandler->writeData(msg) == false) {
+	//	return;
+	//}
+	emit dataToSend(msg);
 
 }
 
@@ -680,7 +682,8 @@ void Editor::localInsert() {
 
 
 
-		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		//m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		emit dataToSend(Serialize::fromObjectToArray(packet));
 
 		//std::string prova = m.getSymbol().getFont().toString().toStdString();
 		//std::cout << "prova" << std::endl;
@@ -727,7 +730,8 @@ void Editor::localDelete() {
 		maybeSleep(dim);
 		dim--;
 
-		m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		//m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+		emit dataToSend(Serialize::fromObjectToArray(packet));
 	}
 
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
@@ -1104,7 +1108,8 @@ void Editor::localStyleChange()
 			//scrivo sul socket solo se c'e stato un vero cambio --> meno banda e carico per il server
 			Message m = this->_CRDT->localChange(pos, chr, font, color, alignment);
 			QJsonObject packet = Serialize::messageSerialize(m, m_fileId, MESSAGE);
-			m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+			//m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
+			emit dataToSend(Serialize::fromObjectToArray(packet));
 		}
 
 	}
@@ -1448,7 +1453,8 @@ void Editor::mousePressEvent(QMouseEvent* event) {
 void Editor::updateCursorPosition(bool isSelection) {
 	QTextCursor TC = m_textEdit->textCursor();
 	Message m(this->_CRDT->getSymbol(TC.position()).getPos(), CURSOR_S, _CRDT->getId(), isSelection);
-	m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+	//m_socketHandler->writeData(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
+	emit dataToSend(Serialize::fromObjectToArray(Serialize::messageSerialize(m, m_fileId, MESSAGE)));
 }
 
 void Editor::showHideUsersIntervals() {

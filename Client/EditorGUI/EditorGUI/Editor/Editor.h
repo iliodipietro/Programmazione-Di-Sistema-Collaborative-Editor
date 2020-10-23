@@ -171,4 +171,5 @@ signals:
 	void styleChange();
 	void showHideUsersIntervalsSignal();
 	void updateUsersIntervals();
+	void dataToSend(QByteArray);
 };

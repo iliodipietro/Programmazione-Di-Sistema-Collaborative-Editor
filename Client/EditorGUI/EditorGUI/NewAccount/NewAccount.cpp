@@ -16,6 +16,7 @@ NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* par
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &NewAccount::registrationResult);
+	connect(this, &NewAccount::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 	//ilio
 	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
@@ -83,18 +84,19 @@ void NewAccount::on_submit_clicked() {
 	if (username != "" && email != "") {
 		if (password.compare(password_re) == 0) {
 			QJsonObject userInfoSerialized = Serialize::userSerialize(username, password, email, REGISTER, m_croppedImage); //ilio
-			bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
-			if (result) {
-				m_timer->setSingleShot(true);
-				m_timer->setInterval(4000);
-				m_timer->start();
+			//bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(userInfoSerialized));
+			//if (result) {
+			//	m_timer->setSingleShot(true);
+			//	m_timer->setInterval(4000);
+			//	m_timer->start();
 
-			}
-			else {
-				QMessageBox resultDialog(this);
-				resultDialog.setInformativeText("Errore di connessione");
-				resultDialog.exec();
-			}
+			//}
+			//else {
+			//	QMessageBox resultDialog(this);
+			//	resultDialog.setInformativeText("Errore di connessione");
+			//	resultDialog.exec();
+			//}
+			emit dataToSend(Serialize::fromObjectToArray(userInfoSerialized));
 			//if (m_croppedImage != Q_NULLPTR) {
 			//	QPoint areaPos = m_selectionArea->geometry().topLeft();
 			//	areaPos.setX(areaPos.x() - ui.imageLabel->pos().x());

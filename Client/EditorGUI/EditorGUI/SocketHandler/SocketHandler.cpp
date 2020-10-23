@@ -7,28 +7,14 @@
 //#define SERVER_IP "127.0.0.1"
 //#define PORT 44322
 
-SocketHandler::SocketHandler(QObject* parent) : QObject(parent), m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),
-m_previousPacket(QSharedPointer<QByteArray>(new QByteArray())), m_previousSize(0), m_readThreadRun(true)
+SocketHandler::SocketHandler(QObject* parent) : QObject(parent),/* m_tcpSocket(QSharedPointer<QTcpSocket>(new QTcpSocket(this))),*/
+m_previousPacket(new QByteArray()), m_previousSize(0)
 {
-	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-	m_tcpSocket->setReadBufferSize(2*1024*1024);
-	m_tcpSocket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * 1024 * 1024);
-	m_tcpSocket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, 2 * 1024 * 1024);
-	connect(m_tcpSocket.get(), SIGNAL(connected()), this, SLOT(connected()));
-	connect(m_tcpSocket.get(), SIGNAL(disconnected()), this, SLOT(disconnected()));
-	connect(m_tcpSocket.get(), SIGNAL(readyRead()), this, SLOT(readyRead()));
-	connect(m_tcpSocket.get(), SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
-	//connect(this, SIGNAL(dataReceived(int)), this, SLOT(getMessage(int)));
 	readConfigFile();
-	connectToServer();
-	m_readThread = new std::thread(&SocketHandler::readThreadFunction, this);
 }
 
 SocketHandler::~SocketHandler() {
-	m_readThreadRun = false;
-	m_readThread->join();
-	delete m_readThread;
+	m_tcpSocket->deleteLater();
 }
 
 bool SocketHandler::connectToServer() {
@@ -62,15 +48,57 @@ void SocketHandler::bytesWritten(qint64 bytes)
 
 void SocketHandler::readyRead()
 {
+	while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
+		qint64 numBytes = m_tcpSocket->bytesAvailable();
+		QByteArray data = m_tcpSocket->readAll();
+		m_previousPacket->append(data);
+		while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
 
-	//m_readBufferCV.notify_one();
+			if (m_previousSize == 0 && m_previousPacket->size() >= 8) {
+				m_previousSize = arrayToInt(m_previousPacket->mid(0, 8));
+				m_previousPacket->remove(0, 8);
+			}
+
+			if (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize) {
+				QByteArray message = m_previousPacket->mid(0, m_previousSize);
+				m_previousPacket->remove(0, m_previousSize);
+				m_previousSize = 0;
+				QJsonParseError parseError;
+				QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
+				m_packetsInQueue.push_back(doc.object());
+			}
+
+			if (m_packetsInQueue.size() == 7) {
+				for (int i = 0; i < 7; i++)
+					emit dataReceived(m_packetsInQueue[i]);
+				m_packetsInQueue.clear();
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			}
+		}
+
+		if (m_packetsInQueue.size() > 1) {
+			for (int i = 0; i < m_packetsInQueue.size(); i++)
+				emit dataReceived(m_packetsInQueue[i]);
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_packetsInQueue.size() * 6));
+			m_packetsInQueue.clear();
+		}
+
+		if (m_previousPacket->size() < 8 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
+
+	}
+
+	if (m_packetsInQueue.size() == 1) {
+		emit dataReceived(m_packetsInQueue[0]);
+		m_packetsInQueue.clear();
+	}
 }
 
-bool SocketHandler::writeData(QByteArray& data) {
+bool SocketHandler::writeData(QByteArray data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{
-		m_tcpSocket->write(intToArray(data.size()).append(data));
-		return m_tcpSocket->waitForBytesWritten();
+		qint64 size = m_tcpSocket->write(intToArray(data.size()).append(data));
+		if (size + 8 == data.size()) return true;
+		else return false;
 	}
 	else {
 		return false;
@@ -110,59 +138,17 @@ void SocketHandler::readConfigFile() {
 	}
 }
 
-void SocketHandler::readThreadFunction() {
-	while (m_readThreadRun) {
+void SocketHandler::run() {
+	m_tcpSocket = new QTcpSocket();
+	m_tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+	m_tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+	m_tcpSocket->setReadBufferSize(2 * 1024 * 1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption, 2 * 1024 * 1024);
+	m_tcpSocket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption, 2 * 1024 * 1024);
+	connect(m_tcpSocket, SIGNAL(connected()), this, SLOT(connected()), Qt::QueuedConnection);
+	connect(m_tcpSocket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+	connect(m_tcpSocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::QueuedConnection);
+	connect(m_tcpSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
+	connectToServer();
 
-		m_tcpSocket->waitForReadyRead(1000);
-
-		while (m_tcpSocket->bytesAvailable() || m_previousPacket->size() != 0) {
-			qint64 numBytes = m_tcpSocket->bytesAvailable();
-			QByteArray data = m_tcpSocket->readAll();
-			m_previousPacket->append(data);
-			while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
-
-				if (m_previousSize == 0 && m_previousPacket->size() >= 8) {
-					m_previousSize = arrayToInt(m_previousPacket->mid(0, 8));
-					m_previousPacket->remove(0, 8);
-				}
-
-				if (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize) {
-					QByteArray message = m_previousPacket->mid(0, m_previousSize);
-					m_previousPacket->remove(0, m_previousSize);
-					m_previousSize = 0;
-					QJsonParseError parseError;
-					QJsonDocument doc = QJsonDocument::fromJson(message, &parseError);
-					m_packetsInQueue.push_back(doc.object());
-				}
-
-				if (m_packetsInQueue.size() == 7) {
-					for (int i = 0; i < 7; i++)
-						emit dataReceived(m_packetsInQueue[i]);
-					m_packetsInQueue.clear();
-					std::this_thread::sleep_for(std::chrono::milliseconds(40));
-				}
-			}
-
-			if (m_packetsInQueue.size() > 1) {
-				for (int i = 0; i < m_packetsInQueue.size(); i++)
-					emit dataReceived(m_packetsInQueue[i]);
-				std::this_thread::sleep_for(std::chrono::milliseconds(m_packetsInQueue.size() * 5));
-				m_packetsInQueue.clear();
-			}
-
-			if (m_previousPacket->size() < 8 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
-
-		}
-
-		if (m_packetsInQueue.size() == 1) {
-			emit dataReceived(m_packetsInQueue[0]);
-			m_packetsInQueue.clear();
-		}
-	}
-}
-
-void SocketHandler::parseEmitMessages(QByteArray* message) {
-	QJsonParseError parseError;
-	QJsonDocument doc = QJsonDocument::fromJson(*message, &parseError);
-	emit dataReceived(doc.object());
 }

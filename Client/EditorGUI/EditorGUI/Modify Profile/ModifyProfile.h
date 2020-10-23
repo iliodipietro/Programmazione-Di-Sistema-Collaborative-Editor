@@ -64,4 +64,5 @@ private slots:
 signals:
 	void showParent();
 	void showParentUpdated(QString m_username, QString m_email, QSharedPointer<QPixmap> m_image);
+	void dataToSend(QByteArray);
 };

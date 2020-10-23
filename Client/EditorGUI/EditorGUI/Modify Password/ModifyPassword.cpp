@@ -36,19 +36,20 @@ void ModifyPassword::on_okButton_clicked() {
 	if (oldPassword != "" && newPassword != "" && confirmPassword != "") {
 		if (newPassword.compare(confirmPassword) == 0) {
 			QJsonObject passwordSerialize = Serialize::changePasswordSerialize(oldPassword, newPassword, CHANGE_PASSWORD);
-			bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(passwordSerialize));
+			//bool result = m_socketHandler->writeData(Serialize::fromObjectToArray(passwordSerialize));
 
-			if (result) {
-				m_timer->setSingleShot(true);
-				m_timer->setInterval(4000);
-				m_timer->start();
+			//if (result) {
+			//	m_timer->setSingleShot(true);
+			//	m_timer->setInterval(4000);
+			//	m_timer->start();
 
-			}
-			else {
-				QMessageBox resultDialog(this);
-				resultDialog.setInformativeText("Errore di connessione");
-				resultDialog.exec();
-			}
+			//}
+			//else {
+			//	QMessageBox resultDialog(this);
+			//	resultDialog.setInformativeText("Errore di connessione");
+			//	resultDialog.exec();
+			//}
+			emit dataToSend(Serialize::fromObjectToArray(passwordSerialize));
 		}
 		else {
 			QMessageBox::warning(this, "ModifyPassword", "Password non coincidenti!");
