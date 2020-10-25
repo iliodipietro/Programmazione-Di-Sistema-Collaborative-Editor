@@ -164,10 +164,104 @@ void MyTextEdit::updateUsersIntervals() {
 				m_rowDimensions.emplace_back(startRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
 			}
 			else {
-				TC.setPosition(it->getStartPosition(), QTextCursor::MoveAnchor);
+				int interval = it->getEndPosition() - it->getStartPosition();
+				if (interval >= 20) {
+					int numOfInterval = interval / 20;
+					int offset;
+					int start = it->getStartPosition();
+					int end = it->getStartPosition() + 20;
+					int i = 1;
+					while (i - 1 < numOfInterval) {
+						TC.setPosition(end);
+						QRect intRect = this->cursorRect(TC);
+						while (intRect.y() == startRect.y() && end + 20 <= it->getEndPosition()) {
+							end += 20;
+							i++;
+							TC.setPosition(end);
+							intRect = this->cursorRect(TC);
+						}
+						start = preciseIntervals(startRect, start, i, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+						TC.setPosition(start);
+						startRect = this->cursorRect(TC);
+						interval = it->getEndPosition() - start;
+						numOfInterval = interval / 20;
+						end = start + 20;
+						i = 1;
+					}
+					remainingIntervals(startRect, start, it->getEndPosition(), m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				}
+				else {
+					remainingIntervals(startRect, it->getStartPosition(), it->getEndPosition(), m_cursorsToPrint.at(it->getUserId())->getCursorColor());
+				}
+
+			}
+		}
+	}
+
+	if (m_usersIntervalsEnabled)
+		this->repaint();
+}
+
+int MyTextEdit::preciseIntervals(QRect start, int startPos, int nIntervals, QColor color) {
+	QRect intRect;
+	QTextCursor TC = this->textCursor();
+	int i;
+	bool flag = false;
+	for (i = startPos + (nIntervals - 1) * 20; i < startPos + nIntervals * 20; i++) {
+		TC.setPosition(i);
+		intRect = this->cursorRect(TC);
+		if (intRect.y() > start.y())
+		{
+			flag = true;
+			break;
+		}
+	}
+	TC.setPosition(i - 1);
+	intRect = this->cursorRect(TC);
+	start.setWidth(intRect.x() - start.x());
+	m_rowDimensions.emplace_back(start, color);
+	if (flag)
+		return i;
+	else
+		return i + 1;
+}
+
+void MyTextEdit::remainingIntervals(QRect start, int startPos, int endPos, QColor color) {
+	if (startPos == endPos) return;
+	QRect intRect;
+	QTextCursor TC = this->textCursor();
+	bool flag = false;
+	for (int i = startPos; i < endPos + 1; i++) {
+		TC.setPosition(i);
+		intRect = this->cursorRect(TC);
+		int y = intRect.y();
+		if (intRect.y() != start.y()) {
+			TC.setPosition(i - 1);
+			intRect = this->cursorRect(TC);
+			start.setWidth(intRect.x() - start.x());
+			m_rowDimensions.emplace_back(start, color);
+			TC.setPosition(i);
+			start = this->cursorRect(TC);
+			flag = true;
+		}
+	}
+	if (!flag) {
+		start.setWidth(intRect.x() - start.x());
+		m_rowDimensions.emplace_back(start, color);
+	}
+}
+
+/*TC.setPosition(it->getStartPosition(), QTextCursor::MoveAnchor);
 				TC.setPosition(it->getEndPosition(), QTextCursor::KeepAnchor);
 				QString str = TC.selectedText();
 				bool multipleLines = str.contains(QRegularExpression(QStringLiteral("[\\x{2029}]")));
+				do {
+					TC.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
+					QRect newRect = this->cursorRect(TC);
+				}
+				while
+				int pos = TC.position();
+				TC.setPosition(it->getStartPosition());
 				if (multipleLines) {
 					int initialPos = it->getStartPosition();
 					do {
@@ -188,12 +282,4 @@ void MyTextEdit::updateUsersIntervals() {
 					m_rowDimensions.emplace_back(startRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
 				}
 				endRect.setX(4);
-				m_rowDimensions.emplace_back(endRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-
-			}
-		}
-	}
-
-	if(m_usersIntervalsEnabled)
-		this->repaint();
-}
+				m_rowDimensions.emplace_back(endRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());*/

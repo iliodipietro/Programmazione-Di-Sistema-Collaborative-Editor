@@ -34,11 +34,12 @@ void Login::closeEvent(QCloseEvent* event)
 void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor) {
 	m_timer->stop();
 	resetWindows();
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);// altrimenti arriva sempre al login anche quando non deve
 	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor,  m_email, m_username, clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
-	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);// altrimenti arriva sempre al login anche quando non deve
+	
 	this->hide();
 }
 
