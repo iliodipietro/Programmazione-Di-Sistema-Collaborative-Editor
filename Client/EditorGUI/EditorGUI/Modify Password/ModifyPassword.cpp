@@ -60,19 +60,21 @@ void ModifyPassword::on_okButton_clicked() {
 		QMessageBox::warning(this, "ModifyPassword", "I campi non possono essere vuoti");
 	}
 	
-	//disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
+	
 	this->accept();
 }
 
 void ModifyPassword::on_cancel_clicked() {
 	//emit showParent();
 	//this->hide();
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
 	this->reject();
 }
 
 void ModifyPassword::changeResult(QJsonObject response)
 {
 	m_timer->stop();
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
 	QStringList serverMessage = Serialize::responseUnserialize(response);
 	bool result = serverMessage[0] == "true" ? true : false;
 
