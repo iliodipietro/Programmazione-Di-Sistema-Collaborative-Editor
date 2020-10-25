@@ -560,19 +560,27 @@ void CRDT::saveOnFile()
     //    stream << "";
     //    file.close();
     //}
-	if (this->_symbols.size() > 0) {
 
 
-		QFile file(this->path);
-		if (file.open(QIODevice::WriteOnly | QFile::Truncate)) {
-			QTextStream stream(&file);
+
+	QFile file(this->path);
+	if (file.open(QIODevice::WriteOnly | QFile::Truncate)) {
+		QTextStream stream(&file);
+
+		if (this->_symbols.size() > 0) {
+		
 			QString serialized_text = this->crdt_serialize();
 			stream << serialized_text;
 		}
 		else {
-			qDebug() << "Errore apertura file nella save";
+			stream << "";
 		}
 	}
+	else {
+		qDebug() << "Errore apertura file nella save";
+	}
+	
+
 
 	//this->timer->start(TIMEOUT);
 }
