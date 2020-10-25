@@ -25,18 +25,25 @@ NewAccount::NewAccount(QSharedPointer<SocketHandler> socketHandler, QWidget* par
 
 	QString url = QDir::currentPath().append("/").append("user.png");
 	m_selectedImage = new QPixmap(url);
-	m_croppedImage = new QPixmap(m_selectedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-	QPixmap target(QSize(RUBBER_SIZE, RUBBER_SIZE));
+	m_croppedImage = new QPixmap(m_selectedImage->scaled(QSize(RUBBER_SIZE, RUBBER_SIZE), Qt::KeepAspectRatio));
+	QPixmap target(QSize(RUBBER_SIZE , RUBBER_SIZE ));
 	target.fill(Qt::transparent);
 	QPainter painter(&target);
 	painter.setRenderHint(QPainter::Antialiasing, true);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 	QPainterPath path;
-	path.addRoundedRect(0, 0, RUBBER_SIZE, RUBBER_SIZE, RUBBER_SIZE / 2, RUBBER_SIZE / 2);
+	path.addRoundedRect(0, 0, RUBBER_SIZE , RUBBER_SIZE, RUBBER_SIZE / 2, RUBBER_SIZE / 2);
 	painter.setClipPath(path);
 	painter.drawPixmap(0, 0, *m_croppedImage);
 	QPixmap roundedImage(target);
 	ui.imageLabel->setPixmap(target);
+
+	//Ilio
+	ui.submit->setEnabled(false);
+	connect(ui.usernameLine, &QLineEdit::textChanged, this, &NewAccount::on_texte_changed);
+	connect(ui.emailLine, &QLineEdit::textChanged, this, &NewAccount::on_texte_changed);
+	connect(ui.passwordLine, &QLineEdit::textChanged, this, &NewAccount::on_texte_changed);
+	connect(ui.rePasswordLine, &QLineEdit::textChanged, this, &NewAccount::on_texte_changed);
 }
 
 NewAccount::~NewAccount()
@@ -77,7 +84,7 @@ void NewAccount::on_selectImageButton_clicked() {
 void NewAccount::on_submit_clicked() {
 	//mandare le informazioni al serializzatore
 
-	QString username = ui.nickNameLine->text();
+	QString username = ui.usernameLine->text();
 	QString password = ui.passwordLine->text();
 	QString password_re = ui.rePasswordLine->text();
 	QString email = ui.emailLine->text();
@@ -248,4 +255,17 @@ void NewAccount::adjustTextColor() {
 		ui.emailLine->setStyleSheet("QLineEdit { color: red;}");
 	else
 		ui.emailLine->setStyleSheet("QLineEdit { color: black;}");
+}
+
+void NewAccount::on_texte_changed(){
+	if (this->ui.usernameLine->text().compare("")   != 0 &&
+		this->ui.emailLine->text().compare("")      != 0 &&
+		this->ui.passwordLine->text().compare("")   != 0 &&
+		this->ui.rePasswordLine->text().compare("") != 0) {
+
+		ui.submit->setEnabled(true);
+	}
+	else {
+		ui.submit->setEnabled(false);
+	}
 }

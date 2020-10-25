@@ -51,6 +51,7 @@ private slots:
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
 	void adjustTextColor();//ilio
+	void on_texte_changed();//ilio
 	
 
 signals:

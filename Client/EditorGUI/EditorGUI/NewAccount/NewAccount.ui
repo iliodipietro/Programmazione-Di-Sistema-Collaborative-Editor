@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
+    <width>792</width>
     <height>712</height>
    </rect>
   </property>
@@ -25,12 +25,18 @@
       <x>120</x>
       <y>70</y>
       <width>551</width>
-      <height>211</height>
+      <height>251</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
+     </property>
+     <property name="labelAlignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
+     </property>
+     <property name="formAlignment">
+      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
      </property>
      <property name="horizontalSpacing">
       <number>9</number>
@@ -38,63 +44,6 @@
      <property name="verticalSpacing">
       <number>10</number>
      </property>
-     <item row="1" column="0">
-      <widget class="QLabel" name="nicknameLabel">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLabel { color: white; }</string>
-       </property>
-       <property name="text">
-        <string>Nome Utente</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="nickNameLine">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="emailLabel">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLabel { color: white; }</string>
-       </property>
-       <property name="text">
-        <string>E-mail</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="emailLine">
        <property name="minimumSize">
@@ -108,26 +57,8 @@
          <pointsize>10</pointsize>
         </font>
        </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="passwordLabel">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLabel { color: white; }</string>
-       </property>
-       <property name="text">
-        <string>Password</string>
+       <property name="placeholderText">
+        <string>E-mail</string>
        </property>
       </widget>
      </item>
@@ -147,26 +78,8 @@
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
        </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="rePasswordLabel">
-       <property name="minimumSize">
-        <size>
-         <width>150</width>
-         <height>40</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QLabel { color: white; }</string>
-       </property>
-       <property name="text">
-        <string>Reinserisci Password</string>
+       <property name="placeholderText">
+        <string>Password</string>
        </property>
       </widget>
      </item>
@@ -186,6 +99,27 @@
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
        </property>
+       <property name="placeholderText">
+        <string>Conferma Password</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="usernameLine">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="placeholderText">
+        <string>Nome Utente</string>
+       </property>
       </widget>
      </item>
     </layout>
@@ -193,9 +127,9 @@
    <widget class="QPushButton" name="submit">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>550</y>
-      <width>231</width>
+      <x>120</x>
+      <y>600</y>
+      <width>200</width>
       <height>61</height>
      </rect>
     </property>
@@ -213,7 +147,11 @@
   border-radius: 5px;
 }
 
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
     </property>
     <property name="text">
      <string>Registrati</string>
@@ -222,8 +160,8 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <widget class="QLabel" name="imageLabel">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>300</y>
+      <x>120</x>
+      <y>305</y>
       <width>225</width>
       <height>225</height>
      </rect>
@@ -236,19 +174,31 @@ QPushButton:hover { background-color: #0080FF; }</string>
     </property>
     <property name="maximumSize">
      <size>
-      <width>225</width>
-      <height>225</height>
+      <width>125</width>
+      <height>125</height>
      </size>
+    </property>
+    <property name="baseSize">
+     <size>
+      <width>125</width>
+      <height>125</height>
+     </size>
+    </property>
+    <property name="midLineWidth">
+     <number>0</number>
     </property>
     <property name="text">
      <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="selectImageButton">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>300</y>
+      <x>160</x>
+      <y>500</y>
       <width>156</width>
       <height>40</height>
      </rect>
@@ -282,9 +232,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <widget class="QPushButton" name="cancel">
     <property name="geometry">
      <rect>
-      <x>720</x>
-      <y>550</y>
-      <width>201</width>
+      <x>360</x>
+      <y>600</y>
+      <width>200</width>
       <height>61</height>
      </rect>
     </property>
@@ -311,9 +261,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>0</x>
       <y>0</y>
-      <width>621</width>
+      <width>791</width>
       <height>81</height>
      </rect>
     </property>
@@ -327,6 +277,36 @@ QPushButton:hover { background-color: #0080FF; }</string>
     </property>
     <property name="text">
      <string>Inserisci le tue credenziali</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="emailLabel_2">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>300</y>
+      <width>150</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>150</width>
+      <height>40</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel { color: white; }</string>
+    </property>
+    <property name="text">
+     <string>Immagine:</string>
     </property>
    </widget>
   </widget>

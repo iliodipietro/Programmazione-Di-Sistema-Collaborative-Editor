@@ -43,6 +43,7 @@ private slots:
 	void loginResult(QJsonObject response);
 	void showErrorMessage();
     void childWindowClosed();
+	void on_textChanged();
 
 protected:
 	void hideEvent(QHideEvent* event);

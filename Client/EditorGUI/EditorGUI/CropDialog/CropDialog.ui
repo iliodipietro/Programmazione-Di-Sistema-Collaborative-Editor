@@ -25,6 +25,17 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QPushButton" name="okButton">
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }</string>
+      </property>
       <property name="text">
        <string>Ok</string>
       </property>
@@ -32,6 +43,17 @@
     </item>
     <item>
      <widget class="QPushButton" name="cancelButton">
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }</string>
+      </property>
       <property name="text">
        <string>Annulla</string>
       </property>
