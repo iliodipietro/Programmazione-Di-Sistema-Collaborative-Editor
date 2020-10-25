@@ -48,7 +48,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	//connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
 	//connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
 	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
-	//connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
+	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
 	connect(this, &Editor::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
@@ -493,7 +493,7 @@ void Editor::textSize(const QString& p) {
 	if (p.toFloat() > 0) {
 		QTextCharFormat fmt;
 		fmt.setFontPointSize(pointSize);
-		this->mergeFormatOnWordOrSelection(fmt);
+		this->mergeFormatOnWordOrSelection(fmt); //probabilmente qua non ci entra proprio
 	}
 	QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
@@ -1301,13 +1301,15 @@ void Editor::styleChanged(QFont font){
 	else {
 		this->italicAct->setChecked(false);
 	}
-
+	
 	if (font.underline()) {
 		this->underLineAct->setChecked(true);
 	}
 	else {
 		this->underLineAct->setChecked(false);
 	}
+	//int i = font.pointSize();
+	
 }
 
 
@@ -1320,7 +1322,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	QTextCharFormat fmt = TC.charFormat();
 	QFont font = fmt.font();
 
-	this->styleChanged(font);
+	
 	QTextList* list = TC.currentList();
 	if (list) {
 		switch (list->format().style()) {
@@ -1365,7 +1367,11 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	this->actionTextColor->setIcon(pix);
 	const QList<int> standardSizes = QFontDatabase::standardSizes();
 	int size = m_textEdit->font().pointSize();
-	QString t = TC.selectedText();
+	//QString t = TC.selectedText();
+	//this->textSize(t);
+	//this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
+	this->styleChanged(font);
+	size = font.pointSize();
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(size));
 }
 

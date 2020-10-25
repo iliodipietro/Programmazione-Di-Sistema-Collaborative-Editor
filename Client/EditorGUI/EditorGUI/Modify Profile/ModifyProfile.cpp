@@ -21,6 +21,8 @@ m_timer(new QTimer(this)) {
 	ui.usernameLine_3->setText(username);
 	ui.emailLine_3->setText(email);
 	ui.imageLabel->setPixmap(*profileImage);
+	/*ui.submit->setEnabled(false);
+	ui.submit->setVisible(false);*/
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(ModifyProfileResult(QJsonObject)));
@@ -81,7 +83,7 @@ void ModifyProfile::on_modifyPasswordButton_clicked()
 	else {
 
 	}
-	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
+	//disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 }
 
 void ModifyProfile::on_submit_clicked() {
@@ -119,7 +121,7 @@ void ModifyProfile::on_submit_clicked() {
 	else {
 		QMessageBox::warning(this, "Modifica Profilo", "email mancante");
 	}
-
+	//disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult); questa disconnect non fa chiudere la finestra
 }
 
 void ModifyProfile::mousePressEvent(QMouseEvent* e)
