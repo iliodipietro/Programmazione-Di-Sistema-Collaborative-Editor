@@ -271,6 +271,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
    </property>
   </widget>
   <widget class="QPushButton" name="submit">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>120</x>

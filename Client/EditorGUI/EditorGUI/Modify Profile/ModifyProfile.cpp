@@ -92,7 +92,7 @@ void ModifyProfile::on_modifyPasswordButton_clicked()
 	else {
 
 	}
-	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
+	//disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 }
 
 void ModifyProfile::on_submit_clicked() {
@@ -130,7 +130,7 @@ void ModifyProfile::on_submit_clicked() {
 	else {
 		QMessageBox::warning(this, "Modifica Profilo", "email mancante");
 	}
-
+	//disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult); questa disconnect non fa chiudere la finestra
 }
 
 void ModifyProfile::mousePressEvent(QMouseEvent* e)
