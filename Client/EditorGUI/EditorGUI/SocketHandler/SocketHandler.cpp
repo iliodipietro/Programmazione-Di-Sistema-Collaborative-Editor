@@ -28,6 +28,7 @@ void SocketHandler::run() {
 }
 
 SocketHandler::~SocketHandler() {
+	m_tcpSocket->deleteLater();
 }
 
 bool SocketHandler::connectToServer() {

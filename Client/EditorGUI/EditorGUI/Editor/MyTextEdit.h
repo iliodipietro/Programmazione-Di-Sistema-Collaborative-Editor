@@ -51,6 +51,9 @@ private:
 
     void paintCustomCursors();
     void paintUsersIntervals();
+    void craeteAllIntervals(QRect start, QRect end, QColor color);
+    int preciseIntervals(QRect start, int startPos, int nIntervals, QColor color);
+    void remainingIntervals(QRect start, int startPos, int endPos, QColor color);
 
 protected:
     void paintEvent(QPaintEvent* event);
