@@ -12,8 +12,7 @@ ModifyPassword::ModifyPassword(QSharedPointer<SocketHandler> socketHandler, QWid
 	ui.setupUi(this);
 	this->move_rubberband = false;
 	m_selectionArea = Q_NULLPTR;
-	//connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
-	connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(changeResult(QJsonObject)));
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
 	connect(this, &ModifyPassword::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 

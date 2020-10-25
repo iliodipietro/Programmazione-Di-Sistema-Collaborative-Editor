@@ -198,7 +198,7 @@ void FileBrowser::on_logoutButton_clicked() {
 //viene aperta la finestra per la modifica dei dati dell'utente
 void FileBrowser::on_modifyProfile_clicked()
 {
-	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email, this->m_profileImage); //devo passargli l'email devo capire dove prenderla l'immagine è uno shared pointer
+	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email, this->m_profileImage); 
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParentUpdated, this, &FileBrowser::childWindowClosedAndUpdate);
 	connect(m_modifyProfile, &ModifyProfile::showParent, this, &FileBrowser::childWindowClosed);
@@ -211,8 +211,9 @@ void FileBrowser::childWindowClosed() {
 
 void FileBrowser::childWindowClosedAndUpdate(QString m_username, QString m_email, QSharedPointer<QPixmap> m_profileImage) {
 	this->username = m_username;
-	this->email = email;
+	this->email = m_email;
 	this->m_profileImage = m_profileImage;
+
 	ui.username->setText(m_username);
 	ui.profileImage->setPixmap(*m_profileImage);
 	this->show();
