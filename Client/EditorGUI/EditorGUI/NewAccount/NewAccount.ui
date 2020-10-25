@@ -160,16 +160,16 @@ QPushButton:disabled{
    <widget class="QLabel" name="imageLabel">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>305</y>
-      <width>225</width>
-      <height>225</height>
+      <x>170</x>
+      <y>340</y>
+      <width>125</width>
+      <height>125</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>225</width>
-      <height>225</height>
+      <width>125</width>
+      <height>125</height>
      </size>
     </property>
     <property name="maximumSize">
