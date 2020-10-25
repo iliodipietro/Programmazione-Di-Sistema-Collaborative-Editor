@@ -2,7 +2,7 @@
 #include "CropDialog/CropDialog.h"
 #include <QMouseEvent>
 #include <QMessageBox>
-#define RUBBER_SIZE 225
+#define RUBBER_SIZE 125
 
 ModifyProfile::ModifyProfile(QSharedPointer<SocketHandler> socketHandler, QString username, QString email, QSharedPointer<QPixmap> profileImage, QMainWindow* parent) : QMainWindow(parent), m_socketHandler(socketHandler),
 m_timer(new QTimer(this)) {
@@ -17,10 +17,14 @@ m_timer(new QTimer(this)) {
 	this->m_username = username;
 	this->m_email = email;
 	m_croppedImage = profileImage.get();
-	qDebug() << username;   //l'username non viene preso
+	qDebug() << username;  
+	
 	ui.usernameLine_3->setText(username);
 	ui.emailLine_3->setText(email);
-	ui.imageLabel->setPixmap(*profileImage);
+	QPixmap scaledImage = profileImage->scaled(QSize(RUBBER_SIZE, RUBBER_SIZE), Qt::KeepAspectRatio);
+	ui.imageLabel->setPixmap(scaledImage);
+	
+
 	m_originalSize = ui.imageLabel->size();
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	//connect(m_socketHandler.get(), SIGNAL(SocketHandler::dataReceived(QJsonObject)), this, SLOT(ModifyProfileResult(QJsonObject)));
@@ -28,9 +32,12 @@ m_timer(new QTimer(this)) {
 	connect(this, &ModifyProfile::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 	//ilio
+	ui.submit->setEnabled(false);
 	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);
 	ui.emailLine_3->setValidator(new QRegularExpressionValidator(rx, this));
 	connect(ui.emailLine_3, &QLineEdit::textChanged, this, &ModifyProfile::adjustTextColor);
+	connect(ui.emailLine_3, &QLineEdit::textChanged, this, &ModifyProfile::on_texte_changed);
+	connect(ui.usernameLine_3, &QLineEdit::textChanged, this, &ModifyProfile::on_texte_changed);
 }
 
 ModifyProfile::~ModifyProfile()
@@ -54,19 +61,23 @@ void ModifyProfile::on_selectImageButton_clicked() {
 		dialog->setModal(true);
 		if (dialog->exec() == QDialog::Accepted) {
 			m_croppedImage = dialog->getCroppedImage();
-			QPixmap* resizedImage = new QPixmap(m_croppedImage->scaled(ui.imageLabel->size(), Qt::KeepAspectRatio));
-			QPixmap target(QSize(RUBBER_SIZE, RUBBER_SIZE));
+			QPixmap* resizedImage = new QPixmap(m_croppedImage->scaled(QSize(RUBBER_SIZE, RUBBER_SIZE), Qt::KeepAspectRatio));
+			QPixmap target(QSize(RUBBER_SIZE , RUBBER_SIZE));
 			target.fill(Qt::transparent);
 			QPainter painter(&target);
 			painter.setRenderHint(QPainter::Antialiasing, true);
 			painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 			QPainterPath path;
-			path.addRoundedRect(0, 0, RUBBER_SIZE, RUBBER_SIZE, RUBBER_SIZE / 2, RUBBER_SIZE / 2);
+			path.addRoundedRect(0, 0, RUBBER_SIZE , RUBBER_SIZE , RUBBER_SIZE /2, RUBBER_SIZE /2);
 			painter.setClipPath(path);
 			painter.drawPixmap(0, 0, *resizedImage);
 			QPixmap roundedImage(target);
 			ui.imageLabel->setPixmap(target);
+			ui.submit->setEnabled(true);
 		}
+	}
+	else {
+		ui.submit->setEnabled(false);
 	}
 }
 
@@ -193,15 +204,16 @@ void ModifyProfile::ModifyProfileResult(QJsonObject response) {
 		QString profileImageBase64 = serverMessage[3];
 		QPixmap profileImage;
 		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
-		QPixmap target(QSize(50, 50));
+		QPixmap resizedProfileImage = profileImage.scaled(QSize(60, 60), Qt::KeepAspectRatio);
+		QPixmap target(QSize(60, 60));
 		target.fill(Qt::transparent);
 		QPainter painter(&target);
 		painter.setRenderHint(QPainter::Antialiasing, true);
 		painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 		QPainterPath path;
-		path.addRoundedRect(0, 0, 50, 50, 25, 25);
+		path.addRoundedRect(0, 0, 60, 60, 30, 30);
 		painter.setClipPath(path);
-		painter.drawPixmap(0, 0, profileImage);
+		painter.drawPixmap(0, 0, resizedProfileImage);
 		this->m_image = QSharedPointer<QPixmap>(new QPixmap(target));
 		QColor userColor(serverMessage[3]);
 
@@ -233,5 +245,20 @@ void ModifyProfile::adjustTextColor() {
 		ui.emailLine_3->setStyleSheet("QLineEdit { color: red;}");
 	else
 		ui.emailLine_3->setStyleSheet("QLineEdit { color: black;}");
+}
+
+void ModifyProfile::on_texte_changed(QString newText){// il newText puo essere la nuova email o il nuovo username, quindi controllo che sia differente da entrambi i campi di testo 
+	if (newText.compare(this->m_email) != 0 && newText.compare(this->m_username) != 0 ) {
+		ui.submit->setEnabled(true);
+	}
+	else {
+		ui.submit->setEnabled(false);
+	}
+}
+
+void ModifyProfile::on_image_changed(QSharedPointer<QPixmap> newImage){
+	if (newImage != this->m_image) {
+		ui.submit->setEnabled(true);
+	}
 }
 

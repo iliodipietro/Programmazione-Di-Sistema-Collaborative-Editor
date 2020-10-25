@@ -14,6 +14,10 @@ Login::Login(QWidget* parent)
 	m_thread->start();
 	m_fileBrowserWindow = Q_NULLPTR;
 	m_newAccountWindow = Q_NULLPTR;
+	//ilio
+	ui.loginButton->setEnabled(false);
+	connect(ui.usernameTextLine, &QLineEdit::textChanged, this, &Login::on_textChanged);
+	connect(ui.passwordTextLine, &QLineEdit::textChanged, this, &Login::on_textChanged);
 }
 
 Login::~Login()
@@ -103,9 +107,9 @@ void Login::loginResult(QJsonObject response) {
 	}
 	else {
 		//dialog per mostrare il messaggio di errore ricevuto dal server
-		//QMessageBox resultDialog(this);
-		//resultDialog.setInformativeText(serverMessage[1]);
-		//resultDialog.exec();
+		QMessageBox resultDialog(this);
+		resultDialog.setInformativeText(serverMessage[1]);
+		resultDialog.exec();
 	}
 }
 
@@ -125,6 +129,15 @@ void Login::childWindowClosed() {
 	ui.passwordTextLine->setText("");
 	this->show();
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);
+}
+
+void Login::on_textChanged(){
+	if (this->ui.usernameTextLine->text().compare("") != 0 && this->ui.passwordTextLine->text().compare("") != 0) {
+		ui.loginButton->setEnabled(true);
+	}
+	else {
+		ui.loginButton->setEnabled(false);
+	}
 }
 
 void Login::resetWindows() {

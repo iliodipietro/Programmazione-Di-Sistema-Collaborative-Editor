@@ -28,6 +28,14 @@
     <height>600</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>MS Shell Dlg 2</family>
+   </font>
+  </property>
+  <property name="cursor">
+   <cursorShape>ArrowCursor</cursorShape>
+  </property>
   <property name="windowTitle">
    <string>Login</string>
   </property>
@@ -91,7 +99,11 @@ QLineEdit { border-radius: 3px; }
   border-width: 0px;
   border-radius: 5px;
 }
-QPushButton:hover { background-color: #0080FF; }</string>
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}9</string>
      </property>
      <property name="text">
       <string>Login</string>
@@ -101,60 +113,53 @@ QPushButton:hover { background-color: #0080FF; }</string>
      <property name="geometry">
       <rect>
        <x>60</x>
-       <y>40</y>
+       <y>50</y>
        <width>321</width>
-       <height>151</height>
+       <height>141</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="usernameLabel">
-          <property name="font">
-           <font>
-            <family>Arial</family>
-            <pointsize>9</pointsize>
-           </font>
+         <widget class="QLineEdit" name="usernameTextLine">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel { color: white; }</string>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>30</height>
+           </size>
           </property>
-          <property name="text">
-           <string>Username:</string>
+          <property name="placeholderText">
+           <string>Username</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="usernameTextLine"/>
         </item>
        </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QLabel" name="passwordLabel">
-          <property name="font">
-           <font>
-            <family>Arial</family>
-            <pointsize>9</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel { color: white; }</string>
-          </property>
-          <property name="text">
-           <string>Password:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QLineEdit" name="passwordTextLine">
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>30</height>
+           </size>
+          </property>
           <property name="inputMethodHints">
            <set>Qt::ImhHiddenText|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
           </property>
           <property name="echoMode">
            <enum>QLineEdit::Password</enum>
+          </property>
+          <property name="placeholderText">
+           <string>Password</string>
           </property>
           <property name="clearButtonEnabled">
            <bool>false</bool>
@@ -222,7 +227,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
      </property>
      <property name="text">
-      <string>Crea account</string>
+      <string>Crea un account</string>
      </property>
     </widget>
    </widget>

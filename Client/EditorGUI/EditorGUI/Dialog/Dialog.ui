@@ -27,6 +27,17 @@
    </property>
    <widget class="QTextEdit" name="textEdit"/>
    <widget class="QPushButton" name="pushButton">
+    <property name="styleSheet">
+     <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }</string>
+    </property>
     <property name="text">
      <string>Copy</string>
     </property>

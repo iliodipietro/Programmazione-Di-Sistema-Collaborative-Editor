@@ -13,6 +13,7 @@ ModifyPassword::ModifyPassword(QSharedPointer<SocketHandler> socketHandler, QWid
 	this->move_rubberband = false;
 	m_selectionArea = Q_NULLPTR;
 	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyPassword::changeResult);
+	connect(this, &ModifyPassword::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 
 }
