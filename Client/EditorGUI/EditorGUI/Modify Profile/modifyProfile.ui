@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1064</width>
+    <width>792</width>
     <height>702</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -23,131 +29,11 @@
 #ModifyProfile { background: rgba(32, 80, 96, 100); }
 QLineEdit { border-radius: 3px; }</string>
   </property>
-  <widget class="QWidget" name="formLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>120</y>
-     <width>551</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout_3">
-    <property name="sizeConstraint">
-     <enum>QLayout::SetMinimumSize</enum>
-    </property>
-    <property name="horizontalSpacing">
-     <number>9</number>
-    </property>
-    <property name="verticalSpacing">
-     <number>10</number>
-    </property>
-    <item row="1" column="0">
-     <widget class="QLabel" name="emailLabel">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel { color: white; }</string>
-      </property>
-      <property name="text">
-       <string>Nuova Email:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="emailLine_3">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="usernameLabel">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel { color: white; }</string>
-      </property>
-      <property name="text">
-       <string>Nuovo Username:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="usernameLine_3">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="echoMode">
-       <enum>QLineEdit::Normal</enum>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QPushButton" name="cancel">
-   <property name="geometry">
-    <rect>
-     <x>720</x>
-     <y>610</y>
-     <width>241</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-
-QPushButton:hover { background-color: #0080FF; }</string>
-   </property>
-   <property name="text">
-    <string>Indietro</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="selectImageButton">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>330</y>
+     <x>150</x>
+     <y>460</y>
      <width>156</width>
      <height>40</height>
     </rect>
@@ -178,51 +64,19 @@ QPushButton:hover { background-color: #0080FF; }</string>
     <string>Seleziona immagine</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="submit">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>610</y>
-     <width>231</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-
-QPushButton:hover { background-color: #0080FF; }</string>
-   </property>
-   <property name="text">
-    <string>Conferma</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="imageLabel">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>250</y>
-     <width>225</width>
-     <height>225</height>
+     <x>160</x>
+     <y>320</y>
+     <width>125</width>
+     <height>125</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
-     <width>225</width>
-     <height>225</height>
+     <width>125</width>
+     <height>125</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -233,6 +87,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="text">
     <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
   <widget class="QLabel" name="crop">
@@ -275,35 +132,274 @@ QPushButton:hover { background-color: #0080FF; }</string>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>30</y>
-     <width>621</width>
+     <x>0</x>
+     <y>20</y>
+     <width>791</width>
      <height>81</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="font">
     <font>
-     <pointsize>20</pointsize>
+     <pointsize>30</pointsize>
     </font>
    </property>
    <property name="styleSheet">
     <string notr="true">QLabel { color: white; }</string>
    </property>
    <property name="text">
-    <string>Inserisci solo i campi che vuoi modificare</string>
+    <string>Modifica Account</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
   <widget class="QPushButton" name="modifyPasswordButton">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>450</y>
-     <width>161</width>
-     <height>41</height>
+     <x>340</x>
+     <y>460</y>
+     <width>156</width>
+     <height>40</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }</string>
+   </property>
    <property name="text">
-    <string>Modifica password</string>
+    <string>Cambia password</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="emailLabel">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>120</y>
+     <width>150</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel { color: white; }</string>
+   </property>
+   <property name="text">
+    <string>Nuova Email:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="usernameLine_3">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>240</y>
+     <width>561</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Normal</enum>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancel">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>560</y>
+     <width>200</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>2000</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }</string>
+   </property>
+   <property name="text">
+    <string>Annulla</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="submit">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>560</y>
+     <width>200</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>16777215</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
+   </property>
+   <property name="text">
+    <string>Conferma</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="emailLine_3">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>160</y>
+     <width>561</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="placeholderText">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="usernameLabel">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>200</y>
+     <width>150</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel { color: white; }</string>
+   </property>
+   <property name="text">
+    <string>Nuovo Username:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="emailLabel_2">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>280</y>
+     <width>150</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel { color: white; }</string>
+   </property>
+   <property name="text">
+    <string>Nuova Immagine:</string>
    </property>
   </widget>
  </widget>
