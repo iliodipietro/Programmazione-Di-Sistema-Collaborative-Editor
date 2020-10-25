@@ -119,7 +119,7 @@ QLineEdit { border-radius: 3px; }</string>
     <rect>
      <x>720</x>
      <y>610</y>
-     <width>201</width>
+     <width>241</width>
      <height>61</height>
     </rect>
    </property>
@@ -140,7 +140,7 @@ QLineEdit { border-radius: 3px; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="text">
-    <string>Annulla</string>
+    <string>Indietro</string>
    </property>
   </widget>
   <widget class="QPushButton" name="selectImageButton">
@@ -179,6 +179,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
    </property>
   </widget>
   <widget class="QPushButton" name="submit">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>440</x>
