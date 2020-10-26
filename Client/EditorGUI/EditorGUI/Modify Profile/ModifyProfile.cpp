@@ -190,6 +190,7 @@ void ModifyProfile::mouseReleaseEvent(QMouseEvent* e)
 
 void ModifyProfile::on_cancel_clicked() {
 	emit showParent();
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	this->hide();
 }
 
@@ -237,6 +238,7 @@ void ModifyProfile::showErrorMessage() {
 
 void ModifyProfile::dialogClosed(QAbstractButton* button) {
 	emit showParentUpdated(this->m_username, this->m_email, this->m_image);
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	this->hide();
 }
 
@@ -256,9 +258,5 @@ void ModifyProfile::on_texte_changed(QString newText){// il newText puo essere l
 	}
 }
 
-void ModifyProfile::on_image_changed(QSharedPointer<QPixmap> newImage){
-	if (newImage != this->m_image) {
-		ui.submit->setEnabled(true);
-	}
-}
+
 
