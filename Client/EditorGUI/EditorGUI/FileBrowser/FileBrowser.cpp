@@ -188,6 +188,10 @@ void FileBrowser::removeBlank()
 
 void FileBrowser::on_logoutButton_clicked() {
 	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
+	for (auto el : this->m_textEditors) {
+		QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(el.first, el.second->getSiteCounter_(), CLOSE));
+		emit dataToSend(data);
+	}
 	QByteArray message = Serialize::fromObjectToArray(Serialize::logoutUserSerialize(LOGOUT));
 	//m_socketHandler->writeData(message);
 	emit dataToSend(message);

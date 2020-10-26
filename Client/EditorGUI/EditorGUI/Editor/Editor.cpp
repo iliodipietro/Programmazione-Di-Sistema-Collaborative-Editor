@@ -94,6 +94,11 @@ Editor::~Editor()
 	//FINE---------------------
 }
 
+int Editor::getSiteCounter_()
+{
+	return this->_CRDT->getSiteCounter();
+}
+
 void Editor::closeEvent(QCloseEvent* event) {
 	emit editorClosed(m_fileId, this->_CRDT->getSiteCounter());
 	this->close();
@@ -1213,12 +1218,13 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	{
 	case Qt::Key_Backspace:
 	case Qt::Key_Delete:
-	case Qt::Key_Cancel:
+
 		this->localDelete();
 		if (this->_CRDT->isEmpty())
 			this->lastStart = this->lastEnd = 0;
 		break;
-	case Qt::Key_Alt:
+	case Qt::Key_Alt:	
+	case Qt::Key_Cancel:
 		break;
 	case Qt::Key_Up:
 	case Qt::Key_Down:
