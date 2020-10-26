@@ -184,7 +184,7 @@ void MyTextEdit::updateUsersIntervals() {
 					while (i - 1 < numOfInterval) {
 						TC.setPosition(end);
 						QRect intRect = this->cursorRect(TC);
-						while (intRect.y() == startRect.y() && end + 20 <= it->getEndPosition()) {
+						while (intRect.y() == startRect.y() && end + 20 < it->getEndPosition()) {
 							end += 20;
 							i++;
 							TC.setPosition(end);

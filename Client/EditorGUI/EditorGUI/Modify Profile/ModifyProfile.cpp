@@ -190,6 +190,7 @@ void ModifyProfile::mouseReleaseEvent(QMouseEvent* e)
 
 void ModifyProfile::on_cancel_clicked() {
 	emit showParent();
+	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	this->hide();
 }
 
@@ -237,6 +238,7 @@ void ModifyProfile::showErrorMessage() {
 
 void ModifyProfile::dialogClosed(QAbstractButton* button) {
 	emit showParentUpdated(this->m_username, this->m_email, this->m_image);
+	connect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &ModifyProfile::ModifyProfileResult);
 	this->hide();
 }
 
