@@ -5,6 +5,7 @@
 #include "CRDT/CRDT.h"
 #include "QTimer"
 #include <queue>
+#include <QPair>
 
 class Editor;
 class MyTextEdit;
@@ -22,7 +23,7 @@ public:
 	void messageHandler(Message& message, int position);
 	void setCursorPosition(int pos, CursorMovementMode mode, int lenght = 0);
 	inline QColor getCursorColor() { return m_color; }
-	QRect getCursorPos();
+	QPair<bool, QRect> getCursorPos();
 	int getCursorPosition();
 	void setActiveCursor();
 	void updateLabelPosition();
@@ -40,6 +41,7 @@ private:
 	QRect m_lastPosition;
 	CRDT* m_crdt;
 	int m_position;
+	bool m_hide;
 
 	void updateViewAfterInsert(Message m, __int64 index, QString str);
 	void updateViewAfterDelete(Message m, __int64 index);

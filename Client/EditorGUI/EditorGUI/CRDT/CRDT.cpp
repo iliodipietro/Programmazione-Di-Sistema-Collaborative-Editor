@@ -78,7 +78,7 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+		[symbol](Symbol s) {return ((symbol.getId() == s.getId())); });
 
 	if (it != _symbols.end()) {
 

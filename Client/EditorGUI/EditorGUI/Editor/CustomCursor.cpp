@@ -9,7 +9,7 @@
 
 CustomCursor::CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
-m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor)
+m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor), m_hide(false)
 {
 	QTextCursor TCPrevious = m_editor->textCursor();
 	m_usernameLabel->setAutoFillBackground(true);
@@ -44,13 +44,13 @@ m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor)
 void CustomCursor::messageHandler(Message& m, int index) {
 	switch (m.getAction()) {
 	case INSERT:
-		updateViewAfterInsert(m, index,"");
+		updateViewAfterInsert(m, index, "");
 		break;
 	case DELETE_S:
 		updateViewAfterDelete(m, index);
 		break;
 	case CHANGE:
-		updateViewAfterStyleChange(m, index,"");
+		updateViewAfterStyleChange(m, index, "");
 		break;
 	case CURSOR_S:
 		setCursorPosition(m_crdt->getCursorPosition(m.getCursorPosition()), ChangePosition, m.getIsSelection());
@@ -75,14 +75,15 @@ void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lengh
 		m_position = pos;
 		m_TextCursor->setPosition(pos);
 		m_editor->setTextCursor(*m_TextCursor);
-		updateLabelPosition();
+		//updateLabelPosition();
 		return;
 	}
 	m_editor->setTextCursor(*m_TextCursor);
 }
 
-QRect CustomCursor::getCursorPos() {
-	return m_lastPosition;
+QPair<bool, QRect> CustomCursor::getCursorPos() {
+	updateLabelPosition();
+	return QPair<bool, QRect>(m_hide, m_lastPosition);
 }
 
 void CustomCursor::setActiveCursor() {
@@ -90,12 +91,21 @@ void CustomCursor::setActiveCursor() {
 }
 
 void CustomCursor::updateLabelPosition() {
-	m_lastPosition = m_editor->cursorRect();
+	m_lastPosition = m_editor->cursorRect(*m_TextCursor);
 	QPoint cursorPos = m_lastPosition.topLeft();
-	cursorPos.setY(cursorPos.y() - 2);
-	cursorPos.setX(cursorPos.x() + 9);
-	m_usernameLabel->move(cursorPos);
-	m_usernameLabel->show();
+	QPoint cursorPosGlobal = m_editor->mapToParent(cursorPos);
+	QRect m_editorSize = m_editor->geometry();
+	if (m_editor->geometry().contains(m_editor->mapToParent(cursorPos))) {
+		cursorPos.setY(cursorPos.y() - 2);
+		cursorPos.setX(cursorPos.x() + 9);
+		m_usernameLabel->move(cursorPos);
+		m_usernameLabel->show();
+		m_hide = false;
+	}
+	else {
+		m_usernameLabel->hide();
+		m_hide = true;
+	}
 }
 
 

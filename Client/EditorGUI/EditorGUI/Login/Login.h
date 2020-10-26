@@ -34,7 +34,7 @@ private:
 	
 	void closeEvent(QCloseEvent* event);
 	void resetWindows();
-	void openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor);
+	void openFileBrowser(QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor);
 	
 
 private slots:
