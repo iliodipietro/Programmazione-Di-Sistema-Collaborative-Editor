@@ -267,7 +267,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="text">
-    <string>Annulla</string>
+    <string>Indietro</string>
    </property>
   </widget>
   <widget class="QPushButton" name="submit">

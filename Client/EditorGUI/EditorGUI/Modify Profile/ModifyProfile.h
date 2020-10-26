@@ -61,11 +61,9 @@ private slots:
 	void dialogClosed(QAbstractButton* button);
 	void adjustTextColor(); //ilio
 	void on_texte_changed(QString newText);
-	void on_image_changed(QSharedPointer<QPixmap> newImage);
 
 signals:
 	void showParent();
 	void showParentUpdated(QString m_username, QString m_email, QSharedPointer<QPixmap> m_image);
 	void dataToSend(QByteArray);
-	void imageChanged(QSharedPointer<QPixmap> m_image);
 };
