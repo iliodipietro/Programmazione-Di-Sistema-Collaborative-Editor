@@ -1,14 +1,14 @@
 #include "FileBrowser.h"
 #include <QMap>
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString email, QString username,
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor, QString email, QString username,
 	int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage), m_userColor(userColor), m_timer(new QTimer(this)),
-	m_openAfterUri(false), email(email), username(username)
+	m_openAfterUri(false), email(email), username(username), m_profileImageResized(profileImageResized)
 {
 	ui.setupUi(this);
 	ui.username->setText(username);
-	ui.profileImage->setPixmap(*m_profileImage);
+	ui.profileImage->setPixmap(*m_profileImageResized);
 
 	//this->username = username;
 	this->clientID = clientID;

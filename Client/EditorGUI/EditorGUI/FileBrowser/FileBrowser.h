@@ -21,7 +21,8 @@ class FileBrowser : public QMainWindow
 	Q_OBJECT
 
 public:
-	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString email, QString username = "", int clientID = 0, QWidget* parent = Q_NULLPTR);
+	FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor,
+		QString email, QString username = "", int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~FileBrowser();
 
 
@@ -37,6 +38,7 @@ private:
 	Ui::FileBrowser ui;
 	QLineEdit* m_newFileLabel;
 	QSharedPointer<QPixmap> m_profileImage;
+	QSharedPointer<QPixmap> m_profileImageResized;
 	QMap<int, QString> filename_id;
 	QColor m_userColor;
 	QTimer* m_timer;
