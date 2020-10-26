@@ -4,7 +4,7 @@
 FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor, QString email, QString username,
 	int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage), m_userColor(userColor), m_timer(new QTimer(this)),
-	m_openAfterUri(false), email(email), username(username), m_profileImageResized(profileImageResized)
+	m_openAfterUri(false), email(email), username(username), m_profileImageResized(profileImageResized), m_modifyProfile(Q_NULLPTR)
 {
 	ui.setupUi(this);
 	ui.username->setText(username);
@@ -202,6 +202,8 @@ void FileBrowser::on_logoutButton_clicked() {
 //viene aperta la finestra per la modifica dei dati dell'utente
 void FileBrowser::on_modifyProfile_clicked()
 {
+	if (m_modifyProfile != Q_NULLPTR)
+		m_modifyProfile->deleteLater();
 	this->m_modifyProfile = new ModifyProfile(m_socketHandler, this->username, this->email, this->m_profileImage); 
 	m_modifyProfile->show();
 	connect(m_modifyProfile, &ModifyProfile::showParentUpdated, this, &FileBrowser::childWindowClosedAndUpdate);
@@ -217,9 +219,10 @@ void FileBrowser::childWindowClosedAndUpdate(QString m_username, QString m_email
 	this->username = m_username;
 	this->email = m_email;
 	this->m_profileImage = m_profileImage;
+	m_profileImageResized = QSharedPointer<QPixmap>(new QPixmap(m_profileImage->scaled(QSize(60, 60), Qt::KeepAspectRatio)));
 
 	ui.username->setText(m_username);
-	ui.profileImage->setPixmap(*m_profileImage);
+	ui.profileImage->setPixmap(*m_profileImageResized);
 	this->show();
 }
 

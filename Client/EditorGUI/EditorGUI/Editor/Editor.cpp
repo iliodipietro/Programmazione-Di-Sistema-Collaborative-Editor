@@ -35,6 +35,7 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	ui.gridLayout->addWidget(m_textEdit);
 	m_textEdit->setStyleSheet("QTextEdit { padding-left:10; padding-top:10; padding-bottom:10; padding-right:10}");
 	m_textEdit->setMouseTracking(true);
+	this->setWindowTitle(path);
 	//m_textEdit->setText(path);
 	createActions();
 	//this->loadFile(this->filePath);
@@ -749,6 +750,8 @@ void Editor::localDelete() {
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
+
+	this->lastEnd = this->lastStart;
 
 
 	//this->lastStart = 0;
