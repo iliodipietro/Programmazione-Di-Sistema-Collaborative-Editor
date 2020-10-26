@@ -16,6 +16,13 @@ ModifyPassword::ModifyPassword(QSharedPointer<SocketHandler> socketHandler, QWid
 	connect(this, &ModifyPassword::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	connect(m_timer, SIGNAL(timeout()), this, SLOT(showErrorMessage()));
 
+	//ilio
+	ui.okButton->setEnabled(false);
+	connect(ui.oldPasswordLineEdit, &QLineEdit::textChanged, this, &ModifyPassword::on_texte_changed);
+	connect(ui.newPasswordLineEdit, &QLineEdit::textChanged, this, &ModifyPassword::on_texte_changed);
+	connect(ui.confirmPasswordLineEdit, &QLineEdit::textChanged, this, &ModifyPassword::on_texte_changed);
+
+
 }
 
 
@@ -154,4 +161,13 @@ void ModifyPassword::showErrorMessage() {
 void ModifyPassword::dialogClosed(QAbstractButton* button) {
 	//emit showParent();
 	this->hide();
+}
+
+void ModifyPassword::on_texte_changed() {
+	if (ui.oldPasswordLineEdit->text().compare("") != 0 && ui.newPasswordLineEdit->text().compare("") != 0 && ui.confirmPasswordLineEdit->text().compare("") != 0) {
+		ui.okButton->setEnabled(true);
+	}
+	else {
+		ui.okButton->setEnabled(false);
+	}
 }
