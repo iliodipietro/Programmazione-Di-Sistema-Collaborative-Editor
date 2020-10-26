@@ -219,9 +219,10 @@ void FileBrowser::childWindowClosedAndUpdate(QString m_username, QString m_email
 	this->username = m_username;
 	this->email = m_email;
 	this->m_profileImage = m_profileImage;
+	m_profileImageResized = QSharedPointer<QPixmap>(new QPixmap(m_profileImage->scaled(QSize(60, 60), Qt::KeepAspectRatio)));
 
 	ui.username->setText(m_username);
-	ui.profileImage->setPixmap(*m_profileImage);
+	ui.profileImage->setPixmap(*m_profileImageResized);
 	this->show();
 }
 
