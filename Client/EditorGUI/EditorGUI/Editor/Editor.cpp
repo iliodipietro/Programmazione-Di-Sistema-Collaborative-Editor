@@ -310,7 +310,7 @@ void Editor::createActions() {
 	for (int size : standardSizes)
 		this->comboSize->addItem(QString::number(size));
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
-
+	
 	connect(this->comboSize, QOverload<const QString&>::of(&QComboBox::activated), this, &Editor::textSize);
 
 	QPixmap pix(16, 16);
@@ -392,6 +392,7 @@ void Editor::makeItalic() {
 	QTextCharFormat fmt;
 	fmt.setFontItalic(this->italicAct->isChecked());
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -399,6 +400,7 @@ void Editor::makeBold() {
 	QTextCharFormat fmt;
 	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -406,6 +408,7 @@ void Editor::makeUnderlined() {
 	QTextCharFormat fmt;
 	fmt.setFontUnderline(this->underLineAct->isChecked());
 	mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -478,6 +481,7 @@ void Editor::textStyle(int styleIndex)
 	}
 
 	cursor.endEditBlock();
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -495,9 +499,10 @@ void Editor::textSize(const QString& p) {
 		fmt.setFontPointSize(pointSize);
 		this->mergeFormatOnWordOrSelection(fmt); //probabilmente qua non ci entra proprio
 	}
-	QTextCursor TC = m_textEdit->textCursor();
+	//QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
-	m_textEdit->setTextCursor(TC);
+	//m_textEdit->setTextCursor(TC);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -505,6 +510,7 @@ void Editor::textFamily(const QString& f) {
 	QTextCharFormat fmt;
 	fmt.setFontFamily(f);
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -567,6 +573,7 @@ void Editor::shareLink() {
 	//if (m_socketHandler->writeData(msg) == false) {
 	//	return;
 	//}
+	m_textEdit->setFocus();
 	emit dataToSend(msg);
 
 }
@@ -1393,6 +1400,7 @@ void Editor::textColor()
 	fmt.setForeground(col);
 	mergeFormatOnWordOrSelection(fmt);
 	colorChanged(col);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
