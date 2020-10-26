@@ -96,13 +96,19 @@ void File::sendNewFile(ClientManager* socket)
         qDebug() << "time to send: " << (end - start) << '\n';
 
         for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
-            std::vector<int> pos;
-            if(it.value().afterInsert)
-                pos = this->handler->getNextCursorPosition(it.value().pos);
-            Message cursorPosition(pos, CURSOR_S, it.key()->getId());
-            QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
-            socket->writeData(bytes);
+            if(it.key()->getId() != this->id){
+                std::vector<int> pos;
+                if(it.value().afterInsert)
+                    pos = this->handler->getNextCursorPosition(it.value().pos);
+                else {
+                    pos = it.value().pos;
+                }
+                Message cursorPosition(pos, CURSOR_S, it.key()->getId());
+                QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
+                socket->writeData(bytes);
+            }
         }
+        m_usersCursorPosition.insert(socket, CursorPosition(this->handler->getFirstPosition(), false));
 	}
 }
 

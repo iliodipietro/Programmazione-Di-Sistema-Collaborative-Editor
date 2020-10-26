@@ -46,6 +46,7 @@ private:
     bool m_usersIntervalsEnabled;
     bool m_usersIntervalsRepaint;
     bool m_rectAlreadyDone;
+    bool m_lastAction;
     CRDT* m_crdt;
     Editor* m_parentEditor;
 
@@ -61,6 +62,7 @@ protected:
     void keyPressEvent(QKeyEvent* e);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
+    void scrollContentsBy(int dx, int dy);
 
 signals:
     void textSizeChanged();

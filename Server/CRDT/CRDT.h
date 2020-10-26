@@ -68,8 +68,11 @@ public:
 
 	QTimer* getTimer();
 
+    /*Augusto -------------------------------*/
     std::vector<int> getNextCursorPosition(std::vector<int> crdtPos);
     std::vector<int> fromIteratorToPosition(std::vector<Symbol>::iterator it);
+    inline std::vector<int> getFirstPosition(){return this->_symbols.begin()->getPos();};
+    /*Fine Augusto --------------------------*/
 
 public slots:
 	void saveOnFile();//versione base salva solo i caratteri e non il formato--> da testare
