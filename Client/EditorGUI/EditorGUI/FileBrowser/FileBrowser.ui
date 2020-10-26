@@ -42,45 +42,6 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="addSharedFileButton">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }
-
-QPushButton:disabled{
- background-color: #a6a6a6;
-}</string>
-      </property>
-      <property name="text">
-       <string>Aggiungi</string>
-      </property>
-     </widget>
-    </item>
     <item row="7" column="0">
      <widget class="QPushButton" name="renameFile">
       <property name="minimumSize">
@@ -296,33 +257,6 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </item>
      </layout>
     </item>
-    <item row="3" column="1" colspan="4">
-     <widget class="QLineEdit" name="uriLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="placeholderText">
-       <string>Insert Shared URI</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="modifyProfile">
       <property name="sizePolicy">
@@ -365,6 +299,72 @@ QPushButton:disabled{
       </property>
       <property name="text">
        <string> Modifica Profilo </string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="3">
+     <widget class="QLineEdit" name="uriLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>Insert Shared URI</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QPushButton" name="addSharedFileButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
+      </property>
+      <property name="text">
+       <string>Aggiungi</string>
       </property>
      </widget>
     </item>
