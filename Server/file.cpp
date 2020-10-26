@@ -77,6 +77,9 @@ void maybeSleep(int dim)
 }
 void File::sendNewFile(ClientManager* socket)
 {
+    try {
+
+
 	if (!this->handler->isEmpty()) {
 		//se e e solo se non è vuoto--> nuovo file o senza caratteri
 		//prendo tutto il testo come vettore di messagi, e poi un messagio per volta lo serializzo, trasformo in array e lo invio
@@ -96,14 +99,23 @@ void File::sendNewFile(ClientManager* socket)
         qDebug() << "time to send: " << (end - start) << '\n';
 
         for(auto it = m_usersCursorPosition.begin(); it!=m_usersCursorPosition.end(); it++){
-            std::vector<int> pos;
-            if(it.value().afterInsert)
-                pos = this->handler->getNextCursorPosition(it.value().pos);
-            Message cursorPosition(pos, CURSOR_S, it.key()->getId());
-            QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
-            socket->writeData(bytes);
+            if(it.key()->getId() != this->id){
+                std::vector<int> pos;
+                if(it.value().afterInsert)
+                    pos = this->handler->getNextCursorPosition(it.value().pos);
+                else {
+                    pos = it.value().pos;
+                }
+                Message cursorPosition(pos, CURSOR_S, it.key()->getId());
+                QByteArray bytes = Serialize::fromObjectToArray(Serialize::messageSerialize(this->id, cursorPosition, MESSAGE));
+                socket->writeData(bytes);
+            }
         }
+        m_usersCursorPosition.insert(socket, CursorPosition(this->handler->getFirstPosition(), false));
 	}
+    } catch (...) {
+        throw std::exception("errore nell'invio del file");
+    }
 }
 
 bool File::isModifiedName(){
@@ -125,6 +137,9 @@ void File::modifyName(QString newName){
 
 void File::addUser(ClientManager* user)
 {
+    try {
+
+
 	//quando aggiungo un nuovo utente gli mando l'intero testo
 	if (!this->users.contains(user->getId())) {
 
@@ -141,11 +156,17 @@ void File::addUser(ClientManager* user)
         this->sendNewFile(user);
 
 	}
+    } catch (...) {
+        throw std::exception("errore nell'aggiunta di un utente");
+    }
 
 }
 
 void File::removeUser(ClientManager* user)
 {
+    try {
+
+
 	//rimuovo un utente che non lavora piu sul file
 	this->users.remove(user->getId());
     m_usersCursorPosition.remove(user);
@@ -154,6 +175,9 @@ void File::removeUser(ClientManager* user)
             QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(user->getId(), this->id, REMOVEEDITINGUSER));
             (*it)->writeData(message);
         }
+    }
+    } catch (...) {
+        throw std::exception("errore nella rimozione di un utente");
     }
 }
 

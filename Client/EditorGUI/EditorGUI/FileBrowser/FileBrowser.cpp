@@ -1,14 +1,14 @@
 #include "FileBrowser.h"
 #include <QMap>
 
-FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor, QString email, QString username,
+FileBrowser::FileBrowser(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor, QString email, QString username,
 	int clientID, QWidget* parent)
 	: QMainWindow(parent), m_socketHandler(socketHandler), m_profileImage(profileImage), m_userColor(userColor), m_timer(new QTimer(this)),
-	m_openAfterUri(false), email(email), username(username)
+	m_openAfterUri(false), email(email), username(username), m_profileImageResized(profileImageResized)
 {
 	ui.setupUi(this);
 	ui.username->setText(username);
-	ui.profileImage->setPixmap(*m_profileImage);
+	ui.profileImage->setPixmap(*m_profileImageResized);
 
 	//this->username = username;
 	this->clientID = clientID;
@@ -188,6 +188,10 @@ void FileBrowser::removeBlank()
 
 void FileBrowser::on_logoutButton_clicked() {
 	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &FileBrowser::handleNewMessage);
+	for (auto el : this->m_textEditors) {
+		QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(el.first, el.second->getSiteCounter_(), CLOSE));
+		emit dataToSend(data);
+	}
 	QByteArray message = Serialize::fromObjectToArray(Serialize::logoutUserSerialize(LOGOUT));
 	//m_socketHandler->writeData(message);
 	emit dataToSend(message);

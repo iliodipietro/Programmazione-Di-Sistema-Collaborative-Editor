@@ -23,6 +23,7 @@ Login::Login(QWidget* parent)
 Login::~Login()
 {
 	m_thread->quit();
+	m_thread->wait();
 	m_thread->deleteLater();
 }
 
@@ -31,11 +32,11 @@ void Login::closeEvent(QCloseEvent* event)
 	qApp->quit();
 }
 
-void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QColor userColor) {
+void Login::openFileBrowser(QSharedPointer<QPixmap> profileImage, QSharedPointer<QPixmap> profileImageResized, QColor userColor) {
 	m_timer->stop();
 	resetWindows();
 	disconnect(m_socketHandler.get(), &SocketHandler::dataReceived, this, &Login::loginResult);// altrimenti arriva sempre al login anche quando non deve
-	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, userColor,  m_email, m_username, clientID);
+	m_fileBrowserWindow = new FileBrowser(m_socketHandler, profileImage, profileImageResized, userColor,  m_email, m_username, clientID);
 	m_fileBrowserWindow->show();
 	this->newWindow = true;
 	connect(m_fileBrowserWindow, &FileBrowser::showParent, this, &Login::childWindowClosed);
@@ -92,6 +93,7 @@ void Login::loginResult(QJsonObject response) {
 		QByteArray latin = profileImageBase64.toLatin1();
 		profileImage.loadFromData(QByteArray::fromBase64(profileImageBase64.toLatin1()));
 		QPixmap resizedProfileImage = profileImage.scaled(QSize(60,60), Qt::KeepAspectRatio);
+		profileImage = profileImage.scaled(QSize(125, 125), Qt::KeepAspectRatio);
 		QPixmap target(QSize(60, 60));
 		target.fill(Qt::transparent);
 		QPainter painter(&target);
@@ -101,10 +103,20 @@ void Login::loginResult(QJsonObject response) {
 		path.addRoundedRect(0, 0, 60, 60, 30, 30);
 		painter.setClipPath(path);
 		painter.drawPixmap(0, 0, resizedProfileImage);
-		QSharedPointer<QPixmap> roundedProfileImage = QSharedPointer<QPixmap>(new QPixmap(target));
+		QSharedPointer<QPixmap> roundedProfileImageResized = QSharedPointer<QPixmap>(new QPixmap(target));
+		QPixmap target2(QSize(125, 125));
+		target2.fill(Qt::transparent);
+		QPainter painter2(&target2);
+		painter2.setRenderHint(QPainter::Antialiasing, true);
+		painter2.setRenderHint(QPainter::SmoothPixmapTransform, true);
+		QPainterPath path2;
+		path2.addRoundedRect(0, 0, 125, 125, 125/2, 125/2);
+		painter2.setClipPath(path2);
+		painter2.drawPixmap(0, 0, profileImage);
+		QSharedPointer<QPixmap> roundedProfileImage = QSharedPointer<QPixmap>(new QPixmap(target2));
 		QColor userColor(serverMessage[3]);
 		//dato che ho successo elimino username e password dalla gui
-		openFileBrowser(roundedProfileImage, userColor);
+		openFileBrowser(roundedProfileImage, roundedProfileImageResized, userColor);
 	}
 	else {
 		//dialog per mostrare il messaggio di errore ricevuto dal server

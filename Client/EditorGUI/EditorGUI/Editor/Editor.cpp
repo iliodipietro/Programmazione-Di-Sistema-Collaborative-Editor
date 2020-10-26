@@ -94,6 +94,11 @@ Editor::~Editor()
 	//FINE---------------------
 }
 
+int Editor::getSiteCounter_()
+{
+	return this->_CRDT->getSiteCounter();
+}
+
 void Editor::closeEvent(QCloseEvent* event) {
 	emit editorClosed(m_fileId, this->_CRDT->getSiteCounter());
 	this->close();
@@ -310,7 +315,7 @@ void Editor::createActions() {
 	for (int size : standardSizes)
 		this->comboSize->addItem(QString::number(size));
 	this->comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
-
+	
 	connect(this->comboSize, QOverload<const QString&>::of(&QComboBox::activated), this, &Editor::textSize);
 
 	QPixmap pix(16, 16);
@@ -392,6 +397,7 @@ void Editor::makeItalic() {
 	QTextCharFormat fmt;
 	fmt.setFontItalic(this->italicAct->isChecked());
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -399,6 +405,7 @@ void Editor::makeBold() {
 	QTextCharFormat fmt;
 	fmt.setFontWeight(this->boldAct->isChecked() ? QFont::Bold : QFont::Normal);
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -406,6 +413,7 @@ void Editor::makeUnderlined() {
 	QTextCharFormat fmt;
 	fmt.setFontUnderline(this->underLineAct->isChecked());
 	mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -478,6 +486,7 @@ void Editor::textStyle(int styleIndex)
 	}
 
 	cursor.endEditBlock();
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -495,9 +504,10 @@ void Editor::textSize(const QString& p) {
 		fmt.setFontPointSize(pointSize);
 		this->mergeFormatOnWordOrSelection(fmt); //probabilmente qua non ci entra proprio
 	}
-	QTextCursor TC = m_textEdit->textCursor();
+	//QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
-	m_textEdit->setTextCursor(TC);
+	//m_textEdit->setTextCursor(TC);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -505,6 +515,7 @@ void Editor::textFamily(const QString& f) {
 	QTextCharFormat fmt;
 	fmt.setFontFamily(f);
 	this->mergeFormatOnWordOrSelection(fmt);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 
@@ -567,6 +578,7 @@ void Editor::shareLink() {
 	//if (m_socketHandler->writeData(msg) == false) {
 	//	return;
 	//}
+	m_textEdit->setFocus();
 	emit dataToSend(msg);
 
 }
@@ -796,6 +808,11 @@ void Editor::remoteAction(Message m)
 	//}
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
+	QScrollBar* SB = m_textEdit->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
@@ -835,6 +852,10 @@ void Editor::remoteAction(Message m)
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+		//m_textEdit->setVerticalScrollBar(SB);
+	}
 
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
@@ -1204,12 +1225,13 @@ void Editor::tastoPremuto(QKeyEvent* e)
 	{
 	case Qt::Key_Backspace:
 	case Qt::Key_Delete:
-	case Qt::Key_Cancel:
+
 		this->localDelete();
 		if (this->_CRDT->isEmpty())
 			this->lastStart = this->lastEnd = 0;
 		break;
-	case Qt::Key_Alt:
+	case Qt::Key_Alt:	
+	case Qt::Key_Cancel:
 		break;
 	case Qt::Key_Up:
 	case Qt::Key_Down:
@@ -1393,6 +1415,7 @@ void Editor::textColor()
 	fmt.setForeground(col);
 	mergeFormatOnWordOrSelection(fmt);
 	colorChanged(col);
+	m_textEdit->setFocus();
 	emit styleChange();
 }
 

@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QDataStream>
 #include <QRandomGenerator>
+#include <exception>
 
 DBInteraction* DBInteraction::instance = nullptr;
 
@@ -138,6 +139,8 @@ bool DBInteraction::is_email_valid(QString email) {
     QRegularExpression re("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", QRegularExpression::CaseInsensitiveOption);   //("([a-z]+)([_.a-z0-9]*)([a-z0-9]+)(@)([a-z]+)([.a-z]+)([a-z]+)");      //("(\\w+)(\\.|_)?(\\w*)@(\\w+)(\\.(\\w+))+");
     QSqlQuery query;
     int cnt = 0;
+    try {
+
 
     if (re.match(email).hasMatch()) {
         //controllo unicità della email
@@ -172,12 +175,17 @@ bool DBInteraction::is_email_valid(QString email) {
     else {
         return false;
     }
+    } catch (...) {
+        throw std::exception("errore nella verifica della mail");
+    }
 
 }
 
 bool DBInteraction::is_username_unique(QString username){
     QSqlQuery query;
     int cnt = 0;
+    try {
+
 
     if (instance->db.open()) {
         query.prepare("SELECT COUNT(*) FROM users WHERE Username = (:username)");
@@ -203,6 +211,9 @@ bool DBInteraction::is_username_unique(QString username){
         return false;
     }
     return true;
+    } catch (...) {
+        throw std::exception("errore nel controllo che l'username sia univoco");
+    }
 }
 
 QString DBInteraction::computeHashPassword(QString password) {
@@ -217,6 +228,8 @@ QString DBInteraction::computeHashPassword(QString password) {
 }
 
 bool DBInteraction::checkPassword(QString password, ClientManager* client) {
+    try {
+
 
     if (instance->db.open()) {
         QSqlQuery query;
@@ -274,9 +287,14 @@ bool DBInteraction::checkPassword(QString password, ClientManager* client) {
         sendError(client);
         return false;
     }
+    } catch (...) {
+        throw std::exception("errore nel controllo della password");
+    }
 }
 
 void DBInteraction::registration(QString username, QString email, QString password, QString profileImage, ClientManager* incomingClient) {
+    try {
+
 
     QByteArray salted_pwd;
     QString hashed_pwd;
@@ -388,9 +406,14 @@ void DBInteraction::registration(QString username, QString email, QString passwo
         return;
     }
     return;
+    } catch (...) {
+        throw std::exception("errore nella registrazione di un nuovo utente");
+    }
 }
 
 void DBInteraction::login(QString username, QString password, ClientManager* incomingClient) {
+    try {
+
 
     QSqlQuery query;
     QByteArray salted_pwd;
@@ -475,9 +498,15 @@ void DBInteraction::login(QString username, QString password, ClientManager* inc
         return;
     }
     return;
+    } catch (...) {
+        throw std::exception("errore nel login");
+    }
 }
 
 void DBInteraction::logout(ClientManager* client) {
+    try {
+
+
     //cancella semplicemente l'utente dalle strutture interne(mappe) locali del server
     if (!instance->isUserLogged(client)) {
         return;
@@ -488,9 +517,14 @@ void DBInteraction::logout(ClientManager* client) {
         }
     }
     instance->activeusers.removeOne(client);
+    } catch (...) {
+        throw std::exception("errore nel logout");
+    }
 }
 
 void DBInteraction::createFile(QString filename, ClientManager* client) {
+    try {
+
 
     QSqlQuery query;
     int cnt = 0;
@@ -608,9 +642,14 @@ void DBInteraction::createFile(QString filename, ClientManager* client) {
         return;
     }
     return;
+    } catch (...) {
+        throw std::exception("errore nella creazione di un file");
+    }
 }
 
 void DBInteraction::sendFileList(ClientManager* client) {
+    try {
+
 
     if (!instance->isUserLogged(client)) {
         return;
@@ -664,9 +703,14 @@ void DBInteraction::sendFileList(ClientManager* client) {
         sendError(client);
         return;
     }
+    } catch (...) {
+        throw std::exception("errore nell'invio di un file ad un utente");
+    }
 }
 
 void DBInteraction::openFile(int fileId, ClientManager* client) {
+    try {
+
 
     File* f = nullptr;
     QString message;
@@ -773,9 +817,15 @@ void DBInteraction::openFile(int fileId, ClientManager* client) {
         }
 
     }
+    } catch (...) {
+        throw std::exception("errore nell'apertura di un file");
+    }
 }
 
 void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client) {
+    try {
+
+
     //per ogni utente che richiede la chiusura del file verrÃ  fatta una removeUser
     QByteArray response;
     QString message;
@@ -857,9 +907,15 @@ void DBInteraction::closeFile(int fileId, int siteCounter, ClientManager* client
         }
     }
     return;
+    } catch (...) {
+        std::exception("errore nella chiusura di un file");
+    }
 }
 
 void DBInteraction::deleteFile(int fileId, ClientManager* client) {
+    try {
+
+
     //per ogni utente che richiede la cancellazione verrÃ  cancellata nel DB la riga corrispondente
     QByteArray response;
     QString message;
@@ -947,9 +1003,15 @@ void DBInteraction::deleteFile(int fileId, ClientManager* client) {
         return;
     }
     return;
+    } catch (...) {
+        throw std::exception("errore nella cancellazione di un file");
+    }
 }
 
 QString DBInteraction::changeFileName(QString oldPath, QString newName, int fileId, ClientManager* client){
+    try {
+
+
     QString newPath;
     int i;
     QStringList oldPathList = oldPath.split("/");
@@ -993,11 +1055,16 @@ QString DBInteraction::changeFileName(QString oldPath, QString newName, int file
         return nullptr;
     }
 
-
+    } catch (...) {
+        throw std::exception("errore nel cambio nome di un file");
+    }
 
 }
 
 void DBInteraction::renameFile(int fileId, QString newName, ClientManager* client) {
+    try {
+
+
     // per ogni file bisogna cambiare il nome all'interno del DB e il nome del path (anche nel DB), cosa fatta nella closeFile
     QByteArray response;
     QString message;
@@ -1090,9 +1157,15 @@ void DBInteraction::renameFile(int fileId, QString newName, ClientManager* clien
         f->addRUser(client);
         sendSuccess(client);
     }
+    } catch (...) {
+        throw std::exception("errore nella rename file");
+    }
 }
 
 void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
+    try {
+
+
     QByteArray response;
     QString message;
     QString URI;
@@ -1109,9 +1182,14 @@ void DBInteraction::getURIToShare(int fileid, ClientManager* client) {
         qDebug() << "file not existing\n";
         sendError(client);
     }
+    } catch (...) {
+        throw std::exception("errore nella getUri");
+    }
 }
 
 void DBInteraction::SharedFileAcquisition(QString URI, ClientManager* client) {
+    try {
+
 
     QByteArray response;
     QString message;
@@ -1190,9 +1268,14 @@ void DBInteraction::SharedFileAcquisition(QString URI, ClientManager* client) {
         sendError(client);
         return;
     }
+    } catch (...) {
+        throw std::exception("errore nell'aggiunta di un file tramite uri");
+    }
 }
 
 void DBInteraction::changePassword(QString oldPassword, QString newPassword, ClientManager* client) {
+    try {
+
 
     if (!instance->isUserLogged(client)) {
         return;
@@ -1234,6 +1317,9 @@ void DBInteraction::changePassword(QString oldPassword, QString newPassword, Cli
             sendError(client);
             return;
         }
+    }
+    } catch (...) {
+        throw std::exception("errore nel cambio password");
     }
 }
 
@@ -1376,6 +1462,9 @@ void DBInteraction::changeProfilePic(QString profileImage, ClientManager* client
 */
 
 void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QString oldEmail, QString newEmail, QString newImage, ClientManager* client) {
+    try {
+
+
     if (!instance->isUserLogged(client)) {
         return;
     }
@@ -1466,6 +1555,9 @@ void DBInteraction::changeProfile(QString oldUsername, QString newUsername, QStr
     if (!newEmail.isEmpty()) instance->changeEmail(newEmail, client);
     if (!newImage.isEmpty()) instance->changeProfilePic(newImage, client);
     */
+    } catch (...) {
+        throw std::exception("errore nella modifica del profilo");
+    }
 
 }
 

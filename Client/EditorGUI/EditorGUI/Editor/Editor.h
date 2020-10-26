@@ -26,7 +26,7 @@ public:
 	Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixmap> profileImage, QColor userColor,
 		QString path = "", QString username = "", int fileId = 0, int clientID = 0, QWidget* parent = Q_NULLPTR);
 	~Editor();
-	int getSiteCounter();
+	int getSiteCounter_();
 	void loadFile(const QString& fileName);
 	void remoteAction(Message m);
 	int getFileId();

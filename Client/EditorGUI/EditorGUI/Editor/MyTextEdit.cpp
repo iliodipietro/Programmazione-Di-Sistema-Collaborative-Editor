@@ -6,7 +6,8 @@
 #include <locale>
 #include <codecvt>
 
-MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false), m_usersIntervalsEnabled(false), m_rectAlreadyDone(false)
+MyTextEdit::MyTextEdit(CRDT* crdt, QWidget* parent) : m_crdt(crdt), QTextEdit(parent), m_mousePress(false), m_usersIntervalsEnabled(false), m_rectAlreadyDone(false),
+m_lastAction(false)
 {
 	Editor* editor = qobject_cast<Editor*>(this->parent());
 	m_parentEditor = editor;
@@ -27,9 +28,11 @@ void MyTextEdit::paintCustomCursors() {
 	auto it = m_cursorsToPrint.begin();
 	for (it; it != m_cursorsToPrint.end(); it++) {
 		painter.setRenderHint(QPainter::Antialiasing, true);
-		QRect rect = it->second->getCursorPos();
-		rect.setX(rect.x() - 1);
-		painter.fillRect(rect, QBrush((it->second)->getCursorColor()));
+		QPair<bool, QRect> hideRect = it->second->getCursorPos();
+		if (!hideRect.first) {
+			hideRect.second.setX(hideRect.second.x() - 1);
+			painter.fillRect(hideRect.second, QBrush((it->second)->getCursorColor()));
+		}
 	}
 }
 
@@ -58,6 +61,7 @@ void MyTextEdit::removeCursor(int id) {
 }
 
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
+	m_lastAction = true;
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
 	if (m.getAction() == CURSOR_S) {
@@ -67,6 +71,12 @@ void MyTextEdit::handleMessage(int id, Message& m, int position) {
 
 void MyTextEdit::updateTextSize() {
 	emit textSizeChanged();
+}
+
+void MyTextEdit::scrollContentsBy(int dx, int dy) {
+	if (!m_lastAction)
+		QTextEdit::scrollContentsBy(dx, dy);
+	m_lastAction = false;
 }
 
 void MyTextEdit::refresh(QKeyEvent* e)

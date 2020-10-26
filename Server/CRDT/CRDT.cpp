@@ -30,6 +30,9 @@ CRDT::~CRDT()
 //inserimento e cancellazione nelle strutture dati locali sono le remote insert/delete di conclave ossia de messaggi che mi arrivano
 __int64 CRDT::insert_symbol(Symbol symbol)
 {
+    try {
+
+
 	__int64 index = -1;
 
 	QString ssss= symbol.getFont().toString();
@@ -81,10 +84,16 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 		return index;
 	else
 		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 
+    } catch (...) {
+        throw std::exception("errore nell'inserimento di un carattere");
+    }
 }
 
 __int64 CRDT::delete_symbol(Symbol symbol)
 {
+    try {
+
+
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
@@ -110,8 +119,14 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 	}
 
 	return -1;
+    } catch (...) {
+        throw std::exception("errore nel cancellamento di un carattere");
+    }
 }
 __int64 CRDT::change_symbol(Symbol symbol) {
+    try {
+
+
 	__int64 index;
 
 	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
@@ -130,6 +145,9 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 	}
 
 	return -1;
+    } catch (...) {
+        throw std::exception("errore nel cambiamento di stile di un carattere");
+    }
 
 }
 
@@ -306,6 +324,9 @@ bool CRDT::isEmpty()
 
 std::vector<Message> CRDT::getMessageArray()
 {
+    try {
+
+
 	std::vector<Message> msgs;
 	for (Symbol s : this->_symbols) {
 
@@ -314,6 +335,9 @@ std::vector<Message> CRDT::getMessageArray()
 	}
 
 	return msgs;
+    } catch (...) {
+        throw std::exception("errore nella getMessageArray");
+    }
 }
 
 
@@ -416,6 +440,9 @@ QJsonObject ObjectFromString(const QString& in)
 
 void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIERE LA LISTA DI MESSAGGI USATA PER TESTARE IL CLIENT
 {
+    try {
+
+
 	if (!QFile::exists(QString(this->path))) {
 		// se non esiste lo creo
         std::ofstream oFile(this->path.toStdString(), std::ios_base::out | std::ios_base::trunc);
@@ -485,6 +512,9 @@ void CRDT::readFromFile()//NON USARE ANCORA MODIFICHE DA FARE-->MATTIA--> TOGLIE
 	else {
 		qDebug()<<"FILE NON APERTO";
 	}
+    } catch (...) {
+        throw std::exception("errore nella prima lettura del file");
+    }
 }
 
 QTimer* CRDT::getTimer()
@@ -496,6 +526,9 @@ QTimer* CRDT::getTimer()
 
 QString CRDT::crdt_serialize()
 {
+    try {
+
+
 	QString text = "";
 
 	for (auto s : this->_symbols) {
@@ -551,6 +584,9 @@ QString CRDT::crdt_serialize()
 		text.append('\n');
 	}
 	return text;
+    } catch (...) {
+        throw std::exception("errore nella serializzazione del CRDT");
+    }
 }
 void CRDT::saveOnFile()
 {
@@ -560,24 +596,39 @@ void CRDT::saveOnFile()
     //    stream << "";
     //    file.close();
     //}
-	if (this->_symbols.size() > 0) {
 
 
-		QFile file(this->path);
-		if (file.open(QIODevice::WriteOnly | QFile::Truncate)) {
-			QTextStream stream(&file);
+    try {
+
+
+	QFile file(this->path);
+	if (file.open(QIODevice::WriteOnly | QFile::Truncate)) {
+		QTextStream stream(&file);
+
+		if (this->_symbols.size() > 0) {
+		
 			QString serialized_text = this->crdt_serialize();
 			stream << serialized_text;
 		}
 		else {
-			qDebug() << "Errore apertura file nella save";
+			stream << "";
 		}
 	}
+	else {
+		qDebug() << "Errore apertura file nella save";
+	}
+	
+    } catch (...) {
+        throw std::exception("errore nel salvataggio su file");
+    }
 
 	//this->timer->start(TIMEOUT);
 }
 
 std::vector<int> CRDT::getNextCursorPosition(std::vector<int> crdtPos) {
+    try {
+
+
     std::vector<Symbol>::iterator positionInVector = this->_symbols.begin();
     std::vector<int> pos;
 
@@ -624,6 +675,10 @@ std::vector<int> CRDT::getNextCursorPosition(std::vector<int> crdtPos) {
         }
     }
 
+    } catch (...) {
+        throw std::exception("errore nella getNextCursorPosition");
+    }
+
     /*if ((unsigned)index < _symbols.size())
         return index;
     else
@@ -631,11 +686,17 @@ std::vector<int> CRDT::getNextCursorPosition(std::vector<int> crdtPos) {
 }
 
 std::vector<int> CRDT::fromIteratorToPosition(std::vector<Symbol>::iterator it){
+    try {
+
+
     if(it != this->_symbols.end())
         return it->getPos();
     else {
         std::vector<int> maxPos;
         maxPos.push_back(INT_MAX);
         return maxPos;
+    }
+    } catch (...) {
+        throw std::exception("errore nella fromIteratorToPosition");
     }
 }
