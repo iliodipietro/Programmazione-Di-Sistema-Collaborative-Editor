@@ -32,209 +32,6 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="1" rowspan="10" colspan="4">
-     <widget class="QListWidget" name="fileList">
-      <property name="editTriggers">
-       <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="addSharedFileButton">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }
-
-QPushButton:disabled{
- background-color: #a6a6a6;
-}</string>
-      </property>
-      <property name="text">
-       <string>Aggiungi</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="0">
-     <widget class="QPushButton" name="renameFile">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }
-
-QPushButton:disabled{
- background-color: #a6a6a6;
-}9</string>
-      </property>
-      <property name="text">
-       <string>Rinomina</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0">
-     <widget class="QPushButton" name="deleteFile">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }
-
-QPushButton:disabled{
- background-color: #a6a6a6;
-}</string>
-      </property>
-      <property name="text">
-       <string>Elimina</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QPushButton" name="newFile">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }</string>
-      </property>
-      <property name="text">
-       <string>Nuovo File</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="4">
-     <widget class="QPushButton" name="logoutButton">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton
-{
-  color: white;
-  background-color: #27a9e3;
-  border-width: 0px;
-  border-radius: 5px;
-}
-QPushButton:hover { background-color: #0080FF; }</string>
-      </property>
-      <property name="text">
-       <string>Logout</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -296,30 +93,77 @@ QPushButton:hover { background-color: #0080FF; }</string>
       </item>
      </layout>
     </item>
-    <item row="3" column="1" colspan="4">
-     <widget class="QLineEdit" name="uriLineEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+    <item row="6" column="0">
+     <widget class="QPushButton" name="newFile">
       <property name="minimumSize">
        <size>
         <width>0</width>
         <height>40</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
       <property name="font">
        <font>
+        <family>Arial</family>
         <pointsize>10</pointsize>
        </font>
       </property>
-      <property name="text">
-       <string/>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
       </property>
-      <property name="placeholderText">
-       <string>Insert Shared URI</string>
+      <property name="text">
+       <string>Nuovo File</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QPushButton" name="deleteFile">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
+      </property>
+      <property name="text">
+       <string>Elimina</string>
       </property>
      </widget>
     </item>
@@ -365,6 +209,162 @@ QPushButton:disabled{
       </property>
       <property name="text">
        <string> Modifica Profilo </string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1" rowspan="7" colspan="4">
+     <widget class="QListWidget" name="fileList">
+      <property name="editTriggers">
+       <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QPushButton" name="renameFile">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}9</string>
+      </property>
+      <property name="text">
+       <string>Rinomina</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QPushButton" name="addSharedFileButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #27a9e3;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }
+
+QPushButton:disabled{
+ background-color: #a6a6a6;
+}</string>
+      </property>
+      <property name="text">
+       <string>Aggiungi</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="3">
+     <widget class="QLineEdit" name="uriLineEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>Insert Shared URI</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="4">
+     <widget class="QPushButton" name="logoutButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+  color: white;
+  background-color: #cb3234;
+  border-width: 0px;
+  border-radius: 5px;
+}
+QPushButton:hover { background-color: #0080FF; }</string>
+      </property>
+      <property name="text">
+       <string>Logout</string>
       </property>
      </widget>
     </item>

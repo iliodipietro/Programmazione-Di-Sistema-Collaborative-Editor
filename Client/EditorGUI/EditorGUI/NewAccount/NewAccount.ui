@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>792</width>
-    <height>712</height>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -127,10 +127,10 @@
    <widget class="QPushButton" name="submit">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>520</x>
       <y>600</y>
-      <width>200</width>
-      <height>61</height>
+      <width>150</width>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
@@ -142,7 +142,7 @@
      <string notr="true">QPushButton
 {
   color: white;
-  background-color: #27a9e3;
+  background-color:  #00a000;
   border-width: 0px;
   border-radius: 5px;
 }
@@ -160,8 +160,8 @@ QPushButton:disabled{
    <widget class="QLabel" name="imageLabel">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>340</y>
+      <x>130</x>
+      <y>350</y>
       <width>125</width>
       <height>125</height>
      </rect>
@@ -197,7 +197,7 @@ QPushButton:disabled{
    <widget class="QPushButton" name="selectImageButton">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>120</x>
       <y>500</y>
       <width>156</width>
       <height>40</height>
@@ -232,10 +232,10 @@ QPushButton:hover { background-color: #0080FF; }</string>
    <widget class="QPushButton" name="cancel">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>350</x>
       <y>600</y>
-      <width>200</width>
-      <height>61</height>
+      <width>150</width>
+      <height>50</height>
      </rect>
     </property>
     <property name="font">
@@ -247,7 +247,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
      <string notr="true">QPushButton
 {
   color: white;
-  background-color: #27a9e3;
+  background-color: #cb3234;
   border-width: 0px;
   border-radius: 5px;
 }
