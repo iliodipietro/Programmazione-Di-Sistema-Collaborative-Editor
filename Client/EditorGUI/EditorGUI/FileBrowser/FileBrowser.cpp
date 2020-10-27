@@ -191,7 +191,9 @@ void FileBrowser::on_logoutButton_clicked() {
 	for (auto el : this->m_textEditors) {
 		QByteArray data = Serialize::fromObjectToArray(Serialize::closeFileSerialize(el.first, el.second->getSiteCounter_(), CLOSE));
 		emit dataToSend(data);
+		el.second->deleteLater();
 	}
+	m_textEditors.clear();
 	QByteArray message = Serialize::fromObjectToArray(Serialize::logoutUserSerialize(LOGOUT));
 	//m_socketHandler->writeData(message);
 	emit dataToSend(message);

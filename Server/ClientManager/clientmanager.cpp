@@ -43,6 +43,7 @@ void ClientManager::readyRead(){
 //sarebbe meglio usare questa funzione per scrivere i messaggi sul socket invece che creare tante funzioni sparse
 //in giro per tutto il progetto
 bool ClientManager::writeData(QByteArray& data) {
+    if(m_clientSocket != Q_NULLPTR){
     if (m_clientSocket->state() == QAbstractSocket::ConnectedState)
     {
         m_clientSocket->write(intToArray(data.size()).append(data));
@@ -50,6 +51,7 @@ bool ClientManager::writeData(QByteArray& data) {
     }
     else {
         return false;
+    }
     }
 }
 
