@@ -284,7 +284,7 @@ void Editor::createActions() {
 	addToolBarBreak(Qt::TopToolBarArea);
 	addToolBar(ui.toolBar);
 
-	this->comboStyle = new QComboBox(ui.toolBar);
+	/*this->comboStyle = new QComboBox(ui.toolBar);
 	ui.toolBar->addWidget(comboStyle);
 	this->comboStyle->addItem("Standard");
 	this->comboStyle->addItem("Bullet List (Disc)");
@@ -301,7 +301,7 @@ void Editor::createActions() {
 	this->comboStyle->addItem("Heading 4");
 	this->comboStyle->addItem("Heading 5");
 	this->comboStyle->addItem("Heading 6");
-	connect(this->comboStyle, QOverload<int>::of(&QComboBox::activated), this, &Editor::textStyle);
+	connect(this->comboStyle, QOverload<int>::of(&QComboBox::activated), this, &Editor::textStyle);*/
 
 	this->comboFont = new QFontComboBox(ui.toolBar);
 	ui.toolBar->addWidget(this->comboFont);
@@ -505,9 +505,9 @@ void Editor::textSize(const QString& p) {
 		fmt.setFontPointSize(pointSize);
 		this->mergeFormatOnWordOrSelection(fmt); //probabilmente qua non ci entra proprio
 	}
-	//QTextCursor TC = m_textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
-	//m_textEdit->setTextCursor(TC);
+	m_textEdit->setTextCursor(TC);
 	m_textEdit->setFocus();
 	emit styleChange();
 }
@@ -1349,7 +1349,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 
 	
 	QTextList* list = TC.currentList();
-	if (list) {
+	/*if (list) {
 		switch (list->format().style()) {
 		case QTextListFormat::ListDisc:
 			this->comboStyle->setCurrentIndex(1);
@@ -1383,7 +1383,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	else {
 		int headingLevel = this->m_textEdit->textCursor().blockFormat().headingLevel();
 		this->comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
-	}
+	}*/
 
 	this->comboFont->setCurrentFont(m_textEdit->currentFont());
 	QPixmap pix(16, 16);
