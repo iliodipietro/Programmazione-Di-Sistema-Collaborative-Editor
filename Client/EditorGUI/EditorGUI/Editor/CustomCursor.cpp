@@ -91,6 +91,7 @@ void CustomCursor::setActiveCursor() {
 }
 
 void CustomCursor::updateLabelPosition() {
+	m_TextCursor->setPosition(m_position);
 	m_lastPosition = m_editor->cursorRect(*m_TextCursor);
 	QPoint cursorPos = m_lastPosition.topLeft();
 	QPoint cursorPosGlobal = m_editor->mapToParent(cursorPos);

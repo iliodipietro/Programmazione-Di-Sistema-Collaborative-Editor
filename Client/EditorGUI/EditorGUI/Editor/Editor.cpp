@@ -703,7 +703,7 @@ void Editor::localInsert() {
 	}
 
 	int offset = TC.position() - lastCursor;
-	int pos = TC.position();
+	int pos = lastCursor;
 	m_textEdit->moveForwardCursorsPosition(pos, offset + 1);
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
