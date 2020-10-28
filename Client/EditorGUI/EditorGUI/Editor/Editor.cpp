@@ -828,11 +828,7 @@ void Editor::remoteAction(Message m)
 	//}
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
-	QScrollBar* SB = m_textEdit->verticalScrollBar();
-	int sbPos;
-	if (SB != Q_NULLPTR) {
-		sbPos = SB->value();
-	}
+
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
@@ -872,10 +868,6 @@ void Editor::remoteAction(Message m)
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
-	if (SB != Q_NULLPTR) {
-		SB->setValue(sbPos);
-		//m_textEdit->setVerticalScrollBar(SB);
-	}
 
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);

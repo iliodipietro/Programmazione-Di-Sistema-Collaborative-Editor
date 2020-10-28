@@ -58,7 +58,7 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	default:
 		break;
 	}
-	updateLabelPosition();
+	//updateLabelPosition();
 }
 
 void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lenght) {
