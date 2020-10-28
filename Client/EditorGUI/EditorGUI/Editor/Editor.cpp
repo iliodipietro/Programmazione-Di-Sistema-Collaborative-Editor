@@ -704,7 +704,15 @@ void Editor::localInsert() {
 
 	int offset = TC.position() - lastCursor;
 	int pos = lastCursor;
+	QScrollBar* SB = m_textEdit->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	m_textEdit->moveForwardCursorsPosition(pos, offset + 1);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 }
@@ -747,7 +755,15 @@ void Editor::localDelete() {
 		emit dataToSend(Serialize::fromObjectToArray(packet));
 	}
 
+	QScrollBar* SB = m_textEdit->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 

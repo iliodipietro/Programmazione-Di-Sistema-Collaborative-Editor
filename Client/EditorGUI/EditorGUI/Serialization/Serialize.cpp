@@ -370,6 +370,7 @@ QJsonObject Serialize::messageSerialize(Message message, int fileId, int type)
 
 	obj.insert("position", Qvett);
 
+	if (message.getAction() == DELETE_S) return obj;
 
 	//font e colore
 	QFont font = s.getFont();
@@ -450,6 +451,11 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
 		pos.push_back(qj.toInt());
 	}
 
+	if (action == DELETE_S) {
+		Symbol s(c, a, pos, QFont(), QColor(), Qt::AlignmentFlag());
+		Message m(s, action, sender);
+		return QPair<int, Message>(fileId, m);
+	}
 
 	QString str_p = obj.value("font").toString();
 	//QFont font(obj.value("font").toString());

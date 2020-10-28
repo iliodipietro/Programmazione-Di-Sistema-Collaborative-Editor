@@ -75,6 +75,7 @@ void MyTextEdit::updateTextSize() {
 
 void MyTextEdit::scrollContentsBy(int dx, int dy) {
 	if (!m_lastAction)
+		updateUsersIntervals();
 		QTextEdit::scrollContentsBy(dx, dy);
 	m_lastAction = false;
 }
