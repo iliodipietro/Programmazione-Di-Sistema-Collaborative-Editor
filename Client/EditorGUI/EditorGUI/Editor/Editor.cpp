@@ -374,7 +374,8 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
-	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	//QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/list.png"), tr("&ShowUsersIntervals"), this);
 	m_showUsersIntervals->setCheckable(false);
 	m_showUsersIntervals->setPriority(QAction::LowPriority);
 	connect(m_showUsersIntervals, &QAction::triggered, this, &Editor::showHideUsersIntervals);
