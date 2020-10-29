@@ -15,6 +15,7 @@ il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anc
 
 CRDT::CRDT(int id) :_siteId(id), _counter(0)
 {
+	this->_symbols.reserve(200000);
 }
 
 
