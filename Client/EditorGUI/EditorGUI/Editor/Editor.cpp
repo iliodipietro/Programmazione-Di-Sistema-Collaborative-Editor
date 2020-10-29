@@ -46,9 +46,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	setCurrentFile(QString());
 	setUnifiedTitleAndToolBarOnMac(true);
 
-	//connect(m_textEdit, &QTextEdit::undoAvailable, this->actionUndo, &QAction::setEnabled);
-	//connect(m_textEdit, &QTextEdit::redoAvailable, this->actionRedo, &QAction::setEnabled);
-	//connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
@@ -61,7 +58,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	this->colorChanged(this->m_textEdit->textColor());
 
 	//MATTIA--------------------------------------------------------------------------------------
-	//qui vanno fatte tutte le connect che sono in main window a debora??
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::updateLastPosition);
 	//trigger stylechange
 	Q_ASSERT(connect(this, &Editor::styleChange, this, &Editor::localStyleChange));
@@ -89,7 +85,6 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 Editor::~Editor()
 {
 	//MATTIA-----------------
-	//bisogna impl la regola dei 3??????
 	delete this->_CRDT;
 	this->_CRDT = nullptr;
 	//FINE---------------------
@@ -570,8 +565,6 @@ void Editor::filePrintPdf() {
 #endif
 }
 
-
-
 //funzione atta a creare un link per la condivisione di un file, da connettere al tasto share
 void Editor::shareLink() {
 	
@@ -661,23 +654,6 @@ void Editor::localInsert() {
 
 		char chr = m_textEdit->toPlainText().at(pos).toLatin1();
 
-		//std::vector<Message> vett;
-		////debug purposes
-		//if (chr == '§') {
-		//	vett = this->_CRDT->readFromFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-
-		//	QByteArray arr = Serialize::fromObjectToArray( Serialize::messageSerialize(vett[0], INSERT));
-
-		//	qint64 len = arr.size();
-
-		//	for (auto v : vett) {
-		//		this->remoteAction(v);
-		//		std::cout << "inseriton" << std::endl;
-		//	}
-		//	std::cout << "FINE" << std::endl;
-		//	//this->_CRDT->saveOnFile("C:/Users/Mattia Proietto/Desktop/prova_save.txt");
-		//	return;
-		//}
 		TC.setPosition(pos);
 
 		QTextCharFormat format = TC.charFormat();
@@ -693,8 +669,6 @@ void Editor::localInsert() {
 		//mandare solo un tot alla volta--> 50 caratteri e poi sleep per tot millisecondi
 		maybeSleep(dim);
 		dim--;
-
-
 
 		//m_socketHandler->writeData(Serialize::fromObjectToArray(packet)); // -> socket
 		emit dataToSend(Serialize::fromObjectToArray(packet));
@@ -768,6 +742,7 @@ void Editor::localDelete() {
 	//}
 
 }
+
 //
 //void Editor::deleteDxSx() {
 //
@@ -982,7 +957,6 @@ void Editor::updateLastPosition()
 	int in = TC.position();
 	int l = lastCursor;
 	this->lastCursor = TC.position();
-	//emit per dire che mi sono spostato-->aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 }
 
@@ -1025,10 +999,6 @@ void Editor::updateViewAfterInsert(Message m, __int64 index)
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
-	/// 
-	/// la parte qui sotto potrbbe essere inutile per poter scrivere sul text editor 
-	/// conviene usare la Qchartextedit--> vedi nota vocale su telegram a me stesso
-	//o vedere changeViewAfterInsert in mainwindow.cpp debora
 
 	QTextCursor TC = m_textEdit->textCursor();
 	// saving current state
@@ -1102,7 +1072,6 @@ void Editor::updateViewAfterStyleChange(Message m, __int64 index)
 	connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(on_textEdit_textChanged()));
 }
 
-
 void Editor::localStyleChange()
 {
 	int start, end;
@@ -1149,35 +1118,12 @@ void Editor::localStyleChange()
 //FINE-------------------------------------------------------------------------------------------------------------
 
 void Editor::keyPressEvent(int e) {
-	//NON SO FARLO FUNZIONARE
-	//switch (e->key())
-	//{
-	//case Qt::Key_Backspace:
-	//	this->Edelete(0);
-	//	break;
-	//case Qt::Key_Delete:
-	//case Qt::Key_Cancel:
-	//	//EditorDelete
-	//	this->Edelete(1);
-	//	break;
-
-	//default:
-	//	//editor insert-->crea una funzione che fa quello che per ora è in texchanged
-	//	this->Einsert();
-	//	break;
-	//	
-	//}
-	//au
-//	ui.label->setText(e->text());
-	if (e == Qt::Key_A) {
-		int i = 0;
-	}
-
+	return;
 }
 
 void Editor::keyRelaseEvent(QKeyEvent* e)
 {
-	int i = 0;
+	return;
 }
 
 void Editor::tastoPremuto(QKeyEvent* e)
@@ -1407,8 +1353,6 @@ void Editor::colorChanged(const QColor& c) {
 	this->actionTextColor->setIcon(pix);
 
 }
-
-
 
 void Editor::textColor()
 {
