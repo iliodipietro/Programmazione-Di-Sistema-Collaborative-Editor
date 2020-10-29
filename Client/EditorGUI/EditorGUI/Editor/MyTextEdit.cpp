@@ -48,9 +48,11 @@ void MyTextEdit::paintUsersIntervals() {
 }
 
 void MyTextEdit::addCursor(int id, QColor color, QString username, int position) {
-	CustomCursor* cursor = new CustomCursor(m_parentEditor, this, color, username, position, m_crdt, this);
+	CustomCursor* cursor = new CustomCursor(m_parentEditor, this, color, id, username, position, m_crdt, this);
 	m_cursorsToPrint.insert(std::pair<int, CustomCursor*>(id, cursor));
 	connect(this, &MyTextEdit::textSizeChanged, cursor, &CustomCursor::textSizeChanged);
+	connect(cursor, &CustomCursor::updatePositionsAfterDelete, this, &MyTextEdit::updatePositionsAfterDelete);
+	connect(cursor, &CustomCursor::updatePositionsAfterInsert, this, &MyTextEdit::updatePositionsAfterInsert);
 }
 
 void MyTextEdit::removeCursor(int id) {
@@ -161,6 +163,29 @@ void MyTextEdit::moveBackwardCursorsPosition(int mainCursorPosition, int offsetP
 	}
 }
 
+void MyTextEdit::updatePositionsAfterInsert(int id, int position) {
+	for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
+		int cursorPosition = it->second->getCursorPosition();
+		if (it->first != id && cursorPosition > position) {
+			it->second->setCursorPosition(cursorPosition + 1, CustomCursor::ChangePosition);
+		}
+	}
+	emit updateLocalCursorAfterInsert(position);
+}
+
+void MyTextEdit::updatePositionsAfterDelete(int id, int position) {
+	for (auto it = m_cursorsToPrint.begin(); it != m_cursorsToPrint.end(); it++) {
+		int cursorPosition = it->second->getCursorPosition();
+		if (it->first != id && cursorPosition > position && cursorPosition - 1 >= position) {
+			it->second->setCursorPosition(cursorPosition - 1, CustomCursor::ChangePosition);
+		}
+		else if (it->first != id && cursorPosition > position && cursorPosition - 1 < position) {
+			it->second->setCursorPosition(position, CustomCursor::ChangePosition);
+		}
+	}
+	emit updateLocalCursorAfterDelete(position);
+}
+
 void MyTextEdit::showHideUsersIntervals() {
 	m_usersIntervalsEnabled = !m_usersIntervalsEnabled;
 	this->repaint();
@@ -269,36 +294,3 @@ void MyTextEdit::remainingIntervals(QRect start, int startPos, int endPos, QColo
 		m_rowDimensions.emplace_back(start, color);
 	}
 }
-
-/*TC.setPosition(it->getStartPosition(), QTextCursor::MoveAnchor);
-				TC.setPosition(it->getEndPosition(), QTextCursor::KeepAnchor);
-				QString str = TC.selectedText();
-				bool multipleLines = str.contains(QRegularExpression(QStringLiteral("[\\x{2029}]")));
-				do {
-					TC.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
-					QRect newRect = this->cursorRect(TC);
-				}
-				while
-				int pos = TC.position();
-				TC.setPosition(it->getStartPosition());
-				if (multipleLines) {
-					int initialPos = it->getStartPosition();
-					do {
-						int index = str.indexOf(QRegularExpression(QStringLiteral("[\\x{2029}]")));
-						TC.setPosition(initialPos + index);
-						QRect intRect = this->cursorRect(TC);
-						startRect.setWidth(intRect.x() - startRect.x());
-						m_rowDimensions.emplace_back(startRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-						str = str.mid(index + 1);
-						multipleLines = str.contains(QRegularExpression(QStringLiteral("[\\x{2029}]")));
-						initialPos = initialPos + index + 1;
-						TC.setPosition(initialPos);
-						startRect = this->cursorRect(TC);
-					} while (multipleLines);
-				}
-				else {
-					startRect.setWidth(this->width());
-					m_rowDimensions.emplace_back(startRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());
-				}
-				endRect.setX(4);
-				m_rowDimensions.emplace_back(endRect, m_cursorsToPrint.at(it->getUserId())->getCursorColor());*/

@@ -7,9 +7,9 @@
 
 #define TIME_TO_SHOW 150 //number of millisecond before repaint
 
-CustomCursor::CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
+CustomCursor::CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, int id, QString username, int position, CRDT* crdt, QObject* parent) : m_editor(editor),
 m_color(color), m_position(position), QObject(parent), m_username(username), m_usernameLabel(new QLabel(username, editor)), m_TextCursor(new QTextCursor(editor->document())),
-m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor), m_hide(false)
+m_textDoc(editor->document()), m_crdt(crdt), m_widgetEditor(widgetEditor), m_hide(false), m_id(id)
 {
 	QTextCursor TCPrevious = m_editor->textCursor();
 	m_usernameLabel->setAutoFillBackground(true);
@@ -45,9 +45,11 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	switch (m.getAction()) {
 	case INSERT:
 		updateViewAfterInsert(m, index, "");
+		emit updatePositionsAfterInsert(m_id, index);
 		break;
 	case DELETE_S:
 		updateViewAfterDelete(m, index);
+		emit updatePositionsAfterDelete(m_id, index);
 		break;
 	case CHANGE:
 		updateViewAfterStyleChange(m, index, "");
