@@ -149,7 +149,7 @@ private:
 	void initialFileLoad(Message m, __int64 index);
 
 protected:
-		void mousePressEvent(QMouseEvent* event);
+	void mousePressEvent(QMouseEvent* event);
 
 public slots:
 	void keyPressEvent(int e);
@@ -165,6 +165,8 @@ private slots:
 	void showHideUsersIntervals();
 	void paste();
 	void copy();
+	void updateLocalCursorAfterInsert(int position);
+	void updateLocalCursorAfterDelete(int position);
 //---------------------------------------------------------------------------------------------------
 signals:
 	void editorClosed(int, int);
