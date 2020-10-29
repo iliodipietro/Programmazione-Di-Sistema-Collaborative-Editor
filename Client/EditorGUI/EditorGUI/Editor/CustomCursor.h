@@ -17,7 +17,7 @@ public:
 
 	enum CursorMovementMode { AfterDelete, AfterInsert, ChangePosition };
 
-	CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
+	CustomCursor(Editor* widgetEditor, QTextEdit* editor, QColor color, int id, QString username, int position, CRDT* crdt, QObject* parent = Q_NULLPTR);
 	~CustomCursor();
 
 	void messageHandler(Message& message, int position);
@@ -40,6 +40,7 @@ private:
 	QColor m_color;
 	QRect m_lastPosition;
 	CRDT* m_crdt;
+	int m_id;
 	int m_position;
 	bool m_hide;
 
@@ -56,5 +57,9 @@ private:
 public slots:
 	void textSizeChanged();
 	void paintNow();
+
+signals: 
+	void updatePositionsAfterInsert(int id, int position);
+	void updatePositionsAfterDelete(int id, int position);
 };
 

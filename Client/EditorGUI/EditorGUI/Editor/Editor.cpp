@@ -52,6 +52,8 @@ Editor::Editor(QSharedPointer<SocketHandler> socketHandler, QSharedPointer<QPixm
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	connect(m_textEdit, &MyTextEdit::clickOnTextEdit, this, &Editor::mousePressEvent);
 	connect(m_textEdit, &MyTextEdit::updateCursorPosition, this, &Editor::updateCursorPosition);
+	connect(m_textEdit, &MyTextEdit::updateLocalCursorAfterInsert, this, &Editor::updateLocalCursorAfterInsert);
+	connect(m_textEdit, &MyTextEdit::updateLocalCursorAfterDelete, this, &Editor::updateLocalCursorAfterDelete);
 	connect(this, &Editor::dataToSend, m_socketHandler.get(), &SocketHandler::writeData, Qt::QueuedConnection);
 	this->setFocusPolicy(Qt::StrongFocus);
 
@@ -1573,4 +1575,28 @@ int Editor::getCursorPosition() {
 	//QTextCursor TC = m_textEdit->textCursor();
 	//return TC.position();
 	return this->lastCursor;
+}
+
+void Editor::updateLocalCursorAfterInsert(int position) {
+	if (this->lastCursor > position) {
+		this->lastCursor++;
+		QTextCursor TC = m_textEdit->textCursor();
+		TC.setPosition(this->lastCursor);
+		m_textEdit->setTextCursor(TC);
+	}
+}
+
+void Editor::updateLocalCursorAfterDelete(int position) {
+	if (this->lastCursor > position && this->lastCursor - 1 >= position) {
+		this->lastCursor--;
+		QTextCursor TC = m_textEdit->textCursor();
+		TC.setPosition(this->lastCursor);
+		m_textEdit->setTextCursor(TC);
+	}
+	else if (this->lastCursor > position && this->lastCursor - 1 < position) {
+		this->lastCursor = position;
+		QTextCursor TC = m_textEdit->textCursor();
+		TC.setPosition(this->lastCursor);
+		m_textEdit->setTextCursor(TC);
+	}
 }

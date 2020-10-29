@@ -69,9 +69,13 @@ signals:
     void clickOnTextEdit(QMouseEvent*);
     void propaga(QKeyEvent* e);
     void updateCursorPosition(bool);
+    void updateLocalCursorAfterInsert(int position);
+    void updateLocalCursorAfterDelete(int position);
 
 private slots:
     void showHideUsersIntervals();
+    void updatePositionsAfterInsert(int id, int position);
+    void updatePositionsAfterDelete(int id, int position);
 
 public slots:
     void updateUsersIntervals();
