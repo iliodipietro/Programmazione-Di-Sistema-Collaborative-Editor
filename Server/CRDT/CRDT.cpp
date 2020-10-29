@@ -20,6 +20,7 @@ CRDT::CRDT(int id, QString path) :_siteId(id), _counter(0),path(path)
 	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
 	this->readFromFile();
 	timer->start(TIMEOUT);
+    this->_symbols.reserve(200000);
 	//this->localInsert(0, 'K', QFont(),QColor('red'),Qt::AlignmentFlag());
 }
 
