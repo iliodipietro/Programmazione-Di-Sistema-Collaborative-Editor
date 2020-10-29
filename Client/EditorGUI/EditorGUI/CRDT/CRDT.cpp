@@ -9,7 +9,7 @@
 /*
 
 id dato dal server per identificare il singolo client usato per creare l'id univoco globale del carattere
-il crdt dovrebbe girare anche sul server --> possibile sol server ha id == 0 anche se non crea mai caratteri
+il crdt dovrebbe girare anche sul server --> server ha id == 0 e non crea mai caratteri
 
 */
 
@@ -321,7 +321,7 @@ std::vector<Message> CRDT::getMessageArray()
 
 
 
-// SERVER ONLYYYYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// SERVER ONLY-----------------------------
 QJsonObject ObjectFromString(const QString& in)
 {
 	QJsonObject obj;

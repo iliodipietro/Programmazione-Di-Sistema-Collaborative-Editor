@@ -14,22 +14,8 @@
 #define DELETE_S 1
 #define CHANGE 2
 #define CURSOR_S 3
-
-
-
 class Message;
 
-/*
-le local insert/delete ritornano dei messaggi che dovranno essere presi serializzati e mandati tramite socket al server
-
-L'algoritmo è quello del lab e funzionava non so se il tutto funziona adesso dopo i cambiamneti -->FARE PROVE QUANDO SI SARA
-IMPLEMENTATO UN MECCANISMO FUNZIONANTE
-
-
-
-TODO
-mancano le interazioni con la gui ossia i signal e slot per scatenare le insert.
-*/
 class CRDT
 {
 private:
@@ -69,7 +55,7 @@ public:
 
 	__int64 getCursorPosition(std::vector<int> crdtPos);
 
-	//for fractional position debug
+	//for fractional position debug only
 	void printPositions()
 	{
 		for (Symbol s : _symbols) {

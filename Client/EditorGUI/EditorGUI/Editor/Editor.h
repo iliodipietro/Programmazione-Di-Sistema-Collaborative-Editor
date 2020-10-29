@@ -70,6 +70,7 @@ private:
 	QString m_username;
 	int selectionStart, selectionEnd, flagItalic = 0, changeItalic = 0;
 	int m_fileId;
+	bool styleBounce = false;
 	QMap<int, QString> m_editingUsers;
 	bool m_showingEditingUsers;
 	QColor m_userColor;
@@ -92,8 +93,7 @@ private:
 	int lastStart;
 	int lastEnd;
 
-	//serve ad impedire che l'ontextchange venga triggerato due volte di seguito quando ho cami di stile
-	bool styleBounce = false;
+	
 
 	std::vector<Message> list_of_msg;
 	std::vector<int> list_of_idx;
