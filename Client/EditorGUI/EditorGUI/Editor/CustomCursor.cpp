@@ -120,10 +120,7 @@ void CustomCursor::updateViewAfterInsert(Message m, __int64 index, QString str)
 	QFont r_font = m.getSymbol().getFont();
 	QColor r_color = m.getSymbol().getColor();
 	Qt::AlignmentFlag alignment = m.getSymbol().getAlignment();
-	/// 
-	/// la parte qui sotto potrbbe essere inutile per poter scrivere sul text editor 
-	/// conviene usare la Qchartextedit--> vedi nota vocale su telegram a me stesso
-	//o vedere changeViewAfterInsert in mainwindow.cpp debora
+
 
 	//QTextCursor TC = m_editor->textCursor();
 	// saving current state
