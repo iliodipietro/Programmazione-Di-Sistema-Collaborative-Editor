@@ -58,13 +58,13 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	default:
 		break;
 	}
-	updateLabelPosition();
+	//updateLabelPosition();
 }
 
 void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lenght) {
 	switch (mode) {
 	case AfterDelete:
-		m_position = pos - 1;
+		m_position = pos;
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:
@@ -91,6 +91,7 @@ void CustomCursor::setActiveCursor() {
 }
 
 void CustomCursor::updateLabelPosition() {
+	m_TextCursor->setPosition(m_position);
 	m_lastPosition = m_editor->cursorRect(*m_TextCursor);
 	QPoint cursorPos = m_lastPosition.topLeft();
 	QPoint cursorPosGlobal = m_editor->mapToParent(cursorPos);

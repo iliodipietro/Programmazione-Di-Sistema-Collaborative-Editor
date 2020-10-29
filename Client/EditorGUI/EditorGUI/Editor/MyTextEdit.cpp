@@ -62,8 +62,16 @@ void MyTextEdit::removeCursor(int id) {
 
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
 	m_lastAction = true;
+	QScrollBar* SB = this->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	if (m.getAction() == CURSOR_S) {
 		this->repaint();
 	}
@@ -75,6 +83,7 @@ void MyTextEdit::updateTextSize() {
 
 void MyTextEdit::scrollContentsBy(int dx, int dy) {
 	if (!m_lastAction)
+		updateUsersIntervals();
 		QTextEdit::scrollContentsBy(dx, dy);
 	m_lastAction = false;
 }
@@ -216,24 +225,23 @@ int MyTextEdit::preciseIntervals(QRect start, int startPos, int nIntervals, QCol
 	QRect intRect;
 	QTextCursor TC = this->textCursor();
 	int i;
-	bool flag = false;
 	for (i = startPos + (nIntervals - 1) * 20; i < startPos + nIntervals * 20; i++) {
 		TC.setPosition(i);
 		intRect = this->cursorRect(TC);
 		if (intRect.y() > start.y())
 		{
-			flag = true;
-			break;
+			TC.setPosition(i - 1);
+			intRect = this->cursorRect(TC);
+			start.setWidth(intRect.x() - start.x());
+			m_rowDimensions.emplace_back(start, color);
+			return i;
 		}
 	}
-	TC.setPosition(i - 1);
+	TC.setPosition(i);
 	intRect = this->cursorRect(TC);
 	start.setWidth(intRect.x() - start.x());
 	m_rowDimensions.emplace_back(start, color);
-	if (flag)
-		return i;
-	else
-		return i + 1;
+	return i;
 }
 
 void MyTextEdit::remainingIntervals(QRect start, int startPos, int endPos, QColor color) {
@@ -252,7 +260,8 @@ void MyTextEdit::remainingIntervals(QRect start, int startPos, int endPos, QColo
 			m_rowDimensions.emplace_back(start, color);
 			TC.setPosition(i);
 			start = this->cursorRect(TC);
-			flag = true;
+			if(i == endPos)
+				flag = true;
 		}
 	}
 	if (!flag) {

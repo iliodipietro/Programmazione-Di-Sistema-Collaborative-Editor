@@ -32,9 +32,9 @@ QLineEdit { border-radius: 3px; }</string>
   <widget class="QPushButton" name="selectImageButton">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>120</x>
      <y>460</y>
-     <width>156</width>
+     <width>150</width>
      <height>40</height>
     </rect>
    </property>
@@ -61,13 +61,13 @@ QLineEdit { border-radius: 3px; }</string>
 QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="text">
-    <string>Seleziona immagine</string>
+    <string>Cambia immagine</string>
    </property>
   </widget>
   <widget class="QLabel" name="imageLabel">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>130</x>
      <y>320</y>
      <width>125</width>
      <height>125</height>
@@ -153,7 +153,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
     <string notr="true">QLabel { color: white; }</string>
    </property>
    <property name="text">
-    <string>Modifica Account</string>
+    <string>Il mio Account</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -162,9 +162,9 @@ QPushButton:hover { background-color: #0080FF; }</string>
   <widget class="QPushButton" name="modifyPasswordButton">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>460</y>
-     <width>156</width>
+     <x>120</x>
+     <y>520</y>
+     <width>150</width>
      <height>40</height>
     </rect>
    </property>
@@ -207,7 +207,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
     <string notr="true">QLabel { color: white; }</string>
    </property>
    <property name="text">
-    <string>Nuova Email:</string>
+    <string>Email:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="usernameLine_3">
@@ -232,10 +232,10 @@ QPushButton:hover { background-color: #0080FF; }</string>
   <widget class="QPushButton" name="cancel">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>560</y>
-     <width>200</width>
-     <height>61</height>
+     <x>360</x>
+     <y>600</y>
+     <width>150</width>
+     <height>50</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -259,7 +259,7 @@ QPushButton:hover { background-color: #0080FF; }</string>
     <string notr="true">QPushButton
 {
   color: white;
-  background-color: #27a9e3;
+  background-color: #cb3234;
   border-width: 0px;
   border-radius: 5px;
 }
@@ -276,10 +276,10 @@ QPushButton:hover { background-color: #0080FF; }</string>
    </property>
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>560</y>
-     <width>200</width>
-     <height>61</height>
+     <x>530</x>
+     <y>600</y>
+     <width>150</width>
+     <height>50</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -315,7 +315,7 @@ QPushButton:disabled{
 }</string>
    </property>
    <property name="text">
-    <string>Conferma</string>
+    <string>Modifica</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="emailLine_3">
@@ -372,7 +372,7 @@ QPushButton:disabled{
     <string notr="true">QLabel { color: white; }</string>
    </property>
    <property name="text">
-    <string>Nuovo Username:</string>
+    <string>Username:</string>
    </property>
   </widget>
   <widget class="QLabel" name="emailLabel_2">
@@ -399,7 +399,7 @@ QPushButton:disabled{
     <string notr="true">QLabel { color: white; }</string>
    </property>
    <property name="text">
-    <string>Nuova Immagine:</string>
+    <string>Immagine:</string>
    </property>
   </widget>
  </widget>

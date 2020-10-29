@@ -66,11 +66,11 @@ void SocketHandler::readyRead()
 		qint64 numBytes = m_tcpSocket->bytesAvailable();
 		QByteArray data = m_tcpSocket->readAll();
 		m_previousPacket->append(data);
-		while ((m_previousSize == 0 && m_previousPacket->size() >= 8) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
+		while ((m_previousSize == 0 && m_previousPacket->size() >= 4) || (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize)) {
 
-			if (m_previousSize == 0 && m_previousPacket->size() >= 8) {
-				m_previousSize = arrayToInt(m_previousPacket->mid(0, 8));
-				m_previousPacket->remove(0, 8);
+			if (m_previousSize == 0 && m_previousPacket->size() >= 4) {
+				m_previousSize = arrayToInt(m_previousPacket->mid(0, 4));
+				m_previousPacket->remove(0, 4);
 			}
 
 			if (m_previousSize > 0 && m_previousPacket->size() >= m_previousSize) {
@@ -97,7 +97,7 @@ void SocketHandler::readyRead()
 			m_packetsInQueue.clear();
 		}
 
-		if (m_previousPacket->size() < 8 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
+		if (m_previousPacket->size() < 4 || (m_previousSize > 0 && m_previousPacket->size() < m_previousSize)) break;
 
 	}
 
@@ -110,8 +110,8 @@ void SocketHandler::readyRead()
 bool SocketHandler::writeData(QByteArray data) {
 	if (m_tcpSocket->state() == QAbstractSocket::ConnectedState)
 	{
-		qint64 size = m_tcpSocket->write(intToArray(data.size()).append(data));
-		if (size + 8 == data.size()) return true;
+		qint32 size = m_tcpSocket->write(intToArray(data.size()).append(data));
+		if (size + 4 == data.size()) return true;
 		else return false;
 	}
 	else {
@@ -119,16 +119,16 @@ bool SocketHandler::writeData(QByteArray data) {
 	}
 }
 
-QByteArray SocketHandler::intToArray(qint64 source) {
+QByteArray SocketHandler::intToArray(qint32 source) {
 	QByteArray temp;
 	QDataStream data(&temp, QIODevice::ReadWrite);
 	data << source;
 	return temp;
 }
 
-qint64 SocketHandler::arrayToInt(QByteArray source)
+qint32 SocketHandler::arrayToInt(QByteArray source)
 {
-	qint64 temp;
+	qint32 temp;
 	QDataStream data(&source, QIODevice::ReadWrite);
 	data >> temp;
 	return temp;

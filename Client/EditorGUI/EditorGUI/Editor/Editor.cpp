@@ -284,7 +284,7 @@ void Editor::createActions() {
 	addToolBarBreak(Qt::TopToolBarArea);
 	addToolBar(ui.toolBar);
 
-	this->comboStyle = new QComboBox(ui.toolBar);
+	/*this->comboStyle = new QComboBox(ui.toolBar);
 	ui.toolBar->addWidget(comboStyle);
 	this->comboStyle->addItem("Standard");
 	this->comboStyle->addItem("Bullet List (Disc)");
@@ -301,7 +301,7 @@ void Editor::createActions() {
 	this->comboStyle->addItem("Heading 4");
 	this->comboStyle->addItem("Heading 5");
 	this->comboStyle->addItem("Heading 6");
-	connect(this->comboStyle, QOverload<int>::of(&QComboBox::activated), this, &Editor::textStyle);
+	connect(this->comboStyle, QOverload<int>::of(&QComboBox::activated), this, &Editor::textStyle);*/
 
 	this->comboFont = new QFontComboBox(ui.toolBar);
 	ui.toolBar->addWidget(this->comboFont);
@@ -374,7 +374,8 @@ void Editor::createActions() {
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	ui.toolBar->addWidget(spacer);
 
-	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	//QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/justify.png"), tr("&ShowUsersIntervals"), this);
+	QAction* m_showUsersIntervals = new QAction(QIcon("./Icons/list.png"), tr("&ShowUsersIntervals"), this);
 	m_showUsersIntervals->setCheckable(false);
 	m_showUsersIntervals->setPriority(QAction::LowPriority);
 	connect(m_showUsersIntervals, &QAction::triggered, this, &Editor::showHideUsersIntervals);
@@ -505,9 +506,9 @@ void Editor::textSize(const QString& p) {
 		fmt.setFontPointSize(pointSize);
 		this->mergeFormatOnWordOrSelection(fmt); //probabilmente qua non ci entra proprio
 	}
-	//QTextCursor TC = m_textEdit->textCursor();
+	QTextCursor TC = m_textEdit->textCursor();
 	m_textEdit->updateTextSize();
-	//m_textEdit->setTextCursor(TC);
+	m_textEdit->setTextCursor(TC);
 	m_textEdit->setFocus();
 	emit styleChange();
 }
@@ -703,8 +704,16 @@ void Editor::localInsert() {
 	}
 
 	int offset = TC.position() - lastCursor;
-	int pos = TC.position();
+	int pos = lastCursor;
+	QScrollBar* SB = m_textEdit->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	m_textEdit->moveForwardCursorsPosition(pos, offset + 1);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 }
@@ -747,7 +756,15 @@ void Editor::localDelete() {
 		emit dataToSend(Serialize::fromObjectToArray(packet));
 	}
 
+	QScrollBar* SB = m_textEdit->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	m_textEdit->moveBackwardCursorsPosition(TC.position(), end - start);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	this->_CRDT->updateUserInterval();
 	emit updateUsersIntervals();
 
@@ -811,11 +828,7 @@ void Editor::remoteAction(Message m)
 	//}
 	QTextCursor TC = m_textEdit->textCursor();
 	int pos = TC.position();
-	QScrollBar* SB = m_textEdit->verticalScrollBar();
-	int sbPos;
-	if (SB != Q_NULLPTR) {
-		sbPos = SB->value();
-	}
+
 	disconnect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	disconnect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
 	//m_textEdit->handleMessage(m.getSenderId(), m, index); //gestione dei messaggi remoti spostata in CustomCursor
@@ -855,10 +868,6 @@ void Editor::remoteAction(Message m)
 
 	TC.setPosition(pos, QTextCursor::MoveAnchor);
 	m_textEdit->setTextCursor(TC);
-	if (SB != Q_NULLPTR) {
-		SB->setValue(sbPos);
-		//m_textEdit->setVerticalScrollBar(SB);
-	}
 
 	connect(m_textEdit, &QTextEdit::textChanged, this, &Editor::on_textEdit_textChanged);
 	connect(m_textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::on_textEdit_cursorPositionChanged);
@@ -1349,7 +1358,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 
 	
 	QTextList* list = TC.currentList();
-	if (list) {
+	/*if (list) {
 		switch (list->format().style()) {
 		case QTextListFormat::ListDisc:
 			this->comboStyle->setCurrentIndex(1);
@@ -1383,7 +1392,7 @@ void Editor::on_textEdit_cursorPositionChanged() {
 	else {
 		int headingLevel = this->m_textEdit->textCursor().blockFormat().headingLevel();
 		this->comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
-	}
+	}*/
 
 	this->comboFont->setCurrentFont(m_textEdit->currentFont());
 	QPixmap pix(16, 16);

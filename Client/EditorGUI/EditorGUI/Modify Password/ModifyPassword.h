@@ -64,6 +64,7 @@ private slots:
 	void changeResult(QJsonObject);
 	void showErrorMessage();
 	void dialogClosed(QAbstractButton* button);
+	void on_texte_changed(); //ilio
 
 signals:
 	void dataToSend(QByteArray);
