@@ -208,7 +208,7 @@ QPushButton:disabled{
 }</string>
       </property>
       <property name="text">
-       <string> Modifica Profilo </string>
+       <string>Profilo</string>
       </property>
      </widget>
     </item>

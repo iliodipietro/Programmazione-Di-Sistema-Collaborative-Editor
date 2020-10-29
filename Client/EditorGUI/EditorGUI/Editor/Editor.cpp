@@ -182,13 +182,13 @@ void Editor::createActions() {
 
 	
 
-	const QIcon openIcon = QIcon::fromTheme("document-open", QIcon("./Icons/plus.png"));
+	/*const QIcon openIcon = QIcon::fromTheme("document-open", QIcon("./Icons/plus.png"));
 	this->openAct = new QAction(openIcon, tr("&Open..."), this);
 	this->openAct->setShortcuts(QKeySequence::Open);
 	this->openAct->setStatusTip(tr("Open an existing file"));
 	connect(openAct, &QAction::triggered, this, &Editor::open);
 	ui.menuFile->addAction(this->openAct);
-	ui.toolBar->addAction(this->openAct);
+	ui.toolBar->addAction(this->openAct);*/
 
 	const QIcon pasteIcon = QIcon::fromTheme("edit-paste", QIcon("./Icons/008-clipboard.png"));
 	this->cutAct = new QAction(pasteIcon, tr("&Paste..."), this);
@@ -209,13 +209,13 @@ void Editor::createActions() {
 
 #ifndef QT_NO_PRINTER
 	//const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
-	this->printAction = ui.menuFile->addAction(QIcon("./Icons/export.png"), tr("&Print..."), this, &Editor::filePrint);
-	this->printAction->setPriority(QAction::LowPriority);
-	this->printAction->setShortcut(QKeySequence::Print);
-	ui.toolBar->addAction(this->printAction);
+	//this->printAction = ui.menuFile->addAction(QIcon("./Icons/export.png"), tr("&Print..."), this, &Editor::filePrint);
+	//this->printAction->setPriority(QAction::LowPriority);
+	//this->printAction->setShortcut(QKeySequence::Print);
+	//ui.toolBar->addAction(this->printAction);
 
-	//const QIcon filePrintIcon = QIcon::fromTheme("fileprint", QIcon(rsrcPath + "/fileprint.png"));
-	ui.menuFile->addAction(QIcon("./Icons/review.png"), tr("Print Preview..."), this, &Editor::filePrintPreview);
+	////const QIcon filePrintIcon = QIcon::fromTheme("fileprint", QIcon(rsrcPath + "/fileprint.png"));
+	//ui.menuFile->addAction(QIcon("./Icons/review.png"), tr("Print Preview..."), this, &Editor::filePrintPreview);
 
 	const QIcon exportPdfIcon = QIcon::fromTheme("exportpdf", QIcon("./Icons/pdf.png"));
 	this->exportPDFAction = ui.menuFile->addAction(exportPdfIcon, tr("&Export PDF..."), this, &Editor::filePrintPdf);
