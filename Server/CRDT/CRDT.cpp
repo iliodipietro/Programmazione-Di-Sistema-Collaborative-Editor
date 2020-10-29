@@ -19,7 +19,7 @@ CRDT::CRDT(int id, QString path) :_siteId(id), _counter(0),path(path)
     this->timer->setSingleShot(true);//altrimenti verrebbe chiamato ogni tot secondi
 	connect(timer, SIGNAL(timeout()), this, SLOT(saveOnFile()));
 	this->readFromFile();
-	timer->start(TIMEOUT);
+    timer->start(TIMEOUT);
     this->_symbols.reserve(200000);
 	//this->localInsert(0, 'K', QFont(),QColor('red'),Qt::AlignmentFlag());
 }
@@ -31,7 +31,6 @@ CRDT::~CRDT()
 //inserimento e cancellazione nelle strutture dati locali sono le remote insert/delete di conclave ossia de messaggi che mi arrivano
 __int64 CRDT::insert_symbol(Symbol symbol)
 {
-    try {
 
 
 	__int64 index = -1;
@@ -42,12 +41,12 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 		//inserisco in coda, lo faccio come prima operazione in modo da ottimizzare l'inserimento
 		//quando carico dal server
 		_symbols.push_back(symbol);
-		index = _symbols.size() - 1;
+        index = _symbols.size() - 1;
 	}
-	else {
+    else {
 
 		//trovo l'iteratore che punta alla posizione in cui inserire basandomi sulle pos frazionarie
-		auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(), [symbol](Symbol s) {
+        auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(), [symbol](Symbol s) {
 
 			if (s.getPos() > symbol.getPos())
 				return true;
@@ -67,7 +66,7 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 
 
 			if (it == _symbols.begin()) {
-				index = 0;
+                index = 0;
 			}
 			else {
 
@@ -76,7 +75,7 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 			   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
 			}
 
-			_symbols.insert(it, symbol);
+            _symbols.insert(it, symbol);
 
 		}
 	}
@@ -85,20 +84,15 @@ __int64 CRDT::insert_symbol(Symbol symbol)
 		return index;
 	else
 		return (index - 1);//non so se va messo o basta ritornare sempre index fare prove 
-    } catch (...) {
-        throw std::exception("errore nell'inserimento di un carattere");
-    }
 }
 
 __int64 CRDT::delete_symbol(Symbol symbol)
 {
-    try {
 
+    __int64 index;
 
-	__int64 index;
-
-	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
+    auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
+        [symbol](Symbol s) {return ((s.getPos() == symbol.getPos()) && (symbol.getId() == s.getId())); });
 
 	if (it != _symbols.end()) {
 
@@ -113,25 +107,21 @@ __int64 CRDT::delete_symbol(Symbol symbol)
 		   //altrimenti non devo fare nulla-->segnalato da -1 che è gestito nel process
 		}
 
-		//vuol dire che l'ho trovato
-		_symbols.erase(it);
+        //vuol dire che l'ho trovato
+        _symbols.erase(it);
 
 		return index;
 	}
 
 	return -1;
-    } catch (...) {
-        throw std::exception("errore nel cancellamento di un carattere");
-    }
 }
 __int64 CRDT::change_symbol(Symbol symbol) {
-    try {
 
 
 	__int64 index;
 
-	auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
-		[symbol](Symbol s) {return ((s.getPos() == symbol.getPos())); });
+    auto it = std::find_if(this->_symbols.begin(), this->_symbols.end(),
+        [symbol](Symbol s) {return ((s.getPos() == symbol.getPos())); });
 
 	if (it != _symbols.end()) {
 		//vuol dire che l'ho trovato
@@ -145,10 +135,7 @@ __int64 CRDT::change_symbol(Symbol symbol) {
 		return index;
 	}
 
-	return -1;
-    } catch (...) {
-        throw std::exception("errore nel cambiamento di stile di un carattere");
-    }
+    return -1;
 
 }
 

@@ -77,7 +77,6 @@ void maybeSleep(int dim)
 }
 void File::sendNewFile(ClientManager* socket)
 {
-    try {
 
 
 	if (!this->handler->isEmpty()) {
@@ -113,9 +112,6 @@ void File::sendNewFile(ClientManager* socket)
         }
         m_usersCursorPosition.insert(socket, CursorPosition(this->handler->getFirstPosition(), false));
 	}
-    } catch (...) {
-        throw std::exception("errore nell'invio del file");
-    }
 }
 
 bool File::isModifiedName(){
@@ -137,7 +133,6 @@ void File::modifyName(QString newName){
 
 void File::addUser(ClientManager* user)
 {
-    try {
 
 
 	//quando aggiungo un nuovo utente gli mando l'intero testo
@@ -156,15 +151,11 @@ void File::addUser(ClientManager* user)
         this->sendNewFile(user);
 
 	}
-    } catch (...) {
-        throw std::exception("errore nell'aggiunta di un utente");
-    }
 
 }
 
 void File::removeUser(ClientManager* user)
 {
-    try {
 
 
 	//rimuovo un utente che non lavora piu sul file
@@ -175,9 +166,6 @@ void File::removeUser(ClientManager* user)
             QByteArray message = Serialize::fromObjectToArray(Serialize::removeEditingUserSerialize(user->getId(), this->id, REMOVEEDITINGUSER));
             (*it)->writeData(message);
         }
-    }
-    } catch (...) {
-        throw std::exception("errore nella rimozione di un utente");
     }
 }
 
