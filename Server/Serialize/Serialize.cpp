@@ -504,6 +504,12 @@ QPair<int, Message> Serialize::messageUnserialize(QJsonObject obj)
         pos.push_back(qj.toInt());
     }
 
+    if (action == DELETE_SYMBOL) {
+        Symbol s(c, a, pos, QFont(), QColor(), Qt::AlignmentFlag());
+        Message m(s, action, sender);
+        return QPair<int, Message>(fileid, m);
+    }
+
     QFont font;
     font.fromString(obj.value("font").toString());
     //QFont font(obj.value("font").toString());

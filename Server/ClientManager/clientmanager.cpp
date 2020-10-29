@@ -22,11 +22,11 @@ void ClientManager::readyRead(){
     QByteArray dataToHandle;
     while(m_clientSocket->bytesAvailable() || m_socketBuffer->size() != 0){
         m_socketBuffer->append(m_clientSocket->readAll());
-        while((m_previousSize == 0 && m_socketBuffer->size() >= 8) || (m_previousSize > 0 && m_socketBuffer->size() >= m_previousSize)){
-            if(m_previousSize == 0 && m_socketBuffer->size() >= 8){ // è stata ricevuta la dimensione del m_socketBuffer (primo parametro)
+        while((m_previousSize == 0 && m_socketBuffer->size() >= 4) || (m_previousSize > 0 && m_socketBuffer->size() >= m_previousSize)){
+            if(m_previousSize == 0 && m_socketBuffer->size() >= 4){ // è stata ricevuta la dimensione del m_socketBuffer (primo parametro)
                 //dim = m_socketBuffer->mid(0,8).toULongLong(); //prendo i primi 8 byte che rappresentano la dimensione
-                m_previousSize = arrayToInt(m_socketBuffer->mid(0,8));
-                m_socketBuffer->remove(0,8); //rimuovo dal m_socketBuffer i primi 8 byte, cosi da poter leggere i veri e propri dati
+                m_previousSize = arrayToInt(m_socketBuffer->mid(0,4));
+                m_socketBuffer->remove(0,4); //rimuovo dal m_socketBuffer i primi 8 byte, cosi da poter leggere i veri e propri dati
             }
             if(m_previousSize > 0 && m_socketBuffer->size() >= m_previousSize){ // ho precedentemente ricevuto la dimensione del dato, quindi adesso lo leggo tutto ed emetto il segnale per
                 dataToHandle = m_socketBuffer->mid(0, m_previousSize);
@@ -36,7 +36,7 @@ void ClientManager::readyRead(){
             }
         }
 
-        if (m_socketBuffer->size() < 8 || (m_previousSize > 0 && m_socketBuffer->size() < m_previousSize)) break;
+        if (m_socketBuffer->size() < 4 || (m_previousSize > 0 && m_socketBuffer->size() < m_previousSize)) break;
     }
 }
 
@@ -98,15 +98,15 @@ void ClientManager::setColor(QColor color){
 
 
 //conversione da QByteArray a qint64
-qint64 ClientManager::arrayToInt(QByteArray source){
-    qint64 temp;
+qint32 ClientManager::arrayToInt(QByteArray source){
+    qint32 temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
     return temp;
 }
 
 //conversione da qint64 a QByteArray
-QByteArray ClientManager::intToArray(qint64 source) {
+QByteArray ClientManager::intToArray(qint32 source) {
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
     data << source;

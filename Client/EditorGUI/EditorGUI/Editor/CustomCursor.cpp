@@ -58,13 +58,13 @@ void CustomCursor::messageHandler(Message& m, int index) {
 	default:
 		break;
 	}
-	updateLabelPosition();
+	//updateLabelPosition();
 }
 
 void CustomCursor::setCursorPosition(int pos, CursorMovementMode mode, int lenght) {
 	switch (mode) {
 	case AfterDelete:
-		m_position = pos - 1;
+		m_position = pos;
 		m_TextCursor->setPosition(pos);
 		break;
 	case AfterInsert:

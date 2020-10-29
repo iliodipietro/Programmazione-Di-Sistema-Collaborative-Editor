@@ -25,14 +25,14 @@ private:
     QTcpSocket* m_tcpSocket;
     QString m_serverIp;
     int m_serverPort;
-    qint64 m_previousSize;
+    qint32 m_previousSize;
     std::vector<QJsonObject> m_packetsInQueue;
 
     void readConfigFile();
     bool connectToServer();
     void closeEvent(QCloseEvent* event);
-    QByteArray intToArray(qint64 source);
-    qint64 arrayToInt(QByteArray source);
+    QByteArray intToArray(qint32 source);
+    qint32 arrayToInt(QByteArray source);
     void readThreadFunction();
 
 signals:

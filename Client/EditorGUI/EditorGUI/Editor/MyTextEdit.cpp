@@ -62,8 +62,16 @@ void MyTextEdit::removeCursor(int id) {
 
 void MyTextEdit::handleMessage(int id, Message& m, int position) {
 	m_lastAction = true;
+	QScrollBar* SB = this->verticalScrollBar();
+	int sbPos;
+	if (SB != Q_NULLPTR) {
+		sbPos = SB->value();
+	}
 	CustomCursor* cursor = m_cursorsToPrint.find(id)->second;
 	cursor->messageHandler(m, position);
+	if (SB != Q_NULLPTR) {
+		SB->setValue(sbPos);
+	}
 	if (m.getAction() == CURSOR_S) {
 		this->repaint();
 	}
@@ -75,6 +83,7 @@ void MyTextEdit::updateTextSize() {
 
 void MyTextEdit::scrollContentsBy(int dx, int dy) {
 	if (!m_lastAction)
+		updateUsersIntervals();
 		QTextEdit::scrollContentsBy(dx, dy);
 	m_lastAction = false;
 }
