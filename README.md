@@ -27,7 +27,7 @@ Inserendo username, email, password e conferma della password verrà creato un n
 Alla fine della creazione del un nuovo account verrete reindirizzati alla pagina di login per effettuare l’accesso.
 Non appena avrete eseguito l’accesso verrete reindirizzati alla schermata principale:
 
-![](images/schermata_principale.jpg)
+![](images/schermata_principale.JPG)
 
 
 Qui si possono visualizzare tutti i file a cui l’utente ha accesso.
