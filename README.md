@@ -1,5 +1,5 @@
 # Programmazione-Di-Sistema-Collaborative-Editor
-progetto per il corso di Programmazione di Sistema, @ Politecnico di Torino.
+### progetto per il corso di Programmazione di Sistema, @ Politecnico di Torino.
 
 La disponibilità di connessioni a larga banda e l’esigenza di lavorare in gruppo senza richiedere necessariamente la compresenza degli attori nello stesso spazio fisico, spinge verso la realizzazione di sistemi di supporto al lavoro cooperativo sempre più efficaci. Un esempio pratico, può essere quello della suite Docs di Google, mediante la quale è possibile editare, in modo cooperativo e distribuito, documenti di varia natura (testi, fogli di calcolo, presentazioni). Tale suite è in grado di scalare su numeri anche grandi di utenti contemporanei: tale soluzione è basata su un insieme di server centralizzati che gestiscono il traffico da e verso i singoli client ed implementano la logica e gli algoritmi necessari a garantire la correttezza delle operazioni concorrenti.
 
