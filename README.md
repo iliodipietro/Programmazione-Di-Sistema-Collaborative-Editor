@@ -21,7 +21,7 @@ I singoli client mostrano il numero e l’identità degli utenti che stanno mod
 cursore dei diversi utenti all’interno del documento. Il client può evidenziare il testo introdotto dai diversi utenti utilizzando colori
 differenti. 
  						
-##Utilizzo					 				
+## Utilizzo					 				
 			
 Quando l’applicazione viene avviata vi troverete immediatamente nella schermata di login
 <img src="images/login.jpg" width="50%" height="50%" align="center">
