@@ -24,14 +24,14 @@ differenti.
 ##Utilizzo					 				
 			
 Quando l’applicazione viene avviata vi troverete immediatamente nella schermata di login
-<img src="images/login.jpg" width="40%" height="40%" align="center">
+<img src="images/login.jpg" width="60%" height="60%" align="center">
 
 
 Qui viene richiesto di inserire le proprie credenziali e di premere il tasto Login per accedere.
 
 Nel caso invece si stia accedendo per la prima volta è necessario creare un nuovo account. Cliccando su ‘Crea un account’ si aprirà la pagina seguente:
 
-<img src="images/registrazione.jpg" width="40%" height="40%" align="center">
+<img src="images/registrazione.jpg" width="60%" height="60%" align="center">
 
 
 Inserendo username, email, password e conferma della password verrà creato un nuovo account. È possibile scegliere un’immagine di profilo (nel caso in cui non venga fatto verrà assegnata in automatico un’icona di default).
@@ -51,7 +51,7 @@ Inserendo l'URI di un documento a cui si è stati invitati a collaborare tale fi
 
 Cliccando invece sul bottone ‘Profilo’ si accede alla pagina che consente di modificare le proprie credenziali.
 
-<img src="images/il_mio_account.jpg" width="40%" height="40%" align="center">
+<img src="images/il_mio_account.jpg" width="60%" height="60%" align="center">
 <img src="images/cambio_pwd.jpg" width="40%" height="40%" align="center">
 
 Andando invece ad aprire uno dei file contenuti nella finestra principale andremo nella pagine dell’editor di testo vero e proprio.
