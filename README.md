@@ -7,19 +7,19 @@ Ciò che abbiamo realizzato in questo progetto, è un sistema di editing testual
 
 L’architettura del sistema è composta da due moduli indipendenti: un client ed un server.
 
-	-Il server è costituito da un processo costantemente attivo, in grado di accettare, attraverso la rete, connessioni provenienti dai client. Il 
-	server, al suo interno, mantiene un insieme di documenti che possono essere editati, in modo collaborativo dai client. Tali documenti sono 
-	archiviati sul file system del server, così da non perderne il contenuto in caso di accidentale interruzione del processo. Le operazioni di 
-	salvataggio sono eseguite automaticamente e non richiedono nessuna richiesta esplicita da parte dei client.
+-Il server è costituito da un processo costantemente attivo, in grado di accettare, attraverso la rete, connessioni provenienti dai client. Il 
+server, al suo interno, mantiene un insieme di documenti che possono essere editati, in modo collaborativo dai client. Tali documenti sono 
+archiviati sul file system del server, così da non perderne il contenuto in caso di accidentale interruzione del processo. Le operazioni di 
+salvataggio sono eseguite automaticamente e non richiedono nessuna richiesta esplicita da parte dei client.
 
-		-I client sono processi discontinui (possono essere avviati e terminati in modo indipendente, secondo la volontà dell’utente), eseguiti  
-		all’interno di elaboratori connessi in rete con il server. I client offrono un’interfaccia grafica mediante la quale un utente può richiedere al
-		server di editare uno dei documenti attivi o chiedere di crearne uno nuovo, cui assegna un nome univoco. Quando il documento richiesto viene 
-		aperto, il client offre una tipica interfaccia da editor che permette di modificare il documento. Se due o più client modificano 
-		contemporaneamente il documento, il server garantisce che le operazioni effettuate generino, in ciascun client una rappresentazione coerente. 
-		I singoli client mostrano il numero e l’identità degli utenti che stanno modificando il documento corrente ed evidenziano la posizione del 
-		cursore dei diversi utenti all’interno del documento. Il client può evidenziare il testo introdotto dai diversi utenti utilizzando colori
-		differenti. 
+	-I client sono processi discontinui (possono essere avviati e terminati in modo indipendente, secondo la volontà dell’utente), eseguiti  
+	all’interno di elaboratori connessi in rete con il server. I client offrono un’interfaccia grafica mediante la quale un utente può richiedere al
+	server di editare uno dei documenti attivi o chiedere di crearne uno nuovo, cui assegna un nome univoco. Quando il documento richiesto viene 
+	aperto, il client offre una tipica interfaccia da editor che permette di modificare il documento. Se due o più client modificano 
+	contemporaneamente il documento, il server garantisce che le operazioni effettuate generino, in ciascun client una rappresentazione coerente. 
+	I singoli client mostrano il numero e l’identità degli utenti che stanno modificando il documento corrente ed evidenziano la posizione del 
+	cursore dei diversi utenti all’interno del documento. Il client può evidenziare il testo introdotto dai diversi utenti utilizzando colori
+	differenti. 
  						
 ##Utilizzo					 				
 			
