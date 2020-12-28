@@ -45,4 +45,6 @@ Cliccando invece sul bottone ‘Profilo’ si accede alla pagina che consente di
 
 Andando invece ad aprire uno dei file contenuti nella finestra principale andremo nella pagine dell’editor di testo vero e proprio.
 
+![](images/text.jpg)
+
 Nella parte più in alto troviamo tutte le operazioni principali come copia/incolla, export in formato PDF e le  le varie funzioni di arricchimento del testo (grassetto, corsivo, sottolineato, allineamento, …).Troviamo anche il tasto per recuperare l'URI del documento corrente, per un eventuale invito a collaborare. In alto a destra, troviamo infine l'icona dell'utente connesso, cliccando su tale icona si apre una nuova finestra che mostra i dettagli degli altri utenti che stanno in quel momento lavorando sul file.
