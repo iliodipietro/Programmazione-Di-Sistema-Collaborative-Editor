@@ -7,10 +7,10 @@ Ciò che abbiamo realizzato in questo progetto, è un sistema di editing testual
 
 L’architettura del sistema è composta da due moduli indipendenti: un client ed un server.
 
-		-Il server è costituito da un processo costantemente attivo, in grado di accettare, attraverso la rete, connessioni provenienti dai client. Il 
-		server, al suo interno, mantiene un insieme di documenti che possono essere editati, in modo collaborativo dai client. Tali documenti sono 
-		archiviati sul file system del server, così da non perderne il contenuto in caso di accidentale interruzione del processo. Le operazioni di 
-		salvataggio sono eseguite automaticamente e non richiedono nessuna richiesta esplicita da parte dei client.
+	-Il server è costituito da un processo costantemente attivo, in grado di accettare, attraverso la rete, connessioni provenienti dai client. Il 
+	server, al suo interno, mantiene un insieme di documenti che possono essere editati, in modo collaborativo dai client. Tali documenti sono 
+	archiviati sul file system del server, così da non perderne il contenuto in caso di accidentale interruzione del processo. Le operazioni di 
+	salvataggio sono eseguite automaticamente e non richiedono nessuna richiesta esplicita da parte dei client.
 
 		-I client sono processi discontinui (possono essere avviati e terminati in modo indipendente, secondo la volontà dell’utente), eseguiti  
 		all’interno di elaboratori connessi in rete con il server. I client offrono un’interfaccia grafica mediante la quale un utente può richiedere al
